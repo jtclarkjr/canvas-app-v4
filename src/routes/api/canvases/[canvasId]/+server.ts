@@ -1,0 +1,91 @@
+import { json, type RequestHandler } from '@sveltejs/kit'
+import {
+  deleteCanvasResponseSchema,
+  updateCanvasInputSchema,
+  updateCanvasResponseSchema
+} from '$lib/canvas/schema'
+import {
+  handleApiError,
+  notFound,
+  parseInput,
+  parseJsonBody
+} from '$lib/server/api-error'
+import { withRateLimit } from '$lib/server/rate-limit'
+import { getSupabase } from '$lib/server/supabase'
+
+const toCanvas = (row: {
+  id: string
+  title: string
+  created_by: string
+  created_at: string
+}) => ({
+  id: row.id,
+  title: row.title,
+  createdBy: row.created_by,
+  createdAt: row.created_at
+})
+
+export const PATCH: RequestHandler = async (event) =>
+  withRateLimit(async () => {
+    try {
+      const supabase = getSupabase()
+      const user = event.locals.user
+
+      if (!user) {
+        return json({ message: 'Unauthorized.' }, { status: 401 })
+      }
+
+      const payload = await parseJsonBody(event.request)
+      const input = parseInput(updateCanvasInputSchema, payload)
+
+      const { data, error } = await supabase
+        .from('canvases')
+        .update({ title: input.title })
+        .eq('id', event.params.canvasId)
+        .eq('created_by', user.id)
+        .select()
+        .single()
+
+      if (error || !data) {
+        throw notFound('Canvas not found.', {
+          code: 'canvas_not_found',
+          details: { canvasId: event.params.canvasId }
+        })
+      }
+
+      return json(updateCanvasResponseSchema.parse({ item: toCanvas(data) }))
+    } catch (error) {
+      return handleApiError(error, event.request)
+    }
+  })({ request: event.request })
+
+export const DELETE: RequestHandler = async (event) =>
+  withRateLimit(async () => {
+    try {
+      const supabase = getSupabase()
+      const user = event.locals.user
+
+      if (!user) {
+        return json({ message: 'Unauthorized.' }, { status: 401 })
+      }
+
+      const { data, error } = await supabase
+        .from('canvases')
+        .delete()
+        .eq('id', event.params.canvasId)
+        .eq('created_by', user.id)
+        .select()
+        .single()
+
+      if (error || !data) {
+        throw notFound('Canvas not found.', {
+          code: 'canvas_not_found',
+          details: { canvasId: event.params.canvasId }
+        })
+      }
+
+      return json(deleteCanvasResponseSchema.parse({ item: toCanvas(data) }))
+    } catch (error) {
+      return handleApiError(error, event.request)
+    }
+  })({ request: event.request })

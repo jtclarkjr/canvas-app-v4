@@ -1,0 +1,13 @@
+*.ts
+*.js
+*.mjs
+*.cjs
+*.json
+*.jsonc
+*.css
+*.html
+*.md
+*.mdx
+*.yaml
+*.yml
+*.toml
