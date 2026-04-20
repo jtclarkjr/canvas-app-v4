@@ -3,7 +3,7 @@ import { env as privateEnv } from '$env/dynamic/private'
 import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
 import { getSupabaseAuthCookieName } from '$lib/auth/supabase-cookie'
 import {
-  getSupabaseAccessTokenFromCookieHeader
+  getSupabaseTokensFromCookieHeader
 } from '$lib/server/supabase-auth-cookie'
 
 export type RequestUser = {
@@ -11,6 +11,11 @@ export type RequestUser = {
   email: string
   name: string
   image: string | null
+}
+
+export type RequestSession = {
+  user: RequestUser
+  refreshedTokens?: { accessToken: string; refreshToken: string }
 }
 
 function getBearerToken(authorizationHeader: string) {
@@ -24,7 +29,7 @@ function getBearerToken(authorizationHeader: string) {
 
 export async function getRequestSession(
   request: Request
-): Promise<RequestUser | null> {
+): Promise<RequestSession | null> {
   const supabaseUrl = privateEnv.SUPABASE_URL
   const supabaseSecretKey = privateEnv.SUPABASE_SECRET_KEY
 
@@ -35,29 +40,50 @@ export async function getRequestSession(
   const authorizationHeader = request.headers.get('authorization') ?? ''
   const cookieHeader = request.headers.get('cookie') ?? ''
   const authCookieName = getSupabaseAuthCookieName(supabaseUrl)
-  const accessToken =
-    getBearerToken(authorizationHeader) ??
-    getSupabaseAccessTokenFromCookieHeader(cookieHeader, authCookieName)
+  const cookieTokens = getSupabaseTokensFromCookieHeader(cookieHeader, authCookieName)
+  const accessToken = getBearerToken(authorizationHeader) ?? cookieTokens?.accessToken ?? null
 
   if (!accessToken) {
     return null
   }
 
   const supabase = createClient(supabaseUrl, supabaseSecretKey)
-  const {
-    data: { user },
-    error
-  } = await supabase.auth.getUser(accessToken)
+  const { data: { user }, error } = await supabase.auth.getUser(accessToken)
 
-  if (error || !user) {
+  if (!error && user) {
+    return {
+      user: {
+        id: user.id,
+        email: user.email ?? '',
+        name: getUserDisplayName(user),
+        image: getUserAvatarUrl(user)
+      }
+    }
+  }
+
+  // Access token is invalid/expired — try refreshing with the refresh token from the cookie
+  const refreshToken = cookieTokens?.refreshToken
+  if (!refreshToken) {
+    return null
+  }
+
+  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({ refresh_token: refreshToken })
+
+  if (refreshError || !refreshData.session || !refreshData.user) {
     return null
   }
 
   return {
-    id: user.id,
-    email: user.email ?? '',
-    name: getUserDisplayName(user),
-    image: getUserAvatarUrl(user)
+    user: {
+      id: refreshData.user.id,
+      email: refreshData.user.email ?? '',
+      name: getUserDisplayName(refreshData.user),
+      image: getUserAvatarUrl(refreshData.user)
+    },
+    refreshedTokens: {
+      accessToken: refreshData.session.access_token,
+      refreshToken: refreshData.session.refresh_token
+    }
   }
 }
 

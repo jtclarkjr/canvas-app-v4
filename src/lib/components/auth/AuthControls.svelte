@@ -13,9 +13,7 @@
   const userDisplayName = $derived(
     session.data?.user ? getUserDisplayName(session.data.user) : 'Guest'
   )
-  const userAvatarUrl = $derived(
-    session.data?.user ? getUserAvatarUrl(session.data.user) : null
-  )
+  const userAvatarUrl = $derived(session.data?.user ? getUserAvatarUrl(session.data.user) : null)
   const userInitial = $derived(userDisplayName.charAt(0).toUpperCase() || 'U')
 
   let avatarLoadFailed = $state(false)

@@ -29,6 +29,14 @@ export function getSupabaseAccessTokenFromCookieHeader(
   cookieHeader: string,
   cookieName: string | null
 ) {
+  const tokens = getSupabaseTokensFromCookieHeader(cookieHeader, cookieName)
+  return tokens?.accessToken ?? null
+}
+
+export function getSupabaseTokensFromCookieHeader(
+  cookieHeader: string,
+  cookieName: string | null
+): { accessToken: string; refreshToken: string | null } | null {
   const cookieValue = getCookieValue(cookieHeader, cookieName)
 
   if (!cookieValue) {
@@ -38,9 +46,9 @@ export function getSupabaseAccessTokenFromCookieHeader(
   try {
     const decoded = decodeURIComponent(cookieValue)
     const parsed = tokenArraySchema.parse(JSON.parse(decoded))
-    return parsed[0]
+    return { accessToken: parsed[0], refreshToken: parsed[1] ?? null }
   } catch {
-    return decodeURIComponent(cookieValue)
+    return { accessToken: decodeURIComponent(cookieValue), refreshToken: null }
   }
 }
 

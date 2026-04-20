@@ -197,7 +197,12 @@
   {/if}
 </section>
 
-<Modal bind:open={isDeleteDialogOpen} title="Delete canvas" eyebrow="Confirm action" widthClass="max-w-md">
+<Modal
+  bind:open={isDeleteDialogOpen}
+  title="Delete canvas"
+  eyebrow="Confirm action"
+  widthClass="max-w-md"
+>
   <div class="grid gap-6">
     <p class="m-0 text-sm leading-6 text-muted-foreground">
       Delete
