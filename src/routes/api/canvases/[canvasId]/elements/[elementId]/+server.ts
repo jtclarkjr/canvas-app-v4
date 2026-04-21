@@ -1,7 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import { deleteElementResponseSchema } from '$lib/canvas/schema'
 import { ensureUserOwnsCanvas } from '$lib/server/canvas-access'
-import { handleApiError, notFound } from '$lib/server/api-error'
+import { handleApiError, notFound, withAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
@@ -31,13 +31,9 @@ export const DELETE: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = event.locals.user
+      const user = withAuth(event.locals.user)
       const canvasId = event.params.canvasId
       const elementId = event.params.elementId
-
-      if (!user) {
-        return json({ message: 'Unauthorized.' }, { status: 401 })
-      }
 
       if (!canvasId || !elementId) {
         return json(

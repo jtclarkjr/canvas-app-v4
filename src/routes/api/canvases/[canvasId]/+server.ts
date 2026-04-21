@@ -8,7 +8,8 @@ import {
   handleApiError,
   notFound,
   parseInput,
-  parseJsonBody
+  parseJsonBody,
+  withAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
@@ -29,11 +30,7 @@ export const PATCH: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = event.locals.user
-
-      if (!user) {
-        return json({ message: 'Unauthorized.' }, { status: 401 })
-      }
+      const user = withAuth(event.locals.user)
 
       const payload = await parseJsonBody(event.request)
       const input = parseInput(updateCanvasInputSchema, payload)
@@ -63,11 +60,7 @@ export const DELETE: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = event.locals.user
-
-      if (!user) {
-        return json({ message: 'Unauthorized.' }, { status: 401 })
-      }
+      const user = withAuth(event.locals.user)
 
       const { data, error } = await supabase
         .from('canvases')

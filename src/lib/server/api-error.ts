@@ -63,6 +63,18 @@ export function validationError(
   })
 }
 
+export function unauthorized(
+  message = 'Unauthorized.',
+  options: Omit<Partial<AppErrorOptions>, 'status' | 'message'> = {}
+) {
+  return new AppError({ status: 401, message, ...options })
+}
+
+export function withAuth<U>(user: U | null | undefined): U {
+  if (!user) throw unauthorized()
+  return user
+}
+
 export function notFound(
   message: string,
   options: Omit<Partial<AppErrorOptions>, 'status' | 'message'> = {}
