@@ -1,5 +1,7 @@
 <script lang="ts">
   import { FileText, Plus, Trash2 } from 'lucide-svelte'
+  import { scale } from 'svelte/transition'
+  import { flip } from 'svelte/animate'
   import { createCanvas, deleteCanvas, listCanvases } from '$lib/canvas/api'
   import Modal from '$lib/components/shared/Modal.svelte'
   import type { Canvas } from '$lib/canvas/schema'
@@ -156,6 +158,8 @@
       {#each canvases as canvas (canvas.id)}
         <a
           href={`/canvas/${canvas.id}`}
+          out:scale={{ duration: 200, start: 0.92, opacity: 0 }}
+          animate:flip={{ duration: 250 }}
           class="group relative aspect-[3/4] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:shadow-md"
         >
           <button

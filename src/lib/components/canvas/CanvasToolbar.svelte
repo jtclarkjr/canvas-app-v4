@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Eraser, Hand, MousePointer2, Pencil, Type } from 'lucide-svelte'
+  import { slide } from 'svelte/transition'
   import type { Tool } from '$lib/canvas/types'
 
   let { selectedTool, onToolChange } = $props<{
@@ -34,30 +35,31 @@
     <CurrentIcon class="size-5" />
   </button>
 
-  <div
-    class={`absolute left-0 top-12 overflow-hidden rounded-2xl border border-slate-800/80 bg-black/60 shadow-lg shadow-black/40 backdrop-blur transition-all duration-300 ease-out ${
-      isExpanded ? 'max-h-96 w-10 opacity-100' : 'pointer-events-none max-h-0 w-10 opacity-0'
-    }`}
-    style="transform-origin: top center"
-  >
-    <div class="flex flex-col gap-1 p-1">
-      {#each tools as tool}
-        <button
-          type="button"
-          class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-            selectedTool === tool.id
-              ? 'bg-primary text-white'
-              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-          }`}
-          onclick={() => {
-            onToolChange(tool.id)
-            isExpanded = false
-          }}
-          title={tool.label}
-        >
-          <tool.icon class="size-4" />
-        </button>
-      {/each}
+  {#if isExpanded}
+    <div
+      transition:slide={{ duration: 200, axis: 'y' }}
+      class="absolute left-0 top-12 overflow-hidden rounded-2xl border border-slate-800/80 bg-black/60 shadow-lg shadow-black/40 backdrop-blur"
+      style="transform-origin: top center"
+    >
+      <div class="flex flex-col gap-1 p-1">
+        {#each tools as tool}
+          <button
+            type="button"
+            class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
+              selectedTool === tool.id
+                ? 'bg-primary text-white'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            }`}
+            onclick={() => {
+              onToolChange(tool.id)
+              isExpanded = false
+            }}
+            title={tool.label}
+          >
+            <tool.icon class="size-4" />
+          </button>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 </div>
