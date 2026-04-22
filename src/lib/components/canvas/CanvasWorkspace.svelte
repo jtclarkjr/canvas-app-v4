@@ -987,6 +987,7 @@
   function handleViewportPointerDown(event: PointerEvent) {
     if (selectedTool !== 'hand') return
     if (event.pointerType === 'mouse' && event.button !== 0) return
+    if ((event.target as Element).closest('button, a, input, [role="button"]')) return
 
     if (event.pointerType !== 'mouse') {
       event.preventDefault()
