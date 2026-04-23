@@ -1,9 +1,11 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
+  canvasElementRowSchema,
   listElementsResponseSchema,
   upsertElementInputSchema,
   upsertElementResponseSchema
 } from '$lib/canvas/schema'
+import type { CanvasElementRow } from '$lib/canvas/schema'
 import { ensureUserOwnsCanvas } from '$lib/server/canvas-access'
 import {
   handleApiError,
@@ -13,18 +15,9 @@ import {
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
+import type { Json } from '$lib/server/database.types'
 
-const toElement = (row: {
-  id: string
-  canvas_id: string
-  type: string
-  data: unknown
-  x: number
-  y: number
-  z: number | null
-  updated_by: string | null
-  updated_at: string
-}) => ({
+const toElement = (row: CanvasElementRow) => ({
   id: row.id,
   canvasId: row.canvas_id,
   type: row.type,
@@ -61,7 +54,9 @@ export const GET: RequestHandler = async (event) =>
 
       return json(
         listElementsResponseSchema.parse({
-          items: (data ?? []).map(toElement)
+          items: (data ?? []).map((row) =>
+            toElement(canvasElementRowSchema.parse(row))
+          )
         })
       )
     } catch (error) {
@@ -86,10 +81,10 @@ export const POST: RequestHandler = async (event) =>
       const input = parseInput(upsertElementInputSchema, payload)
 
       const row = {
-        ...(input.id ? { id: input.id } : {}),
+        id: input.id,
         canvas_id: canvasId,
         type: input.type,
-        data: input.data ?? null,
+        data: (input.data ?? null) as Json | null,
         x: input.x,
         y: input.y,
         z: input.z ?? null,
@@ -108,7 +103,9 @@ export const POST: RequestHandler = async (event) =>
       }
 
       return json(
-        upsertElementResponseSchema.parse({ item: toElement(data) }),
+        upsertElementResponseSchema.parse({
+          item: toElement(canvasElementRowSchema.parse(data))
+        }),
         { status: 201 }
       )
     } catch (error) {

@@ -1,21 +1,12 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import { deleteElementResponseSchema } from '$lib/canvas/schema'
+import { canvasElementRowSchema, deleteElementResponseSchema } from '$lib/canvas/schema'
+import type { CanvasElementRow } from '$lib/canvas/schema'
 import { ensureUserOwnsCanvas } from '$lib/server/canvas-access'
 import { handleApiError, notFound, withAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
-const toElement = (row: {
-  id: string
-  canvas_id: string
-  type: string
-  data: unknown
-  x: number
-  y: number
-  z: number | null
-  updated_by: string | null
-  updated_at: string
-}) => ({
+const toElement = (row: CanvasElementRow) => ({
   id: row.id,
   canvasId: row.canvas_id,
   type: row.type,
@@ -59,7 +50,11 @@ export const DELETE: RequestHandler = async (event) =>
         })
       }
 
-      return json(deleteElementResponseSchema.parse({ item: toElement(data) }))
+      return json(
+        deleteElementResponseSchema.parse({
+          item: toElement(canvasElementRowSchema.parse(data))
+        })
+      )
     } catch (error) {
       return handleApiError(error, event.request)
     }

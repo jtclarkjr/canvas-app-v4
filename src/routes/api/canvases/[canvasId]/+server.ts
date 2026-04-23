@@ -1,9 +1,11 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
+  canvasRowSchema,
   deleteCanvasResponseSchema,
   updateCanvasInputSchema,
   updateCanvasResponseSchema
 } from '$lib/canvas/schema'
+import type { CanvasRow } from '$lib/canvas/schema'
 import {
   handleApiError,
   notFound,
@@ -14,12 +16,7 @@ import {
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
-const toCanvas = (row: {
-  id: string
-  title: string
-  created_by: string
-  created_at: string
-}) => ({
+const toCanvas = (row: CanvasRow) => ({
   id: row.id,
   title: row.title,
   createdBy: row.created_by,
@@ -38,7 +35,7 @@ export const PATCH: RequestHandler = async (event) =>
       const { data, error } = await supabase
         .from('canvases')
         .update({ title: input.title })
-        .eq('id', event.params.canvasId)
+        .eq('id', event.params.canvasId!)
         .eq('created_by', user.id)
         .select()
         .single()
@@ -50,7 +47,11 @@ export const PATCH: RequestHandler = async (event) =>
         })
       }
 
-      return json(updateCanvasResponseSchema.parse({ item: toCanvas(data) }))
+      return json(
+        updateCanvasResponseSchema.parse({
+          item: toCanvas(canvasRowSchema.parse(data))
+        })
+      )
     } catch (error) {
       return handleApiError(error, event.request)
     }
@@ -65,7 +66,7 @@ export const DELETE: RequestHandler = async (event) =>
       const { data, error } = await supabase
         .from('canvases')
         .delete()
-        .eq('id', event.params.canvasId)
+        .eq('id', event.params.canvasId!)
         .eq('created_by', user.id)
         .select()
         .single()
@@ -77,7 +78,11 @@ export const DELETE: RequestHandler = async (event) =>
         })
       }
 
-      return json(deleteCanvasResponseSchema.parse({ item: toCanvas(data) }))
+      return json(
+        deleteCanvasResponseSchema.parse({
+          item: toCanvas(canvasRowSchema.parse(data))
+        })
+      )
     } catch (error) {
       return handleApiError(error, event.request)
     }

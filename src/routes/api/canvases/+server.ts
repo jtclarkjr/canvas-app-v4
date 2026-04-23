@@ -1,9 +1,11 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
+  canvasRowSchema,
   createCanvasInputSchema,
   createCanvasResponseSchema,
   listCanvasesResponseSchema
 } from '$lib/canvas/schema'
+import type { CanvasRow } from '$lib/canvas/schema'
 import {
   handleApiError,
   parseInput,
@@ -13,12 +15,7 @@ import {
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
-const toCanvas = (row: {
-  id: string
-  title: string
-  created_by: string
-  created_at: string
-}) => ({
+const toCanvas = (row: CanvasRow) => ({
   id: row.id,
   title: row.title,
   createdBy: row.created_by,
@@ -42,7 +39,9 @@ export const GET: RequestHandler = async (event) =>
       }
 
       return json(
-        listCanvasesResponseSchema.parse({ items: (data ?? []).map(toCanvas) })
+        listCanvasesResponseSchema.parse({
+          items: (data ?? []).map((row) => toCanvas(canvasRowSchema.parse(row)))
+        })
       )
     } catch (error) {
       return handleApiError(error, event.request)
@@ -69,7 +68,9 @@ export const POST: RequestHandler = async (event) =>
       }
 
       return json(
-        createCanvasResponseSchema.parse({ item: toCanvas(data) }),
+        createCanvasResponseSchema.parse({
+          item: toCanvas(canvasRowSchema.parse(data))
+        }),
         { status: 201 }
       )
     } catch (error) {

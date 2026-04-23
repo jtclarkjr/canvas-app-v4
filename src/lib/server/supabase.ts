@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { env as privateEnv } from '$env/dynamic/private'
 import { internalServerError } from '$lib/server/api-error'
+import type { Database } from '$lib/server/database.types'
 
 export function getSupabase() {
   const supabaseUrl = privateEnv.SUPABASE_URL
@@ -15,5 +16,5 @@ export function getSupabase() {
     )
   }
 
-  return createClient(supabaseUrl, supabaseSecretKey)
+  return createClient<Database>(supabaseUrl, supabaseSecretKey)
 }

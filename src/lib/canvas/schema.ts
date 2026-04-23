@@ -1,5 +1,24 @@
 import { z } from 'zod'
 
+export const canvasRowSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  created_by: z.string(),
+  created_at: z.string()
+})
+
+export const canvasElementRowSchema = z.object({
+  id: z.string(),
+  canvas_id: z.string(),
+  type: z.string(),
+  data: z.record(z.string(), z.unknown()).nullable(),
+  x: z.number(),
+  y: z.number(),
+  z: z.number().nullable(),
+  updated_by: z.string().nullable(),
+  updated_at: z.string()
+})
+
 export const createCanvasInputSchema = z.object({
   title: z
     .string()
@@ -69,6 +88,8 @@ export const deleteElementResponseSchema = z.object({
   item: canvasElementSchema
 })
 
+export type CanvasRow = z.infer<typeof canvasRowSchema>
+export type CanvasElementRow = z.infer<typeof canvasElementRowSchema>
 export type CreateCanvasInput = z.infer<typeof createCanvasInputSchema>
 export type UpdateCanvasInput = z.infer<typeof updateCanvasInputSchema>
 export type Canvas = z.infer<typeof canvasSchema>

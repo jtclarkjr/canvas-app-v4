@@ -1,8 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { notFound } from '$lib/server/api-error'
+import type { Database } from '$lib/server/database.types'
 
 export async function ensureUserOwnsCanvas(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   canvasId: string,
   userId: string
 ) {
