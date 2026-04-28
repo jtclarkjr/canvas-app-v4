@@ -6,13 +6,9 @@
   import { theme } from '$lib/stores/theme.svelte'
   import { page } from '$app/state'
   import { onMount } from 'svelte'
-  import type { AuthConfig } from '$lib/server/auth-config'
 
-  let { children, data } = $props<{
+  let { children } = $props<{
     children: () => unknown
-    data: {
-      authConfig: AuthConfig
-    }
   }>()
 
   const hideHeader = $derived(
@@ -27,7 +23,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>Canvas App V4</title>
+  <title>Canvas App</title>
 </svelte:head>
 
 {#if hideHeader}
