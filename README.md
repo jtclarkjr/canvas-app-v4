@@ -1,6 +1,6 @@
 # Canvas App V4
 
-A real-time collaborative drawing application built with SvelteKit and Supabase.
+A real-time collaborative canvas application built with SvelteKit and Supabase.
 
 ## Features
 
