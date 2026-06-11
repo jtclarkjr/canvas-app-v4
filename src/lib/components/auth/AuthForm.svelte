@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte'
   import PlatformIcons from '$lib/components/shared/PlatformIcons.svelte'
   import { signInWithEmail, signInWithOAuth, signUpWithEmail } from '$lib/auth/session-service'
   import type { AuthConfig } from '$lib/server/auth-config'
@@ -23,47 +22,14 @@
   let error = $state<string | null>(null)
   let message = $state<string | null>(null)
   let isSubmitting = $state(false)
-  let signInButton = $state<HTMLButtonElement | null>(null)
-  let signUpButton = $state<HTMLButtonElement | null>(null)
-  let modeThumbLeft = $state(0)
-  let modeThumbWidth = $state(0)
 
-  const modeThumbStyle = $derived(
-    `transform: translateX(${modeThumbLeft}px); width: ${modeThumbWidth}px;`
-  )
-
-  function updateModeThumb(currentMode = mode) {
-    const activeButton = currentMode === 'sign-in' ? signInButton : signUpButton
-
-    if (!activeButton) {
-      return
-    }
-
-    modeThumbLeft = activeButton.offsetLeft
-    modeThumbWidth = activeButton.offsetWidth
-  }
+  const modeThumbStyle = $derived(`transform: translateX(${mode === 'sign-up' ? '100%' : '0'});`)
 
   function setMode(nextMode: AuthMode) {
     mode = nextMode
     error = null
     message = null
   }
-
-  $effect(() => {
-    const currentMode = mode
-    void tick().then(() => updateModeThumb(currentMode))
-  })
-
-  onMount(() => {
-    const handleResize = () => updateModeThumb()
-
-    updateModeThumb()
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-    }
-  })
 
   async function handleSubmit(event: SubmitEvent) {
     event.preventDefault()
@@ -189,16 +155,17 @@
         </div>
       {/if}
 
-      <div class="relative inline-flex w-fit rounded-full border border-border bg-secondary p-1">
+      <div
+        class="relative grid w-full grid-cols-2 rounded-full border border-border bg-secondary p-1"
+      >
         <span
-          class="pointer-events-none absolute top-1 bottom-1 left-0 rounded-full bg-primary shadow-sm opacity-100 transition-all duration-200 ease-out motion-reduce:transition-none"
+          class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/2)] rounded-full bg-primary shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none"
           style={modeThumbStyle}
           aria-hidden="true"
         ></span>
         <button
-          bind:this={signInButton}
           type="button"
-          class={`relative z-10 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
+          class={`relative z-10 flex h-9 min-w-0 items-center justify-center rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-200 ${
             mode === 'sign-in'
               ? 'text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
@@ -210,9 +177,8 @@
           Sign In
         </button>
         <button
-          bind:this={signUpButton}
           type="button"
-          class={`relative z-10 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-200 ${
+          class={`relative z-10 flex h-9 min-w-0 items-center justify-center rounded-full px-3 text-sm font-semibold whitespace-nowrap transition-colors duration-200 ${
             mode === 'sign-up'
               ? 'text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
