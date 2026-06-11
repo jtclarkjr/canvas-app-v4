@@ -32,7 +32,8 @@ describe('drawing utils', () => {
         { x: 20, y: 20 }
       ],
       color: '#000000',
-      width: 2
+      width: 2,
+      opacity: 1
     }
 
     expect(
@@ -48,10 +49,28 @@ describe('drawing utils', () => {
       id: 'path-1',
       points: [{ x: 50, y: 50 }],
       color: '#000000',
-      width: 2
+      width: 2,
+      opacity: 1
     }
 
     expect(isPointNearPath({ x: 55, y: 55 }, path, 10)).toBe(true)
     expect(isPointNearPath({ x: 80, y: 80 }, path, 10)).toBe(false)
+  })
+
+  it('matches points near the middle of a long straight segment', () => {
+    const path: Path = {
+      id: 'path-1',
+      points: [
+        { x: 0, y: 0 },
+        { x: 200, y: 0 }
+      ],
+      color: '#000000',
+      width: 2,
+      opacity: 1
+    }
+
+    expect(isPointNearPath({ x: 100, y: 5 }, path, 10)).toBe(true)
+    expect(isPointNearPath({ x: 100, y: 20 }, path, 10)).toBe(false)
+    expect(isPointNearPath({ x: -15, y: 0 }, path, 10)).toBe(false)
   })
 })

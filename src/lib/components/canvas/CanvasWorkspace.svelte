@@ -27,6 +27,7 @@
   import type { Canvas, CanvasElement, UpsertElementInput } from '$lib/canvas/schema'
   import type {
     Camera,
+    DrawFormatting,
     EditingText,
     Path,
     Point,
@@ -44,6 +45,7 @@
   } from '$lib/canvas/drawing-utils'
   import CanvasActionToolbar from '$lib/components/canvas/CanvasActionToolbar.svelte'
   import CanvasToolbar from '$lib/components/canvas/CanvasToolbar.svelte'
+  import DrawingToolbar from '$lib/components/canvas/DrawingToolbar.svelte'
   import LiveCursors from '$lib/components/canvas/LiveCursors.svelte'
   import TextFormattingToolbar from '$lib/components/canvas/TextFormattingToolbar.svelte'
 
@@ -65,7 +67,8 @@
     .object({
       points: z.array(pointSchema).default([]),
       color: z.string().default('#000000'),
-      width: z.number().default(2)
+      width: z.number().default(2),
+      opacity: z.number().min(0).max(1).default(1)
     })
     .nullable()
     .catch(null)
@@ -117,6 +120,13 @@
     isItalic: false,
     isUnderline: false,
     color: '#000000'
+  })
+  let drawFormatting = $state<DrawFormatting>({
+    width: 2,
+    color: '#000000',
+    style: 'freeform',
+    isHighlighter: false,
+    highlighterOpacity: 0.4
   })
   let camera = $state<Camera>({ x: 0, y: 0, scale: 1 })
   let isViewportDragging = $state(false)
@@ -313,7 +323,8 @@
           id: element.id,
           points: pathData?.points || [],
           color: pathData?.color || '#000000',
-          width: pathData?.width || 2
+          width: pathData?.width || 2,
+          opacity: pathData?.opacity ?? 1
         } satisfies Path
       })
 
@@ -780,15 +791,17 @@
       const pathId = crypto.randomUUID()
       const pathData = {
         points: currentPath,
-        color: '#000000',
-        width: 2
+        color: drawFormatting.color,
+        width: drawFormatting.width,
+        opacity: drawFormatting.isHighlighter ? drawFormatting.highlighterOpacity : 1
       }
 
       const newPath: Path = {
         id: pathId,
         points: pathData.points,
         color: pathData.color,
-        width: pathData.width
+        width: pathData.width,
+        opacity: pathData.opacity
       }
 
       setPaths((previous) => [...previous, newPath])
@@ -942,7 +955,13 @@
     if (selectedTool === 'pencil' && isCurrentlyDrawing && event.isPrimary) {
       event.preventDefault()
       event.stopPropagation()
-      currentPath = [...currentPath, screenToCanvasPoint(event.clientX, event.clientY)]
+      const point = screenToCanvasPoint(event.clientX, event.clientY)
+      if (drawFormatting.style === 'straight') {
+        const start = currentPath[0]
+        currentPath = start ? [start, point] : [point]
+      } else {
+        currentPath = [...currentPath, point]
+      }
     }
   }
 
@@ -1338,7 +1357,8 @@
                   id: nextElement.id,
                   points: pathData.points,
                   color: pathData.color,
-                  width: pathData.width
+                  width: pathData.width,
+                  opacity: pathData.opacity
                 }
               ]
             })
@@ -1413,7 +1433,8 @@
                       ...entry,
                       points: pathData.points,
                       color: pathData.color,
-                      width: pathData.width
+                      width: pathData.width,
+                      opacity: pathData.opacity
                     }
                   : entry
               )
@@ -1756,6 +1777,30 @@
     }}
   />
 
+  <DrawingToolbar
+    width={drawFormatting.width}
+    color={drawFormatting.color}
+    style={drawFormatting.style}
+    isHighlighter={drawFormatting.isHighlighter}
+    highlighterOpacity={drawFormatting.highlighterOpacity}
+    isVisible={selectedTool === 'pencil'}
+    onWidthChange={(width) => {
+      drawFormatting = { ...drawFormatting, width }
+    }}
+    onColorChange={(color) => {
+      drawFormatting = { ...drawFormatting, color }
+    }}
+    onStyleChange={(style) => {
+      drawFormatting = { ...drawFormatting, style }
+    }}
+    onHighlighterToggle={() => {
+      drawFormatting = { ...drawFormatting, isHighlighter: !drawFormatting.isHighlighter }
+    }}
+    onHighlighterOpacityChange={(highlighterOpacity) => {
+      drawFormatting = { ...drawFormatting, highlighterOpacity }
+    }}
+  />
+
   {#if canvasesError}
     <div
       class="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-red-600 px-4 py-2 text-sm text-white shadow-lg"
@@ -1788,6 +1833,7 @@
           stroke={path.color}
           stroke-linecap="round"
           stroke-linejoin="round"
+          stroke-opacity={path.opacity}
           stroke-width={path.width}
         />
       {/each}
@@ -1796,10 +1842,11 @@
         <path
           d={pathToSvgPath(currentPath)}
           fill="none"
-          stroke="#000000"
+          stroke={drawFormatting.color}
           stroke-linecap="round"
           stroke-linejoin="round"
-          stroke-width="2"
+          stroke-opacity={drawFormatting.isHighlighter ? drawFormatting.highlighterOpacity : 1}
+          stroke-width={drawFormatting.width}
         />
       {/if}
 

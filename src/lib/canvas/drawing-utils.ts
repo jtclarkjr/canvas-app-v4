@@ -5,17 +5,42 @@ import type {
   TextElement
 } from '$lib/canvas/types'
 
+function distanceToSegment(point: Point, start: Point, end: Point): number {
+  const dx = end.x - start.x
+  const dy = end.y - start.y
+  const lengthSquared = dx * dx + dy * dy
+  if (lengthSquared === 0) {
+    return Math.sqrt((point.x - start.x) ** 2 + (point.y - start.y) ** 2)
+  }
+  const t = Math.min(
+    Math.max(((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared, 0),
+    1
+  )
+  const closestX = start.x + t * dx
+  const closestY = start.y + t * dy
+  return Math.sqrt((point.x - closestX) ** 2 + (point.y - closestY) ** 2)
+}
+
 export function isPointNearPath(
   point: Point,
   path: Path,
   threshold: number
 ): boolean {
-  return path.points.some((pathPoint) => {
-    const distance = Math.sqrt(
-      (point.x - pathPoint.x) ** 2 + (point.y - pathPoint.y) ** 2
-    )
-    return distance < threshold
-  })
+  const [first] = path.points
+  if (!first) return false
+
+  if (path.points.length === 1) {
+    return Math.sqrt((point.x - first.x) ** 2 + (point.y - first.y) ** 2) < threshold
+  }
+
+  for (let i = 0; i < path.points.length - 1; i += 1) {
+    const start = path.points[i]
+    const end = path.points[i + 1]
+    if (start && end && distanceToSegment(point, start, end) < threshold) {
+      return true
+    }
+  }
+  return false
 }
 
 export function isElementInSelection(

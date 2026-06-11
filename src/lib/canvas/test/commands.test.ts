@@ -13,7 +13,8 @@ describe('canvas commands', () => {
       id: 'path-1',
       points: [{ x: 1, y: 2 }],
       color: '#000000',
-      width: 2
+      width: 2,
+      opacity: 1
     }
 
     const command = createCreatePathCommand(path, 'user-1')

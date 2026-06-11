@@ -7,6 +7,7 @@ export type Path = {
   points: Point[]
   color: string
   width: number
+  opacity: number
 }
 
 export type TextElement = {
@@ -27,6 +28,16 @@ export type TextFormatting = {
   isItalic: boolean
   isUnderline: boolean
   color: string
+}
+
+export type DrawStyle = 'freeform' | 'straight'
+
+export type DrawFormatting = {
+  width: number
+  color: string
+  style: DrawStyle
+  isHighlighter: boolean
+  highlighterOpacity: number
 }
 
 export type EditingText = {
