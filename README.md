@@ -68,6 +68,13 @@ vp build        # Production build
 vp preview      # Preview production build
 ```
 
+For Svelte-specific checks and formatting:
+
+```sh
+vp dlx sv check
+vp run fmt:sv
+```
+
 ## Project Structure
 
 ```
