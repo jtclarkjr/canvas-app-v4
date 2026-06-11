@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation'
+  import { invalidateAll } from '$app/navigation'
   import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from '@supabase/supabase-js'
-  import { Home } from 'lucide-svelte'
   import { onMount, tick } from 'svelte'
   import { z } from 'zod'
   import { ensureSessionInitialized, supabase } from '$lib/auth/session-store'
@@ -40,18 +39,20 @@
     Tool
   } from '$lib/canvas/types'
   import {
-    calculateTextBounds,
     findTextAtPoint,
-    getTextLineHeight,
     isElementInSelection,
     isPointNearPath,
-    pathToSvgPath,
     screenToCanvas,
-    TEXT_LINE_HEIGHT,
     textElementToData
   } from '$lib/canvas/drawing-utils'
   import {
-    applyLegacyListStyle,
+    canvasElementsToDrawingState,
+    deletedRowSchema,
+    realtimeRowSchema,
+    realtimeRowToPath,
+    realtimeRowToText
+  } from '$lib/canvas/element-mapping'
+  import {
     continueListOnEnter,
     getSelectionListStyle,
     listStartValue,
@@ -59,10 +60,13 @@
     toggleListStyle
   } from '$lib/canvas/text-lists'
   import CanvasActionToolbar from '$lib/components/canvas/CanvasActionToolbar.svelte'
-  import CanvasOptionsButton from '$lib/components/canvas/CanvasOptionsButton.svelte'
-  import CanvasToolbar from '$lib/components/canvas/CanvasToolbar.svelte'
   import DrawingToolbar from '$lib/components/canvas/DrawingToolbar.svelte'
   import LiveCursors from '$lib/components/canvas/LiveCursors.svelte'
+  import CanvasPresenceActions from '$lib/components/canvas/CanvasPresenceActions.svelte'
+  import CanvasScene from '$lib/components/canvas/CanvasScene.svelte'
+  import CanvasTextEditor from '$lib/components/canvas/CanvasTextEditor.svelte'
+  import CanvasTitleSwitcher from '$lib/components/canvas/CanvasTitleSwitcher.svelte'
+  import CanvasZoomControls from '$lib/components/canvas/CanvasZoomControls.svelte'
   import ShareDialog from '$lib/components/canvas/ShareDialog.svelte'
   import TextFormattingToolbar from '$lib/components/canvas/TextFormattingToolbar.svelte'
   import { toast } from '$lib/stores/toast.svelte'
@@ -86,40 +90,6 @@
     timestamp: number
   }
 
-  const pointSchema = z.object({ x: z.number(), y: z.number() })
-  const pathDataSchema = z
-    .object({
-      points: z.array(pointSchema).default([]),
-      color: z.string().default('#000000'),
-      width: z.number().default(2),
-      opacity: z.number().min(0).max(1).default(1)
-    })
-    .nullable()
-    .catch(null)
-  const textDataSchema = z
-    .object({
-      text: z.string().default(''),
-      color: z.string().default('#000000'),
-      fontSize: z.number().default(16),
-      isBold: z.boolean().default(false),
-      isItalic: z.boolean().default(false),
-      isUnderline: z.boolean().default(false),
-      listStyle: z.enum(['none', 'bullet', 'number']).catch('none').default('none')
-    })
-    .nullable()
-    .catch(null)
-  const realtimeRowSchema = z
-    .object({
-      id: z.string(),
-      type: z.string(),
-      data: z.unknown(),
-      x: z.number().nullable().optional(),
-      y: z.number().nullable().optional(),
-      created_by: z.string().nullable().optional()
-    })
-    .nullable()
-    .catch(null)
-  const deletedRowSchema = z.object({ id: z.string() }).nullable().catch(null)
   const cameraSchema = z.object({
     x: z.number(),
     y: z.number(),
@@ -128,17 +98,12 @@
 
   let rootEl = $state<HTMLDivElement | null>(null)
   let svgEl = $state<SVGSVGElement | null>(null)
-  let titleInputEl = $state<HTMLInputElement | null>(null)
   let textInputEl = $state<HTMLTextAreaElement | null>(null)
-  let dropdownEl = $state<HTMLDivElement | null>(null)
 
   let canvases = $state<Canvas[]>([])
   let canvasesError = $state<string | null>(null)
   let isLoadingCanvases = $state(false)
   let activeCanvasId = $state('')
-  let showCanvasSelector = $state(false)
-  let isEditingTitle = $state(false)
-  let editedTitle = $state('')
   let selectedTool = $state<Tool>('select')
   let textFormatting = $state<TextFormatting>({
     fontSize: 16,
@@ -363,40 +328,10 @@
   }
 
   function syncElements(items: CanvasElement[]) {
-    elementOwners = new Map(items.map((element) => [element.id, element.createdBy ?? null]))
-
-    const loadedPaths = items
-      .filter((element) => element.type === 'path')
-      .map((element) => {
-        const pathData = pathDataSchema.parse(element.data)
-        return {
-          id: element.id,
-          points: pathData?.points || [],
-          color: pathData?.color || '#000000',
-          width: pathData?.width || 2,
-          opacity: pathData?.opacity ?? 1
-        } satisfies Path
-      })
-
-    const loadedText = items
-      .filter((element) => element.type === 'text')
-      .map((element) => {
-        const textData = textDataSchema.parse(element.data)
-        return {
-          id: element.id,
-          text: applyLegacyListStyle(textData?.text || '', textData?.listStyle),
-          x: element.x ?? 0,
-          y: element.y ?? 0,
-          color: textData?.color || '#000000',
-          fontSize: textData?.fontSize || 16,
-          isBold: textData?.isBold || false,
-          isItalic: textData?.isItalic || false,
-          isUnderline: textData?.isUnderline || false
-        } satisfies TextElement
-      })
-
-    paths = loadedPaths
-    textElements = loadedText
+    const drawingState = canvasElementsToDrawingState(items)
+    elementOwners = drawingState.owners
+    paths = drawingState.paths
+    textElements = drawingState.textElements
   }
 
   async function loadCanvasElements(id: string) {
@@ -435,37 +370,20 @@
     }
   }
 
-  async function saveTitle() {
+  async function saveTitle(title: string) {
     const canvas = currentCanvas()
-    if (!canvas || !editedTitle.trim()) {
-      isEditingTitle = false
+    if (!canvas || !title.trim()) {
       return
     }
 
     try {
       const response = await updateCanvas(canvas.id, {
-        title: editedTitle.trim()
+        title: title.trim()
       })
       canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
     } catch (error) {
       canvasesError = error instanceof Error ? error.message : 'Failed to update title.'
-    } finally {
-      isEditingTitle = false
     }
-  }
-
-  function beginTitleEdit() {
-    const canvas = currentCanvas()
-    if (!canvas || !canManageCanvas) {
-      return
-    }
-
-    editedTitle = canvas.title
-    isEditingTitle = true
-    queueMicrotask(() => {
-      titleInputEl?.focus()
-      titleInputEl?.select()
-    })
   }
 
   function checkDoubleClick(point: Point) {
@@ -1279,10 +1197,6 @@
     initialCamera = null
   }
 
-  function handleResetView() {
-    camera = { x: 0, y: 0, scale: 1 }
-  }
-
   function handleTextInputBlur(event: FocusEvent) {
     if (!editingText) return
 
@@ -1393,18 +1307,10 @@
   onMount(() => {
     void loadCanvasesList()
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownEl && event.target instanceof Node && !dropdownEl.contains(event.target)) {
-        showCanvasSelector = false
-      }
-    }
-
     window.addEventListener('keydown', handleWorkspaceKeydown)
-    document.addEventListener('mousedown', handleClickOutside)
 
     return () => {
       window.removeEventListener('keydown', handleWorkspaceKeydown)
-      document.removeEventListener('mousedown', handleClickOutside)
     }
   })
 
@@ -1600,15 +1506,6 @@
   })
 
   $effect(() => {
-    if (isEditingTitle) {
-      queueMicrotask(() => {
-        titleInputEl?.focus()
-        titleInputEl?.select()
-      })
-    }
-  })
-
-  $effect(() => {
     const wasText = selectedTool === 'text'
     return () => {
       if (wasText || !editingText) {
@@ -1643,45 +1540,24 @@
             elementOwners.set(nextElement.id, nextElement.created_by ?? null)
           }
 
-          if (nextElement.type === 'path') {
-            const pathData = pathDataSchema.parse(nextElement.data)
-            if (!pathData) return
+          const nextPath = realtimeRowToPath(nextElement)
+          if (nextPath) {
             setPaths((previous) => {
               if (previous.some((entry) => entry.id === nextElement.id)) {
                 return previous
               }
-              return [
-                ...previous,
-                {
-                  id: nextElement.id,
-                  points: pathData.points,
-                  color: pathData.color,
-                  width: pathData.width,
-                  opacity: pathData.opacity
-                }
-              ]
+              return [...previous, nextPath]
             })
-          } else if (nextElement.type === 'text') {
-            const textData = textDataSchema.parse(nextElement.data)
-            if (!textData) return
+            return
+          }
+
+          const nextText = realtimeRowToText(nextElement)
+          if (nextText) {
             setTextElements((previous) => {
               if (previous.some((entry) => entry.id === nextElement.id)) {
                 return previous
               }
-              return [
-                ...previous,
-                {
-                  id: nextElement.id,
-                  text: applyLegacyListStyle(textData.text, textData.listStyle),
-                  color: textData.color,
-                  fontSize: textData.fontSize,
-                  isBold: textData.isBold,
-                  isItalic: textData.isItalic,
-                  isUnderline: textData.isUnderline,
-                  x: nextElement.x ?? 0,
-                  y: nextElement.y ?? 0
-                }
-              ]
+              return [...previous, nextText]
             })
           }
         }
@@ -1702,38 +1578,29 @@
             return
           }
 
-          if (nextElement.type === 'text') {
-            const textData = textDataSchema.parse(nextElement.data)
-            if (!textData) return
+          const nextText = realtimeRowToText(nextElement)
+          if (nextText) {
             setTextElements((previous) =>
               previous.map((entry) =>
                 entry.id === nextElement.id
                   ? {
                       ...entry,
-                      text: applyLegacyListStyle(textData.text, textData.listStyle),
-                      color: textData.color,
-                      fontSize: textData.fontSize,
-                      isBold: textData.isBold,
-                      isItalic: textData.isItalic,
-                      isUnderline: textData.isUnderline,
-                      x: nextElement.x ?? 0,
-                      y: nextElement.y ?? 0
+                      ...nextText
                     }
                   : entry
               )
             )
-          } else if (nextElement.type === 'path') {
-            const pathData = pathDataSchema.parse(nextElement.data)
-            if (!pathData) return
+            return
+          }
+
+          const nextPath = realtimeRowToPath(nextElement)
+          if (nextPath) {
             setPaths((previous) =>
               previous.map((entry) =>
                 entry.id === nextElement.id
                   ? {
                       ...entry,
-                      points: pathData.points,
-                      color: pathData.color,
-                      width: pathData.width,
-                      opacity: pathData.opacity
+                      ...nextPath
                     }
                   : entry
               )
@@ -1935,130 +1802,30 @@
 >
   <div class="absolute inset-0 screen-grid bg-white"></div>
 
-  <div class="fixed left-4 top-4 z-20 flex items-start gap-4">
-    <div class="flex flex-col gap-2">
-      <a
-        href="/"
-        class="toolbar-pill flex h-10 w-10 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
-        title="Back to dashboard"
-      >
-        <Home class="size-5" />
-      </a>
-      <CanvasToolbar
-        {selectedTool}
-        readOnly={!canEdit}
-        onToolChange={(tool) => {
-          if (selectedTool === 'text' && tool !== 'text' && editingText) {
-            commitText(editingText)
-          }
-          selectedTool = tool
-        }}
-      />
-    </div>
+  <CanvasTitleSwitcher
+    {canvases}
+    {activeCanvasId}
+    currentTitle={currentCanvas()?.title ?? ''}
+    {canManageCanvas}
+    {isLoadingCanvases}
+    {selectedTool}
+    readOnly={!canEdit}
+    onTitleSave={saveTitle}
+    onToolChange={(tool) => {
+      if (selectedTool === 'text' && tool !== 'text' && editingText) {
+        commitText(editingText)
+      }
+      selectedTool = tool
+    }}
+  />
 
-    <div class="flex items-start gap-2">
-      {#if isEditingTitle}
-        <div class="toolbar-pill flex items-center gap-1 px-3 py-1">
-          <input
-            bind:this={titleInputEl}
-            class="w-[200px] border-0 bg-transparent text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200 outline-none"
-            bind:value={editedTitle}
-            onblur={() => void saveTitle()}
-            onkeydown={(event) => {
-              if (event.key === 'Enter') {
-                void saveTitle()
-              } else if (event.key === 'Escape') {
-                isEditingTitle = false
-              }
-            }}
-          />
-        </div>
-      {:else if canManageCanvas}
-        <button
-          type="button"
-          class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:border-slate-700 hover:bg-slate-900"
-          onclick={beginTitleEdit}
-        >
-          {currentCanvas()?.title ?? 'Select Canvas'}
-        </button>
-      {:else}
-        <span class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]">
-          {currentCanvas()?.title ?? 'Canvas'}
-        </span>
-      {/if}
-
-      <div bind:this={dropdownEl} class="relative">
-        <button
-          type="button"
-          class="toolbar-pill flex h-8 w-8 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
-          onclick={() => (showCanvasSelector = !showCanvasSelector)}
-          title="Switch canvas"
-        >
-          ▾
-        </button>
-        {#if showCanvasSelector}
-          <div
-            class="absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-slate-700 bg-slate-950 shadow-2xl shadow-black/70"
-          >
-            <div class="max-h-[300px] overflow-y-auto p-2">
-              {#if canvases.length > 0}
-                {#each canvases as canvas}
-                  <button
-                    type="button"
-                    class={`w-full rounded px-3 py-2 text-left text-sm font-medium transition ${
-                      canvas.id === activeCanvasId
-                        ? 'bg-primary text-white'
-                        : 'text-slate-100 hover:bg-slate-800'
-                    }`}
-                    onclick={() => {
-                      showCanvasSelector = false
-                      if (canvas.id !== activeCanvasId) {
-                        void goto(`/canvas/${canvas.id}`)
-                      }
-                    }}
-                  >
-                    {canvas.title}
-                  </button>
-                {/each}
-              {:else if isLoadingCanvases}
-                <div class="px-3 py-2 text-sm text-slate-400">Loading canvases…</div>
-              {:else}
-                <div class="px-3 py-2 text-sm text-slate-400">No canvases yet</div>
-              {/if}
-            </div>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </div>
-
-  <div class="pointer-events-auto fixed right-6 top-6 z-30 flex items-center gap-3">
-    <div class="flex -space-x-2">
-      {#each displayMembers().slice(0, 5) as member (member.id)}
-        <span
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 text-[11px] font-bold shadow-inner shadow-black/30"
-          style={`background-color:${member.color}`}
-          title={member.name}
-        >
-          {member.name.trim().slice(0, 2).toUpperCase() || 'ME'}
-        </span>
-      {/each}
-      {#if displayMembers().length > 5}
-        <span
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-700 text-[11px] font-bold text-white shadow-inner shadow-black/30"
-        >
-          +{displayMembers().length - 5}
-        </span>
-      {/if}
-    </div>
-
-    <CanvasOptionsButton
-      canvasId={activeCanvasId || canvasId}
-      {role}
-      pendingCount={pendingRequests.length}
-      onShare={() => (shareDialogOpen = true)}
-    />
-  </div>
+  <CanvasPresenceActions
+    canvasId={activeCanvasId || canvasId}
+    {role}
+    members={displayMembers()}
+    pendingCount={pendingRequests.length}
+    onShare={() => (shareDialogOpen = true)}
+  />
 
   <ShareDialog
     bind:open={shareDialogOpen}
@@ -2136,126 +1903,37 @@
     </div>
   {/if}
 
-  <svg
-    bind:this={svgEl}
-    aria-label="Drawing canvas"
-    class="absolute inset-0 h-full w-full select-none"
-    role="img"
-    onpointerdown={handleSvgPointerDown}
-    onpointermove={handleSvgPointerMove}
-    onpointerup={handleSvgPointerUp}
-    onpointercancel={handleSvgPointerUp}
-    onpointerleave={handleSvgPointerUp}
-    ondblclick={handleSvgDoubleClick}
-    style={`pointer-events:${canEdit && ['select', 'pencil', 'eraser', 'text'].includes(selectedTool) ? 'auto' : 'none'};user-select:none;-webkit-user-select:none;touch-action:none`}
-  >
-    <g transform={`translate(${camera.x}, ${camera.y}) scale(${camera.scale})`}>
-      {#each paths as path (path.id)}
-        <path
-          d={pathToSvgPath(path.points)}
-          fill="none"
-          filter={selectedElementIds.has(path.id)
-            ? 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.8))'
-            : undefined}
-          stroke={path.color}
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-opacity={path.opacity}
-          stroke-width={path.width}
-        />
-      {/each}
+  <CanvasScene
+    bind:svgEl
+    {camera}
+    {canEdit}
+    {selectedTool}
+    {drawFormatting}
+    {editingText}
+    elements={{ paths, currentPath, textElements }}
+    selection={{
+      selectedIds: selectedElementIds,
+      start: selectionStart,
+      end: selectionEnd
+    }}
+    handlers={{
+      pointerDown: handleSvgPointerDown,
+      pointerMove: handleSvgPointerMove,
+      pointerUp: handleSvgPointerUp,
+      doubleClick: handleSvgDoubleClick
+    }}
+  />
 
-      {#if currentPath.length > 0}
-        <path
-          d={pathToSvgPath(currentPath)}
-          fill="none"
-          stroke={drawFormatting.color}
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-opacity={drawFormatting.isHighlighter ? drawFormatting.highlighterOpacity : 1}
-          stroke-width={drawFormatting.width}
-        />
-      {/if}
-
-      {#each textElements as text (text.id)}
-        {#if editingText?.id !== text.id}
-          {@const bounds = calculateTextBounds(text)}
-          <g>
-            {#if selectedElementIds.has(text.id)}
-              <rect
-                fill="rgba(59, 130, 246, 0.1)"
-                x={bounds.x}
-                y={bounds.y}
-                width={bounds.width}
-                height={bounds.height}
-                rx={2 / camera.scale}
-                stroke="#3b82f6"
-                stroke-width={1 / camera.scale}
-              />
-            {/if}
-            <text
-              class="select-none"
-              dominant-baseline="hanging"
-              fill={text.color}
-              font-size={text.fontSize}
-              font-style={text.isItalic ? 'italic' : 'normal'}
-              font-weight={text.isBold ? 'bold' : 'normal'}
-              style="pointer-events:none"
-              text-decoration={text.isUnderline ? 'underline' : 'none'}
-              x={text.x}
-              y={text.y}
-            >
-              {#each text.text.split('\n') as line, lineIndex (lineIndex)}
-                <tspan x={text.x} y={text.y + lineIndex * getTextLineHeight(text.fontSize)}>
-                  {line}
-                </tspan>
-              {/each}
-            </text>
-          </g>
-        {/if}
-      {/each}
-
-      {#if selectionStart && selectionEnd}
-        <rect
-          fill="rgba(59, 130, 246, 0.1)"
-          x={Math.min(selectionStart.x, selectionEnd.x)}
-          y={Math.min(selectionStart.y, selectionEnd.y)}
-          width={Math.abs(selectionEnd.x - selectionStart.x)}
-          height={Math.abs(selectionEnd.y - selectionStart.y)}
-          pointer-events="none"
-          stroke="#3b82f6"
-          stroke-dasharray={`${4 / camera.scale} ${2 / camera.scale}`}
-          stroke-width={1 / camera.scale}
-        />
-      {/if}
-    </g>
-  </svg>
-
-  {#if editingText}
-    {@const editorLines = editingText.value.split('\n')}
-    {@const longestEditorLine = Math.max(...editorLines.map((line) => line.length), 1)}
-    {@const editorWidth = Math.max(
-      120,
-      longestEditorLine * textFormatting.fontSize * 0.6 * camera.scale + 16
-    )}
-    <textarea
-      bind:this={textInputEl}
-      class="absolute border-none bg-transparent caret-current outline-none"
-      style={`left:${camera.x + editingText.x * camera.scale}px;top:${camera.y + editingText.y * camera.scale}px;font-size:${textFormatting.fontSize * camera.scale}px;line-height:${TEXT_LINE_HEIGHT};color:${textFormatting.color};font-weight:${textFormatting.isBold ? 'bold' : 'normal'};font-style:${textFormatting.isItalic ? 'italic' : 'normal'};text-decoration:${textFormatting.isUnderline ? 'underline' : 'none'};width:${editorWidth}px;resize:none;overflow:hidden;white-space:pre;box-shadow:inset 0 0 0 1px rgba(59,130,246,.2);padding:0;margin:0`}
-      rows={editorLines.length}
-      wrap="off"
-      value={editingText.value}
-      oninput={(event) => {
-        applyEditorValue((event.currentTarget as HTMLTextAreaElement).value)
-        syncEditorSelection()
-      }}
-      onblur={handleTextInputBlur}
-      onkeydown={handleTextEditorKeydown}
-      onkeyup={syncEditorSelection}
-      onpointerup={syncEditorSelection}
-      onselect={syncEditorSelection}
-    ></textarea>
-  {/if}
+  <CanvasTextEditor
+    bind:textInputEl
+    {camera}
+    {editingText}
+    {textFormatting}
+    onValueChange={applyEditorValue}
+    onBlur={handleTextInputBlur}
+    onKeydown={handleTextEditorKeydown}
+    onSelectionChange={syncEditorSelection}
+  />
 
   <LiveCursors {cursors} />
 
@@ -2270,34 +1948,5 @@
     />
   {/if}
 
-  <div class="pointer-events-auto fixed bottom-6 right-6 z-30 flex flex-col gap-2">
-    <button
-      type="button"
-      class="toolbar-pill flex h-10 w-10 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
-      onclick={() => {
-        camera = { ...camera, scale: Math.min(camera.scale * 1.2, 5) }
-      }}
-      title="Zoom in"
-    >
-      +
-    </button>
-    <button
-      type="button"
-      class="toolbar-pill flex h-10 w-10 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
-      onclick={() => {
-        camera = { ...camera, scale: Math.max(camera.scale * 0.8, 0.1) }
-      }}
-      title="Zoom out"
-    >
-      −
-    </button>
-    <button
-      type="button"
-      class="toolbar-pill flex h-10 w-10 items-center justify-center text-[11px] font-semibold transition hover:border-slate-700 hover:bg-slate-900"
-      onclick={handleResetView}
-      title="Reset view"
-    >
-      {Math.round(camera.scale * 100)}%
-    </button>
-  </div>
+  <CanvasZoomControls bind:camera />
 </div>
