@@ -23,6 +23,7 @@
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --success: #16a34a;
+  --warning: #ca8a04;
 }
 
 .dark {
@@ -46,6 +47,7 @@
   --destructive: #f87171;
   --destructive-foreground: #08101b;
   --success: #4ade80;
+  --warning: #fbbf24;
 }
 
 @theme inline {
@@ -72,6 +74,7 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
+  --color-warning: var(--warning);
   --radius: 1rem;
 }
 

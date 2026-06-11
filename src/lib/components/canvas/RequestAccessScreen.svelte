@@ -1,8 +1,9 @@
 <script lang="ts">
   import { invalidateAll } from '$app/navigation'
   import { Lock } from 'lucide-svelte'
+  import { untrack } from 'svelte'
   import { supabase, ensureSessionInitialized } from '$lib/auth/session-store'
-  import { getMyAccessRequest, requestAccess } from '$lib/canvas/api'
+  import { getCanvas, getMyAccessRequest, requestAccess } from '$lib/canvas/api'
   import type { AccessRequest } from '$lib/canvas/schema'
 
   let { canvasId } = $props<{ canvasId: string }>()
@@ -11,6 +12,9 @@
   let isLoading = $state(true)
   let isSubmitting = $state(false)
   let errorMessage = $state<string | null>(null)
+  // The snapshot path may re-run the page load at most once; recursing here
+  // would loop the screen since the load already answered "no access".
+  let reloadRequested = false
 
   const status = $derived(request?.status ?? 'idle')
 
@@ -18,11 +22,27 @@
     isLoading = true
     try {
       const response = await getMyAccessRequest(canvasId)
-      request = response.item
-      if (request?.status === 'approved') {
-        // Approved while away: membership exists, re-run the page load.
-        void invalidateAll()
+
+      if (response.item?.status === 'approved') {
+        // The page load said "no access", so an approved request is stale
+        // (approved earlier, access revoked since) unless approval landed in
+        // the last instant. Verify before reloading so a revoked user can
+        // request again instead of refresh-looping.
+        const hasAccess = await getCanvas(canvasId)
+          .then(() => true)
+          .catch(() => false)
+
+        if (hasAccess && !reloadRequested) {
+          reloadRequested = true
+          void invalidateAll()
+          return
+        }
+
+        request = null
+        return
       }
+
+      request = response.item
     } catch (error) {
       errorMessage = error instanceof Error ? error.message : 'Failed to load access request.'
     } finally {
@@ -44,50 +64,56 @@
   }
 
   $effect(() => {
-    void loadMyRequest()
+    void canvasId
+    untrack(() => {
+      void loadMyRequest()
+    })
   })
 
   $effect(() => {
     const client = supabase
     const requestId = request?.id
-    if (!client || !requestId || request?.status !== 'pending') {
+    const requestStatus = request?.status
+    if (!client || !requestId || requestStatus !== 'pending') {
       return
     }
 
-    let cancelled = false
+    return untrack(() => {
+      let cancelled = false
 
-    const channel = client.channel(`canvas:${canvasId}:my-access`).on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'canvas_access_requests',
-        filter: `id=eq.${requestId}`
-      },
-      (payload) => {
-        const next = payload.new as { status?: string }
-        if (next.status === 'approved') {
-          void invalidateAll()
-        } else if (next.status === 'denied' && request) {
-          request = { ...request, status: 'denied' }
+      const channel = client.channel(`canvas:${canvasId}:my-access`).on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'canvas_access_requests',
+          filter: `id=eq.${requestId}`
+        },
+        (payload) => {
+          const next = payload.new as { status?: string }
+          if (next.status === 'approved') {
+            void invalidateAll()
+          } else if (next.status === 'denied' && request) {
+            request = { ...request, status: 'denied' }
+          }
         }
-      }
-    )
+      )
 
-    // The RLS policy on canvas_access_requests requires the realtime socket
-    // to carry this user's JWT before the subscription is authorized.
-    void ensureSessionInitialized().then((session) => {
-      if (cancelled) return
-      if (session?.access_token) {
-        client.realtime.setAuth(session.access_token)
+      // The RLS policy on canvas_access_requests requires the realtime socket
+      // to carry this user's JWT before the subscription is authorized.
+      void ensureSessionInitialized().then((session) => {
+        if (cancelled) return
+        if (session?.access_token) {
+          client.realtime.setAuth(session.access_token)
+        }
+        channel.subscribe()
+      })
+
+      return () => {
+        cancelled = true
+        void client.removeChannel(channel)
       }
-      channel.subscribe()
     })
-
-    return () => {
-      cancelled = true
-      void client.removeChannel(channel)
-    }
   })
 </script>
 
@@ -109,7 +135,7 @@
     <span
       class="flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-secondary-foreground"
     >
-      <span class="size-2 animate-pulse rounded-full bg-amber-400"></span>
+      <span class="size-2 animate-pulse rounded-full bg-warning"></span>
       Waiting for approval
     </span>
   {:else if status === 'denied'}

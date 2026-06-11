@@ -43,7 +43,10 @@
   }
 
   onMount(() => {
-    const handleClick = (event: MouseEvent) => {
+    // pointerdown instead of mousedown: the canvas calls preventDefault() on
+    // pointerdown, which suppresses the derived mouse events — clicks on the
+    // drawing surface would never reach a mousedown listener.
+    const handlePointerDown = (event: PointerEvent) => {
       if (!open || !root) {
         return
       }
@@ -60,11 +63,11 @@
       }
     }
 
-    document.addEventListener('mousedown', handleClick)
+    document.addEventListener('pointerdown', handlePointerDown)
     document.addEventListener('keydown', handleEscape)
 
     return () => {
-      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('pointerdown', handlePointerDown)
       document.removeEventListener('keydown', handleEscape)
     }
   })

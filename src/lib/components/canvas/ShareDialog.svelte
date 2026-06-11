@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Check, Link } from 'lucide-svelte'
+  import { Check, Link, X } from 'lucide-svelte'
   import Modal from '$lib/components/shared/Modal.svelte'
   import RoleBadge from '$lib/components/shared/RoleBadge.svelte'
   import {
@@ -233,11 +233,23 @@
           Add people
         </h3>
         <div class="flex items-center gap-2">
-          <input
-            class="min-w-0 flex-1 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
-            placeholder="Search by name or email"
-            bind:value={searchQuery}
-          />
+          <div class="relative min-w-0 flex-1">
+            <input
+              class="w-full rounded-xl border border-border bg-secondary/40 px-3 py-2 pr-9 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+              placeholder="Search by name or email"
+              bind:value={searchQuery}
+            />
+            {#if searchQuery}
+              <button
+                type="button"
+                class="absolute right-2 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition hover:text-foreground"
+                onclick={() => (searchQuery = '')}
+                aria-label="Clear search"
+              >
+                <X class="size-4" />
+              </button>
+            {/if}
+          </div>
           <select
             class="shrink-0 rounded-xl border border-border bg-secondary/40 px-2 py-2 text-sm text-foreground outline-none"
             bind:value={addRole}
@@ -288,13 +300,13 @@
 
       {#if pendingRequests.length > 0}
         <section class="grid gap-2">
-          <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-amber-400">
+          <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-warning">
             Pending requests
           </h3>
           <ul class="grid gap-1">
             {#each pendingRequests as request (request.id)}
               <li
-                class="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-2 py-1.5"
+                class="flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 px-2 py-1.5"
               >
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-medium text-foreground">
@@ -346,7 +358,20 @@
           People with access
         </h3>
         {#if isLoadingMembers}
-          <p class="text-xs text-muted-foreground">Loading members…</p>
+          <ul class="grid gap-1">
+            {#each Array.from({ length: 2 }) as _, index (index)}
+              <li class="flex items-center gap-3 rounded-xl px-2 py-1.5">
+                <span class="size-8 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
+                ></span>
+                <div class="grid min-w-0 flex-1 gap-1.5">
+                  <span class="h-3 w-28 animate-pulse rounded bg-muted-foreground/25"></span>
+                  <span class="h-2.5 w-40 animate-pulse rounded bg-muted-foreground/20"></span>
+                </div>
+                <span class="h-5 w-16 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
+                ></span>
+              </li>
+            {/each}
+          </ul>
         {:else}
           <ul class="grid gap-1">
             {#each members as member (member.userId)}

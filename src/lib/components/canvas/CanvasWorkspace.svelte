@@ -1419,10 +1419,17 @@
     }
 
     let cancelled = false
+    let membershipRowId: string | null = null
+
+    function kickOut(message: string) {
+      toast.show({ title: 'Access changed', description: message })
+      void invalidateAll()
+    }
 
     // React immediately when this user's membership is changed or revoked.
-    // DELETE events ignore the canvas_id filter, so both handlers re-check
-    // the payload before reloading.
+    // DELETE events ignore the canvas_id filter, and on RLS-enabled tables
+    // their old record is stripped to the primary key — so removal is
+    // matched against this user's membership row id, fetched up front.
     const channel = client
       .channel(`canvas:${id}:membership`)
       .on(
@@ -1434,9 +1441,10 @@
           filter: `canvas_id=eq.${id}`
         },
         (payload) => {
-          const next = payload.new as { user_id?: string }
+          const next = payload.new as { id?: string; user_id?: string }
           if (next.user_id === userId) {
-            void invalidateAll()
+            membershipRowId = next.id ?? membershipRowId
+            kickOut('Your role on this canvas was changed.')
           }
         }
       )
@@ -1448,18 +1456,34 @@
           table: 'canvas_members'
         },
         (payload) => {
-          const previous = payload.old as { user_id?: string; canvas_id?: string }
-          if (previous.user_id === userId && previous.canvas_id === id) {
-            void invalidateAll()
+          const previous = payload.old as {
+            id?: string
+            user_id?: string
+            canvas_id?: string
+          }
+          const matchesRowId = membershipRowId !== null && previous.id === membershipRowId
+          const matchesColumns = previous.user_id === userId && previous.canvas_id === id
+          if (matchesRowId || matchesColumns) {
+            kickOut('Your access to this canvas was removed.')
           }
         }
       )
 
-    void ensureSessionInitialized().then((session) => {
+    void ensureSessionInitialized().then(async (session) => {
       if (cancelled) return
       if (session?.access_token) {
         client.realtime.setAuth(session.access_token)
       }
+
+      const { data: membership } = await client
+        .from('canvas_members')
+        .select('id')
+        .eq('canvas_id', id)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (cancelled) return
+      membershipRowId = (membership as { id: string } | null)?.id ?? null
       channel.subscribe()
     })
 

@@ -122,7 +122,13 @@ what authorizes realtime `postgres_changes` subscriptions:
   owner/admins (`is_canvas_admin()`), so request notifications are only
   delivered to people allowed to act on them, as a database guarantee.
 - `canvas_members`: readable by anyone with access to the canvas
-  (`can_view_canvas()`), powering live revocation handling.
+  (`can_view_canvas()`), powering live revocation handling. Note: on
+  RLS-enabled tables, realtime DELETE payloads strip the old record to the
+  primary key, so the workspace resolves its own membership row id up front
+  and matches removals by that id (see the membership effect in
+  `CanvasWorkspace.svelte`). Removal kicks the user to the request-access
+  screen immediately; a role change re-resolves the page and re-gates the
+  workspace in place.
 - `profiles`: self-only select (pre-existing); user search goes through the
   server API.
 - `canvases` / `canvas_elements`: pre-existing broad authenticated-read
