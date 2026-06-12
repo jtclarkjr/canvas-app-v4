@@ -137,10 +137,13 @@ WebRTC conferencing.
   captions on, every unmuted participant transcribes their mic, so all
   speakers are captioned for whoever wants them. No one transcribes when
   nobody has captions enabled (cost control).
-- Translation is per-viewer: final segments go through
+- Translation is per-viewer: finalized utterances go through
   `POST …/conference/captions/translate` (gpt-4o-mini, returns the text
-  unchanged when already in the target language). Interim text shows
-  italicized in the original language until the final lands.
+  unchanged when already in the target language). Viewers see captions
+  **only in their target language** — lines render once translated, the
+  original language never flashes first, and a failed translation falls
+  back to the original text. Interim transcription deltas are neither
+  published nor rendered.
 - Privacy note: with captions on, call audio is streamed to OpenAI for
   transcription.
 

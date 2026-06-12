@@ -38,9 +38,13 @@
   })
 
   const CAPTION_VISIBLE_MS = 8000
+  // Only lines that already exist in the viewer's target language render —
+  // the original language never flashes first.
   const visibleCaptions = $derived(
     store.captionSegments
-      .filter((segment) => now - segment.receivedAt < CAPTION_VISIBLE_MS)
+      .filter(
+        (segment) => segment.translated !== null && now - segment.receivedAt < CAPTION_VISIBLE_MS
+      )
       .slice(-2)
   )
 
@@ -106,9 +110,7 @@
             <span class="font-bold" style={`color:${segment.speakerColor}`}>
               {segment.speakerName}:
             </span>
-            <span class={segment.final ? '' : 'italic opacity-80'}>
-              {segment.translated ?? segment.text}
-            </span>
+            <span>{segment.translated ?? segment.text}</span>
           </p>
         {:else}
           <p class="text-xs font-medium text-white/70">{captionsStatusLabel}</p>

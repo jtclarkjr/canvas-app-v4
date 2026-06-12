@@ -22,7 +22,6 @@ type ConferenceCaptionsInput = {
 
 const OPENAI_CALLS_URL = 'https://api.openai.com/v1/realtime/calls'
 const MAX_SEGMENTS = 24
-const DELTA_PUBLISH_INTERVAL_MS = 400
 
 type SttState = 'off' | 'connecting' | 'running' | 'error'
 
@@ -53,8 +52,6 @@ export function createConferenceCaptionsStore({
   let connectWatchdog: ReturnType<typeof setTimeout> | null = null
   let warnedThisCall = false
 
-  const pendingTexts = new Map<string, string>()
-  const lastPublishedAt = new Map<string, number>()
   const translationCache = new Map<string, string>()
   // Items that produced whisper-style segment events: their `completed`
   // event repeats the full transcript and must not render twice.
@@ -83,8 +80,6 @@ export function createConferenceCaptionsStore({
     captureTrack = null
     pc?.close()
     pc = null
-    pendingTexts.clear()
-    lastPublishedAt.clear()
     segmentedItems.clear()
     sttState = 'off'
   }
@@ -279,14 +274,10 @@ export function createConferenceCaptionsStore({
       return
     }
 
+    // Only finalized utterances render (viewers see captions exclusively in
+    // their target language, so there is no interim text to show) — interim
+    // delta events are intentionally ignored.
     if (
-      event.type === 'conversation.item.input_audio_transcription.delta' &&
-      typeof event.delta === 'string'
-    ) {
-      const text = (pendingTexts.get(event.item_id) ?? '') + event.delta
-      pendingTexts.set(event.item_id, text)
-      emitOwnSegment(event.item_id, text, false)
-    } else if (
       event.type === 'conversation.item.input_audio_transcription.segment' &&
       typeof event.text === 'string'
     ) {
@@ -295,40 +286,33 @@ export function createConferenceCaptionsStore({
       segmentedItems.add(event.item_id)
       emitOwnSegment(
         `${event.item_id}:${event.id ?? segmentedItems.size}`,
-        event.text,
-        true
+        event.text
       )
     } else if (
       event.type === 'conversation.item.input_audio_transcription.completed' &&
       typeof event.transcript === 'string'
     ) {
-      pendingTexts.delete(event.item_id)
       // Segmented items already rendered this text chunk by chunk.
       if (segmentedItems.has(event.item_id)) {
         segmentedItems.delete(event.item_id)
         return
       }
-      emitOwnSegment(event.item_id, event.transcript, true)
+      emitOwnSegment(event.item_id, event.transcript)
     }
   }
 
-  function emitOwnSegment(id: string, text: string, final: boolean) {
+  function emitOwnSegment(id: string, text: string) {
     const trimmed = text.trim()
     if (!trimmed) {
       return
     }
 
-    // Deltas are throttled on the wire; finals always go out.
-    const now = Date.now()
-    if (final || now - (lastPublishedAt.get(id) ?? 0) > DELTA_PUBLISH_INTERVAL_MS) {
-      lastPublishedAt.set(id, now)
-      room.publishData(CAPTIONS_DATA_TOPIC, {
-        v: 1,
-        id,
-        text: trimmed,
-        final
-      })
-    }
+    room.publishData(CAPTIONS_DATA_TOPIC, {
+      v: 1,
+      id,
+      text: trimmed,
+      final: true
+    })
 
     // publishData does not loop back to the sender, so ingest locally too.
     if (enabled) {
@@ -338,8 +322,7 @@ export function createConferenceCaptionsStore({
         speakerIdentity: local?.identity ?? 'me',
         speakerName: 'You',
         speakerColor: local?.color ?? 'var(--color-primary)',
-        text: trimmed,
-        final
+        text: trimmed
       })
     }
   }
@@ -359,7 +342,7 @@ export function createConferenceCaptionsStore({
       return
     }
     const data = captionDataSchema.safeParse(parsed)
-    if (!data.success) {
+    if (!data.success || !data.data.final) {
       return
     }
 
@@ -371,8 +354,7 @@ export function createConferenceCaptionsStore({
       speakerIdentity: participantIdentity ?? 'unknown',
       speakerName: speaker?.name ?? 'Someone',
       speakerColor: speaker?.color ?? 'var(--color-muted-foreground)',
-      text: data.data.text,
-      final: data.data.final
+      text: data.data.text
     })
   }
 
@@ -382,11 +364,11 @@ export function createConferenceCaptionsStore({
     speakerName: string
     speakerColor: string
     text: string
-    final: boolean
   }) {
     const existing = segments.find((segment) => segment.id === input.id)
     const next: CaptionSegment = {
       ...input,
+      final: true,
       translated: existing?.translated ?? null,
       receivedAt: Date.now()
     }
@@ -395,13 +377,13 @@ export function createConferenceCaptionsStore({
       next
     ].slice(-MAX_SEGMENTS)
 
-    if (input.final) {
-      void translateSegment(next.id, input.text)
-    }
+    void translateSegment(next.id, input.text)
   }
 
-  // Per-viewer translation of final segments into the picked language. The
-  // model returns text unchanged when it is already in that language.
+  // Per-viewer translation into the picked language. The model returns the
+  // text unchanged when it is already in that language. Lines only render
+  // once `translated` is set, so originals never flash in another language;
+  // a failed translation falls back to the original text.
   async function translateSegment(id: string, text: string) {
     const target = language
     const cacheKey = `${target}:${id}`
@@ -415,7 +397,7 @@ export function createConferenceCaptionsStore({
       translationCache.set(cacheKey, response.text)
       applyTranslation(id, target, response.text)
     } catch {
-      // Untranslated captions still show the original text.
+      applyTranslation(id, target, text)
     }
   }
 
