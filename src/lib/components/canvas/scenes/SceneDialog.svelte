@@ -189,7 +189,7 @@
       {#if canModify}
         <button
           type="button"
-          class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500"
+          class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
           onclick={() => (confirmDeleteOpen = true)}
           title="Delete scene"
         >

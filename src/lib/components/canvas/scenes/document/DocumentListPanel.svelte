@@ -47,7 +47,7 @@
       {/if}
       <button
         type="button"
-        class="hidden size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500 group-hover:flex"
+        class="hidden size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive group-hover:flex"
         onclick={() => onDelete(document.id)}
         title="Delete document"
       >

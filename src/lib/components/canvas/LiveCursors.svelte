@@ -43,8 +43,8 @@
           />
 
           <div
-            class="absolute left-5 top-5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-semibold text-white shadow-lg"
-            style={`background-color:${cursor.color}`}
+            class="absolute left-5 top-5 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background/80 text-xs font-semibold shadow-lg"
+            style={`background-color:${cursor.color};color:var(--canvas-avatar-foreground)`}
           >
             {getInitials(cursor.user.name)}
           </div>

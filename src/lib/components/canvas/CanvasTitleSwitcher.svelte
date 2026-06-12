@@ -73,7 +73,7 @@
   <div class="flex flex-col gap-2">
     <a
       href="/"
-      class="toolbar-pill flex h-10 w-10 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
+      class="toolbar-pill flex h-10 w-10 items-center justify-center"
       title="Back to dashboard"
     >
       <Home class="size-5" />
@@ -86,7 +86,7 @@
       <div class="toolbar-pill flex items-center gap-1 px-3 py-1">
         <input
           bind:this={titleInputEl}
-          class="w-[200px] border-0 bg-transparent text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200 outline-none"
+          class="w-[200px] border-0 bg-transparent text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground outline-none"
           bind:value={editedTitle}
           onblur={() => void saveTitle()}
           onkeydown={(event) => {
@@ -101,7 +101,7 @@
     {:else if canManageCanvas}
       <button
         type="button"
-        class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] transition hover:border-slate-700 hover:bg-slate-900"
+        class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
         onclick={beginTitleEdit}
       >
         {currentTitle || 'Select Canvas'}
@@ -115,7 +115,7 @@
     <div bind:this={dropdownEl} class="relative">
       <button
         type="button"
-        class="toolbar-pill flex h-8 w-8 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
+        class="toolbar-pill flex h-8 w-8 items-center justify-center"
         onclick={() => (showCanvasSelector = !showCanvasSelector)}
         title="Switch canvas"
       >
@@ -123,7 +123,7 @@
       </button>
       {#if showCanvasSelector}
         <div
-          class="absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-slate-700 bg-slate-950 shadow-2xl shadow-black/70"
+          class="absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-border/70 bg-popover text-popover-foreground shadow-xl"
         >
           <div class="max-h-[300px] overflow-y-auto p-2">
             {#if canvases.length > 0}
@@ -132,8 +132,8 @@
                   type="button"
                   class={`w-full rounded px-3 py-2 text-left text-sm font-medium transition ${
                     canvas.id === activeCanvasId
-                      ? 'bg-primary text-white'
-                      : 'text-slate-100 hover:bg-slate-800'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
                   onclick={() => {
                     showCanvasSelector = false
@@ -146,9 +146,9 @@
                 </button>
               {/each}
             {:else if isLoadingCanvases}
-              <div class="px-3 py-2 text-sm text-slate-400">Loading canvases...</div>
+              <div class="px-3 py-2 text-sm text-muted-foreground">Loading canvases...</div>
             {:else}
-              <div class="px-3 py-2 text-sm text-slate-400">No canvases yet</div>
+              <div class="px-3 py-2 text-sm text-muted-foreground">No canvases yet</div>
             {/if}
           </div>
         </div>

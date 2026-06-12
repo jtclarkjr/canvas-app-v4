@@ -28,7 +28,9 @@
       <button
         type="button"
         class={`relative z-10 flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
-          mode === entry.id ? 'text-white' : 'text-slate-300 hover:text-white'
+          mode === entry.id
+            ? 'text-primary-foreground'
+            : 'text-muted-foreground hover:text-foreground'
         }`}
         aria-pressed={mode === entry.id}
         onclick={() => onModeChange(entry.id)}

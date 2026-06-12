@@ -81,7 +81,7 @@
         <div
           class={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
             message.role === 'user'
-              ? 'bg-primary text-white'
+              ? 'bg-primary text-primary-foreground'
               : 'border border-border/60 bg-background/70 text-foreground'
           }`}
         >

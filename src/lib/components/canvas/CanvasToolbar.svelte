@@ -35,7 +35,7 @@
 <div class="relative w-10">
   <button
     type="button"
-    class="toolbar-pill flex h-10 w-10 items-center justify-center transition hover:border-slate-700 hover:bg-slate-900"
+    class="toolbar-pill flex h-10 w-10 items-center justify-center"
     onclick={() => (isExpanded = !isExpanded)}
     title="Tools"
   >
@@ -45,7 +45,7 @@
   {#if isExpanded}
     <div
       transition:slide={{ duration: 200, axis: 'y' }}
-      class="absolute left-0 top-12 overflow-hidden rounded-2xl border border-slate-800/80 bg-black/60 shadow-lg shadow-black/40 backdrop-blur"
+      class="absolute left-0 top-12 overflow-hidden rounded-2xl border border-border/70 bg-popover text-popover-foreground shadow-xl backdrop-blur"
       style="transform-origin: top center"
     >
       <div class="flex flex-col gap-1 p-1">
@@ -54,8 +54,8 @@
             type="button"
             class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
               selectedTool === tool.id
-                ? 'bg-primary text-white'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
             onclick={() => {
               onToolChange(tool.id)

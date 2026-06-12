@@ -111,7 +111,7 @@
 
       <button
         type="button"
-        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-white transition disabled:opacity-40"
+        class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-40"
         onclick={send}
         disabled={!canSend}
         title="Send"

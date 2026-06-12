@@ -15,8 +15,8 @@
   <div class="flex -space-x-2">
     {#each members.slice(0, 5) as member (member.id)}
       <span
-        class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 text-[11px] font-bold shadow-inner shadow-black/30"
-        style={`background-color:${member.color}`}
+        class="flex h-9 w-9 items-center justify-center rounded-full border border-background/80 text-[11px] font-bold shadow-inner"
+        style={`background-color:${member.color};color:var(--canvas-avatar-foreground)`}
         title={member.name}
       >
         {member.name.trim().slice(0, 2).toUpperCase() || 'ME'}
@@ -24,7 +24,7 @@
     {/each}
     {#if members.length > 5}
       <span
-        class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-800 bg-slate-700 text-[11px] font-bold text-white shadow-inner shadow-black/30"
+        class="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-[11px] font-bold text-card-foreground shadow-inner"
       >
         +{members.length - 5}
       </span>

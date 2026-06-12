@@ -69,7 +69,7 @@
           type="button"
           class={`flex size-8 items-center justify-center rounded-full transition ${
             selectedTool === tool.id
-              ? 'bg-primary text-white'
+              ? 'bg-primary text-primary-foreground'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
           onclick={() => onToolChange(tool.id)}
@@ -116,7 +116,7 @@
     <button
       type="button"
       class={`flex size-8 items-center justify-center rounded-full transition ${
-        isHighlighter ? 'bg-amber-400/30 text-amber-600' : 'text-muted-foreground hover:bg-muted'
+        isHighlighter ? 'bg-warning/20 text-warning' : 'text-muted-foreground hover:bg-muted'
       }`}
       onclick={onHighlighterToggle}
       title="Highlighter"
@@ -147,7 +147,7 @@
       {#if selectedCount > 0}
         <button
           type="button"
-          class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-red-500/10 hover:text-red-500"
+          class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
           onclick={onDeleteSelected}
           title={`Delete ${selectedCount} selected`}
         >

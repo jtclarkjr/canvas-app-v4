@@ -197,7 +197,7 @@
 
   {#if chat.error}
     <div
-      class="mx-5 mb-2 flex items-center justify-between rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-600"
+      class="mx-5 mb-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
     >
       <span>{chat.error.message || 'Something went wrong.'}</span>
       <button type="button" class="font-medium underline" onclick={() => chat.clearError()}>

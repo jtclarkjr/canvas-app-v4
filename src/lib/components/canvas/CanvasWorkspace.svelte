@@ -68,7 +68,7 @@
   style={workspace.rootStyle}
   role="application"
 >
-  <div class="absolute inset-0 screen-grid bg-white"></div>
+  <div class="absolute inset-0 screen-grid"></div>
 
   <CanvasTitleSwitcher
     canvases={workspace.canvases}
@@ -138,7 +138,7 @@
 
   {#if workspace.canvasesError || workspace.scenesError}
     <div
-      class="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-red-600 px-4 py-2 text-sm text-white shadow-lg"
+      class="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground shadow-lg"
     >
       {workspace.canvasesError ?? workspace.scenesError}
     </div>

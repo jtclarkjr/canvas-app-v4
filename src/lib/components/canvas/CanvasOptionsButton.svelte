@@ -36,7 +36,7 @@
   {#snippet trigger({ id, expanded })}
     <button
       type="button"
-      class="toolbar-pill relative flex h-9 w-9 items-center justify-center rounded-full transition hover:border-slate-700 hover:bg-slate-900"
+      class="toolbar-pill relative flex h-9 w-9 items-center justify-center rounded-full"
       aria-controls={id}
       aria-expanded={expanded}
       onclick={() => (open = !open)}
@@ -45,7 +45,7 @@
       <Share2 class="size-4" />
       {#if canManage && pendingCount > 0}
         <span
-          class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-400 px-1 text-[9px] font-bold text-black"
+          class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"
         >
           {pendingCount}
         </span>

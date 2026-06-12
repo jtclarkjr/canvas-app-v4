@@ -148,7 +148,7 @@
         {/if}
         <button
           type="button"
-          class="flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-white transition disabled:opacity-40"
+          class="flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground transition disabled:opacity-40"
           onclick={() => onSave(title, markdown)}
           disabled={!isDirty || isSaving}
           title="Save now"

@@ -147,7 +147,7 @@
     <span class="text-sm text-muted-foreground">Edit request denied</span>
     <button
       type="button"
-      class="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+      class="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
       disabled={isSubmitting}
       onclick={() => void submitRequest()}
     >
@@ -157,7 +157,7 @@
     <span class="text-sm text-muted-foreground">{viewingLabel}</span>
     <button
       type="button"
-      class="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+      class="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
       disabled={isSubmitting}
       onclick={() => void submitRequest()}
     >
@@ -168,7 +168,7 @@
 
 {#if errorMessage}
   <div
-    class="fixed bottom-20 left-1/2 z-30 -translate-x-1/2 rounded-full bg-red-600 px-4 py-2 text-sm text-white shadow-lg"
+    class="fixed bottom-20 left-1/2 z-30 -translate-x-1/2 rounded-full bg-destructive px-4 py-2 text-sm text-destructive-foreground shadow-lg"
   >
     {errorMessage}
   </div>

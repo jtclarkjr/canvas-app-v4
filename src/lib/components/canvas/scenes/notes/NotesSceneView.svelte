@@ -117,7 +117,7 @@
   />
 
   {#if notes.error || exportError}
-    <div class="mx-4 mt-2 rounded-xl bg-red-500/10 px-3 py-2 text-xs text-red-600">
+    <div class="mx-4 mt-2 rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
       {notes.error ?? exportError}
     </div>
   {/if}

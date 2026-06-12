@@ -47,13 +47,13 @@
 
 {#if isVisible}
   <div
-    class="pointer-events-auto fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-full border border-slate-800/80 bg-black/60 p-1 shadow-lg shadow-black/40 backdrop-blur"
+    class="toolbar-pill pointer-events-auto fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 p-1"
     data-text-formatting-toolbar
   >
-    <div class="flex items-center gap-1 rounded-lg bg-slate-900/40 px-2">
+    <div class="flex items-center gap-1 rounded-lg bg-secondary/70 px-2">
       <button
         type="button"
-        class="flex h-6 w-6 items-center justify-center rounded text-slate-300 transition hover:text-white"
+        class="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
         onmousedown={preventEditorBlur}
         onclick={() => onFontSizeChange(Math.max(fontSize - 2, 8))}
         title="Decrease font size"
@@ -61,7 +61,7 @@
         <Minus class="size-3" />
       </button>
       <input
-        class="w-12 border-0 bg-transparent text-center text-sm text-slate-200 outline-none"
+        class="w-12 border-0 bg-transparent text-center text-sm text-foreground outline-none"
         min="8"
         max="100"
         type="number"
@@ -71,7 +71,7 @@
       />
       <button
         type="button"
-        class="flex h-6 w-6 items-center justify-center rounded text-slate-300 transition hover:text-white"
+        class="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
         onmousedown={preventEditorBlur}
         onclick={() => onFontSizeChange(Math.min(fontSize + 2, 100))}
         title="Increase font size"
@@ -83,7 +83,9 @@
     <button
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-        isBold ? 'bg-primary text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+        isBold
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={onBoldToggle}
@@ -94,7 +96,9 @@
     <button
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-        isItalic ? 'bg-primary text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+        isItalic
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={onItalicToggle}
@@ -105,7 +109,9 @@
     <button
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
-        isUnderline ? 'bg-primary text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+        isUnderline
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={onUnderlineToggle}
@@ -117,8 +123,8 @@
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         listStyle === 'bullet'
-          ? 'bg-primary text-white'
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onListStyleChange('bullet')}
@@ -130,8 +136,8 @@
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         listStyle === 'number'
-          ? 'bg-primary text-white'
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onListStyleChange('number')}
@@ -142,7 +148,7 @@
 
     <div class="relative">
       <label
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
         for="text-color"
         title="Text color"
       >

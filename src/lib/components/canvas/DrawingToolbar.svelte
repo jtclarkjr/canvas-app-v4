@@ -51,10 +51,10 @@
 
 {#if isVisible}
   <div
-    class="pointer-events-auto fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 rounded-full border border-slate-800/80 bg-black/60 p-1 shadow-lg shadow-black/40 backdrop-blur"
+    class="toolbar-pill pointer-events-auto fixed left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-1 p-1"
     data-drawing-toolbar
   >
-    <div class="flex items-center gap-2 rounded-lg bg-slate-900/40 px-3 py-1.5">
+    <div class="flex items-center gap-2 rounded-lg bg-secondary/70 px-3 py-1.5">
       <input
         class="h-1 w-24 cursor-pointer accent-primary"
         min="1"
@@ -65,12 +65,12 @@
         oninput={handleWidthChange}
         title="Stroke width"
       />
-      <span class="w-6 text-center text-sm text-slate-200">{width}</span>
+      <span class="w-6 text-center text-sm text-foreground">{width}</span>
     </div>
 
     <div class="relative">
       <label
-        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        class="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition hover:bg-accent hover:text-accent-foreground"
         for="draw-color"
         title="Stroke color"
       >
@@ -89,8 +89,8 @@
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         style === 'freeform'
-          ? 'bg-primary text-white'
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onStyleChange('freeform')}
@@ -102,8 +102,8 @@
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         style === 'straight'
-          ? 'bg-primary text-white'
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onStyleChange('straight')}
@@ -116,8 +116,8 @@
       type="button"
       class={`flex h-8 w-8 items-center justify-center rounded-lg transition ${
         isHighlighter
-          ? 'bg-primary text-white'
-          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+          ? 'bg-primary text-primary-foreground'
+          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
       }`}
       onmousedown={preventEditorBlur}
       onclick={onHighlighterToggle}
@@ -126,7 +126,7 @@
       <Highlighter class="size-4" />
     </button>
     {#if isHighlighter}
-      <div class="flex items-center gap-2 rounded-lg bg-slate-900/40 px-3 py-1.5">
+      <div class="flex items-center gap-2 rounded-lg bg-secondary/70 px-3 py-1.5">
         <input
           class="h-1 w-16 cursor-pointer accent-primary"
           min="10"
@@ -137,7 +137,7 @@
           oninput={handleHighlighterOpacityChange}
           title="Highlighter opacity"
         />
-        <span class="w-9 text-center text-sm text-slate-200">
+        <span class="w-9 text-center text-sm text-foreground">
           {Math.round(highlighterOpacity * 100)}%
         </span>
       </div>

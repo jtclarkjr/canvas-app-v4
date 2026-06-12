@@ -9,6 +9,7 @@
     Tool
   } from '$lib/canvas/types'
   import { calculateTextBounds, getTextLineHeight, pathToSvgPath } from '$lib/canvas/drawing-utils'
+  import { resolveCanvasDisplayColor } from '$lib/canvas/helpers/display-color'
   import { selectionRectFromPoints } from '$lib/canvas/element-mapping'
 
   type CanvasSceneElements = {
@@ -76,9 +77,9 @@
         d={pathToSvgPath(path.points)}
         fill="none"
         filter={selection.selectedIds.has(path.id)
-          ? 'drop-shadow(0 0 4px rgba(59, 130, 246, 0.8))'
+          ? 'drop-shadow(0 0 4px var(--canvas-selection-shadow))'
           : undefined}
-        stroke={path.color}
+        stroke={resolveCanvasDisplayColor(path.color)}
         stroke-linecap="round"
         stroke-linejoin="round"
         stroke-opacity={path.opacity}
@@ -90,7 +91,7 @@
       <path
         d={pathToSvgPath(elements.currentPath)}
         fill="none"
-        stroke={drawFormatting.color}
+        stroke={resolveCanvasDisplayColor(drawFormatting.color)}
         stroke-linecap="round"
         stroke-linejoin="round"
         stroke-opacity={drawFormatting.isHighlighter ? drawFormatting.highlighterOpacity : 1}
@@ -104,20 +105,20 @@
         <g>
           {#if selection.selectedIds.has(text.id)}
             <rect
-              fill="rgba(59, 130, 246, 0.1)"
+              fill="var(--canvas-selection-fill)"
               x={bounds.x}
               y={bounds.y}
               width={bounds.width}
               height={bounds.height}
               rx={2 / camera.scale}
-              stroke="#3b82f6"
+              stroke="var(--canvas-selection-stroke)"
               stroke-width={1 / camera.scale}
             />
           {/if}
           <text
             class="select-none"
             dominant-baseline="hanging"
-            fill={text.color}
+            fill={resolveCanvasDisplayColor(text.color)}
             font-size={text.fontSize}
             font-style={text.isItalic ? 'italic' : 'normal'}
             font-weight={text.isBold ? 'bold' : 'normal'}
@@ -139,13 +140,13 @@
     {#if selection.start && selection.end}
       {@const rect = selectionRectFromPoints(selection.start, selection.end)}
       <rect
-        fill="rgba(59, 130, 246, 0.1)"
+        fill="var(--canvas-selection-fill)"
         x={rect.x}
         y={rect.y}
         width={rect.width}
         height={rect.height}
         pointer-events="none"
-        stroke="#3b82f6"
+        stroke="var(--canvas-selection-stroke)"
         stroke-dasharray={`${4 / camera.scale} ${2 / camera.scale}`}
         stroke-width={1 / camera.scale}
       />

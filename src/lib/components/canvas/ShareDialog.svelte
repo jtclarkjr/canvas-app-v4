@@ -244,7 +244,7 @@
         />
         <button
           type="button"
-          class="flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          class="flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
           onclick={copyLink}
         >
           {#if copied}
@@ -295,7 +295,7 @@
             onclick={() => void handleVisibilityToggle()}
           >
             <span
-              class={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-all ${
+              class={`absolute top-0.5 size-5 rounded-full bg-background shadow transition-all ${
                 effectiveVisibility === 'public' ? 'left-[22px]' : 'left-0.5'
               }`}
             ></span>
@@ -359,7 +359,7 @@
                 </div>
                 <button
                   type="button"
-                  class="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                  class="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                   disabled={busyIds.has(result.id)}
                   onclick={() => void handleAdd(result)}
                 >
@@ -408,7 +408,7 @@
                 </select>
                 <button
                   type="button"
-                  class="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                  class="shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                   disabled={busyIds.has(request.id)}
                   onclick={() => void handleResolve(request, 'approve')}
                 >
