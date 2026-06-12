@@ -1,13 +1,12 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   sceneResponseSchema,
-  sceneRowSchema,
   updateSceneInputSchema
 } from '$lib/scenes/schema'
 import { getSceneType } from '$lib/scenes/registry'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import { assertSceneModify, requireScene } from '$lib/server/scene-access'
-import { sceneRowToScene } from '$lib/scenes/mapping'
+import { toCanvasScene } from '$lib/server/canvas-scenes'
 import {
   badRequest,
   handleApiError,
@@ -72,7 +71,7 @@ export const PATCH: RequestHandler = async (event) =>
       }
 
       return json(
-        sceneResponseSchema.parse({ item: sceneRowToScene(sceneRowSchema.parse(data)) })
+        sceneResponseSchema.parse({ item: toCanvasScene(data) })
       )
     } catch (error) {
       return handleApiError(error, event.request)
@@ -109,7 +108,7 @@ export const DELETE: RequestHandler = async (event) =>
       }
 
       return json(
-        sceneResponseSchema.parse({ item: sceneRowToScene(sceneRowSchema.parse(scene)) })
+        sceneResponseSchema.parse({ item: toCanvasScene(scene) })
       )
     } catch (error) {
       return handleApiError(error, event.request)

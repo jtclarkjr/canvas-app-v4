@@ -2,13 +2,17 @@ import type { PageServerLoad } from './$types'
 import { sceneDocumentsDependency } from '$lib/canvas/dependencies'
 import { AppError } from '$lib/server/api-error'
 import { resolveCanvasAccess } from '$lib/server/canvas-access'
+import { listCanvasElementsForCanvas } from '$lib/server/canvas-elements'
+import { listCanvasScenesForCanvas } from '$lib/server/canvas-scenes'
 import {
   groupSceneDocumentItemsBySceneId,
   listSceneDocumentItemsForCanvas,
   type SceneDocumentListsBySceneId
 } from '$lib/server/scene-documents'
 import { getSupabase } from '$lib/server/supabase'
+import type { CanvasElement } from '$lib/canvas/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
+import type { Scene } from '$lib/scenes/schema'
 
 export type CanvasPageAccess =
   | { state: 'member'; role: CanvasRole; canvasTitle: string }
@@ -22,11 +26,15 @@ export const load: PageServerLoad = async ({ params, locals, depends }) => {
   if (!locals.user) {
     return {
       canvasId: params.canvasId,
+      initialElements: [],
+      initialScenes: [],
       sceneDocumentListsBySceneId: {}
     }
   }
 
   let access: CanvasPageAccess
+  let initialElements: CanvasElement[] = []
+  let initialScenes: Scene[] = []
   let sceneDocumentListsBySceneId: SceneDocumentListsBySceneId = {}
   try {
     const supabase = getSupabase()
@@ -49,8 +57,16 @@ export const load: PageServerLoad = async ({ params, locals, depends }) => {
     }
 
     if (resolved.role || resolved.publicAccess) {
+      const [elements, scenes, sceneDocuments] = await Promise.all([
+        listCanvasElementsForCanvas(supabase, params.canvasId),
+        listCanvasScenesForCanvas(supabase, params.canvasId),
+        listSceneDocumentItemsForCanvas(supabase, params.canvasId)
+      ])
+
+      initialElements = elements.items
+      initialScenes = scenes.items
       sceneDocumentListsBySceneId = groupSceneDocumentItemsBySceneId(
-        (await listSceneDocumentItemsForCanvas(supabase, params.canvasId)).items
+        sceneDocuments.items
       )
     }
   } catch (error) {
@@ -66,6 +82,8 @@ export const load: PageServerLoad = async ({ params, locals, depends }) => {
     userId: locals.user.id,
     userEmail: locals.user.email,
     access,
+    initialElements,
+    initialScenes,
     sceneDocumentListsBySceneId
   }
 }

@@ -1,5 +1,6 @@
 import type { CanvasRole } from '$lib/canvas/roles'
-import type { Canvas } from '$lib/canvas/schema'
+import type { Canvas, CanvasElement } from '$lib/canvas/schema'
+import type { Scene } from '$lib/scenes/schema'
 import type { SceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
 
 export type Tool = 'select' | 'hand' | 'pencil' | 'eraser' | 'text'
@@ -79,6 +80,8 @@ export type CanvasWorkspaceStoreInput = {
   isPublicViewer?: boolean
   canvasTitle?: string
   initialCanvases?: Canvas[]
+  initialElements?: CanvasElement[]
+  initialScenes?: Scene[]
   sceneDocumentsStore: SceneDocumentsStore
 }
 

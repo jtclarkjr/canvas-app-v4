@@ -1,13 +1,14 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   createSceneInputSchema,
-  listScenesResponseSchema,
-  sceneResponseSchema,
-  sceneRowSchema
+  sceneResponseSchema
 } from '$lib/scenes/schema'
 import { getSceneType } from '$lib/scenes/registry'
-import { sceneRowToScene } from '$lib/scenes/mapping'
 import { requireCanvasRole } from '$lib/server/canvas-access'
+import {
+  listCanvasScenesForCanvas,
+  toCanvasScene
+} from '$lib/server/canvas-scenes'
 import {
   badRequest,
   handleApiError,
@@ -32,21 +33,7 @@ export const GET: RequestHandler = async (event) =>
 
       await requireCanvasRole(supabase, canvasId, user.id, 'reader')
 
-      const { data, error } = await supabase
-        .from('canvas_scenes')
-        .select('*')
-        .eq('canvas_id', canvasId)
-        .order('created_at', { ascending: true })
-
-      if (error) {
-        throw error
-      }
-
-      return json(
-        listScenesResponseSchema.parse({
-          items: (data ?? []).map((row) => sceneRowToScene(sceneRowSchema.parse(row)))
-        })
-      )
+      return json(await listCanvasScenesForCanvas(supabase, canvasId))
     } catch (error) {
       return handleApiError(error, event.request)
     }
@@ -98,7 +85,7 @@ export const POST: RequestHandler = async (event) =>
       }
 
       return json(
-        sceneResponseSchema.parse({ item: sceneRowToScene(sceneRowSchema.parse(data)) }),
+        sceneResponseSchema.parse({ item: toCanvasScene(data) }),
         { status: 201 }
       )
     } catch (error) {

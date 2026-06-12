@@ -41,6 +41,7 @@ type WorkspaceScenesInput = {
   getRole: () => CanvasRole
   getRootElement: () => HTMLDivElement | null
   getCameraScale: () => number
+  initialScenes?: Scene[]
   screenToCanvasPoint: (clientX: number, clientY: number) => {
     x: number
     y: number
@@ -53,9 +54,10 @@ export function createWorkspaceScenesStore({
   getRole,
   getRootElement,
   getCameraScale,
+  initialScenes,
   screenToCanvasPoint
 }: WorkspaceScenesInput) {
-  let scenes = $state<Scene[]>([])
+  let scenes = $state<Scene[]>(initialScenes ?? [])
   let isLoading = $state(false)
   let isCreatingScene = $state(false)
   let error = $state<string | null>(null)

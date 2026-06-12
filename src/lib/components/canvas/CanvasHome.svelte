@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { FileText, Plus, Trash2 } from 'lucide-svelte'
+  import { tick } from 'svelte'
+  import { FileText, LoaderCircle, Plus, Trash2 } from 'lucide-svelte'
   import { goto, invalidate } from '$app/navigation'
-  import { scale } from 'svelte/transition'
+  import { fade, scale } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { createCanvas, deleteCanvas, listCanvases } from '$lib/canvas/api'
   import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
@@ -38,6 +39,8 @@
   let isDeleteDialogOpen = $state(false)
   let deleteTarget = $state<Canvas | null>(null)
   let isDeletingId = $state<string | null>(null)
+  let openingCanvasId = $state<string | null>(null)
+  let openingCanvasTitle = $state<string | null>(null)
   let localError = $state<string | null>(null)
   let hasLoadedFallback = $state(false)
   const error = $derived(localError ?? initialError)
@@ -68,6 +71,55 @@
     }
   }
 
+  async function openCanvas(canvas: Pick<Canvas, 'id' | 'title'>) {
+    openingCanvasId = canvas.id
+    openingCanvasTitle = canvas.title
+    localError = null
+
+    await tick()
+    if (typeof requestAnimationFrame !== 'undefined') {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+    }
+
+    try {
+      await goto(`/canvas/${canvas.id}`)
+    } catch (error) {
+      openingCanvasId = null
+      openingCanvasTitle = null
+      throw error
+    }
+  }
+
+  function shouldHandleCanvasNavigation(event: MouseEvent) {
+    const target = event.currentTarget
+    return (
+      event.button === 0 &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.shiftKey &&
+      !event.altKey &&
+      target instanceof HTMLAnchorElement &&
+      (!target.target || target.target === '_self')
+    )
+  }
+
+  async function handleCanvasNavigation(event: MouseEvent, canvas: Canvas) {
+    if (!shouldHandleCanvasNavigation(event)) {
+      return
+    }
+
+    event.preventDefault()
+    if (openingCanvasId) {
+      return
+    }
+
+    try {
+      await openCanvas(canvas)
+    } catch (nextError) {
+      localError = nextError instanceof Error ? nextError.message : 'Failed to open canvas.'
+    }
+  }
+
   async function handleCreate() {
     if (!activeUser) {
       window.location.assign('/login?redirect=%2F')
@@ -81,7 +133,7 @@
       const response = await createCanvas({ title: 'Untitled' })
       canvases = [response.item, ...canvases]
       await invalidate(CANVASES_DEPENDENCY)
-      await goto(`/canvas/${response.item.id}`)
+      await openCanvas(response.item)
     } catch (nextError) {
       localError = nextError instanceof Error ? nextError.message : 'Failed to create canvas.'
     } finally {
@@ -197,9 +249,11 @@
       {#each ownedCanvases as canvas (canvas.id)}
         <a
           href={`/canvas/${canvas.id}`}
+          onclick={(event) => void handleCanvasNavigation(event, canvas)}
           out:scale={{ duration: 200, start: 0.92, opacity: 0 }}
           animate:flip={{ duration: 250 }}
-          class="group relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm transition hover:border-primary/50 hover:shadow-md"
+          aria-busy={openingCanvasId === canvas.id}
+          class={`group relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm transition hover:border-primary/50 hover:shadow-md ${openingCanvasId === canvas.id ? 'border-primary/60 shadow-lg ring-2 ring-primary/25' : ''} ${openingCanvasId && openingCanvasId !== canvas.id ? 'opacity-60' : ''}`}
         >
           <button
             type="button"
@@ -232,6 +286,21 @@
               {formatCanvasDate(canvas.createdAt)}
             </p>
           </div>
+
+          {#if openingCanvasId === canvas.id}
+            <div
+              in:fade={{ duration: 120 }}
+              class="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-[2px]"
+            >
+              <div
+                in:scale={{ duration: 140, start: 0.95 }}
+                class="inline-flex items-center gap-2 rounded-full border border-border bg-card/95 px-3 py-2 text-xs font-semibold text-foreground shadow-lg"
+              >
+                <LoaderCircle class="size-4 animate-spin text-primary" />
+                Opening
+              </div>
+            </div>
+          {/if}
         </a>
       {/each}
     {/if}
@@ -244,9 +313,11 @@
         {#each sharedCanvases as canvas (canvas.id)}
           <a
             href={`/canvas/${canvas.id}`}
+            onclick={(event) => void handleCanvasNavigation(event, canvas)}
             out:scale={{ duration: 200, start: 0.92, opacity: 0 }}
             animate:flip={{ duration: 250 }}
-            class="group relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm transition hover:border-primary/50 hover:shadow-md"
+            aria-busy={openingCanvasId === canvas.id}
+            class={`group relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm transition hover:border-primary/50 hover:shadow-md ${openingCanvasId === canvas.id ? 'border-primary/60 shadow-lg ring-2 ring-primary/25' : ''} ${openingCanvasId && openingCanvasId !== canvas.id ? 'opacity-60' : ''}`}
           >
             <div class="absolute right-2 top-2 z-10">
               <RoleBadge role={canvas.role ?? 'reader'} />
@@ -270,6 +341,21 @@
                 {formatCanvasDate(canvas.createdAt)}
               </p>
             </div>
+
+            {#if openingCanvasId === canvas.id}
+              <div
+                in:fade={{ duration: 120 }}
+                class="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-[2px]"
+              >
+                <div
+                  in:scale={{ duration: 140, start: 0.95 }}
+                  class="inline-flex items-center gap-2 rounded-full border border-border bg-card/95 px-3 py-2 text-xs font-semibold text-foreground shadow-lg"
+                >
+                  <LoaderCircle class="size-4 animate-spin text-primary" />
+                  Opening
+                </div>
+              </div>
+            {/if}
           </a>
         {/each}
       </div>
@@ -282,6 +368,18 @@
     </div>
   {/if}
 </section>
+
+{#if openingCanvasId}
+  <div in:fade={{ duration: 120 }} class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+    <div
+      in:scale={{ duration: 140, start: 0.96 }}
+      class="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm font-medium text-foreground shadow-xl backdrop-blur"
+    >
+      <LoaderCircle class="size-4 animate-spin text-primary" />
+      Opening {openingCanvasTitle ?? 'canvas'}
+    </div>
+  </div>
+{/if}
 
 <Modal
   bind:open={isDeleteDialogOpen}

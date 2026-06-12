@@ -42,6 +42,8 @@ type WorkspaceElements = {
 }
 
 export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
+  const initialDrawingState = canvasElementsToDrawingState(input.initialElements ?? [])
+
   let canvasId = $state(input.canvasId)
   let userId = $state(input.userId)
   let userEmail = $state<string | null | undefined>(input.userEmail)
@@ -56,8 +58,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
 
   let activeCanvasId = $state(input.canvasId)
   let selectedTool = $state<Tool>('select')
-  let paths = $state<Path[]>([])
-  let textElements = $state<TextElement[]>([])
+  let paths = $state<Path[]>(initialDrawingState.paths)
+  let textElements = $state<TextElement[]>(initialDrawingState.textElements)
   let currentPath = $state<Point[]>([])
   let isCurrentlyDrawing = $state(false)
   let selectionStart = $state<Point | null>(null)
@@ -66,7 +68,7 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   let selectedElementIds = $state<Set<string>>(new Set())
   let editingText = $state<EditingText | null>(null)
   let editorSelection = $state({ start: 0, end: 0 })
-  let elementOwners = new Map<string, string | null>()
+  let elementOwners = initialDrawingState.owners
   // Chat messages arriving over realtime, keyed by scene id, so viewers of
   // an open scene see other users' conversations appear live.
   let sceneLiveMessages = $state<Record<string, SceneMessage[]>>({})
@@ -119,7 +121,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getRole: () => role,
     getRootElement: () => rootEl,
     getCameraScale: () => cameraStore.camera.scale,
-    screenToCanvasPoint
+    screenToCanvasPoint,
+    initialScenes: input.initialScenes
   })
   const sceneActivityStore = createWorkspaceSceneActivityStore({
     getActiveCanvasId: () => activeCanvasId,
@@ -148,6 +151,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   })
 
   function setProps(next: CanvasWorkspaceStoreInput) {
+    const canvasChanged = next.canvasId !== activeCanvasId
+
     canvasId = next.canvasId
     userId = next.userId
     userEmail = next.userEmail
@@ -156,6 +161,11 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     canvasTitle = next.canvasTitle ?? ''
     activeCanvasId = next.canvasId
     canvasesStore.setCanvases(next.initialCanvases)
+
+    if (canvasChanged) {
+      syncElements(next.initialElements ?? [])
+      scenesStore.setScenes(next.initialScenes ?? [])
+    }
   }
 
   function setElements(next: WorkspaceElements) {

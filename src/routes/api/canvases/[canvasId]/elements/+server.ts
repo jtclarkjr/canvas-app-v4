@@ -1,12 +1,13 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import {
-  canvasElementRowSchema,
-  listElementsResponseSchema,
   upsertElementInputSchema,
   upsertElementResponseSchema
 } from '$lib/canvas/schema'
-import type { CanvasElementRow } from '$lib/canvas/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
+import {
+  listCanvasElementsForCanvas,
+  toCanvasElement
+} from '$lib/server/canvas-elements'
 import {
   forbidden,
   handleApiError,
@@ -18,19 +19,6 @@ import {
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 import type { Json } from '$lib/server/database.types'
-
-const toElement = (row: CanvasElementRow) => ({
-  id: row.id,
-  canvasId: row.canvas_id,
-  type: row.type,
-  data: row.data,
-  x: row.x,
-  y: row.y,
-  z: row.z,
-  createdBy: row.created_by ?? null,
-  updatedBy: row.updated_by,
-  updatedAt: row.updated_at
-})
 
 export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
@@ -45,23 +33,7 @@ export const GET: RequestHandler = async (event) =>
 
       await requireCanvasRole(supabase, canvasId, user.id, 'reader')
 
-      const { data, error } = await supabase
-        .from('canvas_elements')
-        .select('*')
-        .eq('canvas_id', canvasId)
-        .order('updated_at', { ascending: true })
-
-      if (error) {
-        throw error
-      }
-
-      return json(
-        listElementsResponseSchema.parse({
-          items: (data ?? []).map((row) =>
-            toElement(canvasElementRowSchema.parse(row))
-          )
-        })
-      )
+      return json(await listCanvasElementsForCanvas(supabase, canvasId))
     } catch (error) {
       return handleApiError(error, event.request)
     }
@@ -155,7 +127,7 @@ export const POST: RequestHandler = async (event) =>
 
       return json(
         upsertElementResponseSchema.parse({
-          item: toElement(canvasElementRowSchema.parse(data))
+          item: toCanvasElement(data)
         }),
         { status: 201 }
       )

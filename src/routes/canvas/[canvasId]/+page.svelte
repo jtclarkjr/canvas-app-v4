@@ -1,10 +1,15 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
+  import { fade } from 'svelte/transition'
   import CanvasWorkspace from '$lib/components/canvas/CanvasWorkspace.svelte'
   import RequestAccessScreen from '$lib/components/canvas/RequestAccessScreen.svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
-  import type { Canvas } from '$lib/canvas/schema'
+  import type { Canvas, CanvasElement } from '$lib/canvas/schema'
   import { provideSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
-  import type { SceneDocumentListItem } from '$lib/scenes/schema'
+  import type { Scene, SceneDocumentListItem } from '$lib/scenes/schema'
+  import { sleep } from '$lib/utils'
+
+  const CANVAS_ENTRY_TRANSITION_HOLD_MS = 80
 
   let { data } = $props<{
     data: {
@@ -12,6 +17,8 @@
       userId?: string
       userEmail?: string
       canvasList?: { items: Canvas[] }
+      initialElements?: CanvasElement[]
+      initialScenes?: Scene[]
       sceneDocumentListsBySceneId?: Record<string, SceneDocumentListItem[]>
       access?:
         | { state: 'member'; role: CanvasRole; canvasTitle: string }
@@ -20,6 +27,11 @@
         | { state: 'not-found' }
     }
   }>()
+
+  let showCanvasEntryTransition = $state(true)
+  const canShowCanvasEntryTransition = $derived(
+    data.access?.state !== 'no-access' && data.access?.state !== 'not-found'
+  )
 
   // svelte-ignore state_referenced_locally -- seeds the context store once;
   // the effect below syncs fresh route data after invalidation.
@@ -30,6 +42,21 @@
 
   $effect(() => {
     sceneDocumentsStore.setCanvas(data.canvasId, data.sceneDocumentListsBySceneId ?? {})
+  })
+
+  onMount(() => {
+    let cancelled = false
+    requestAnimationFrame(() => {
+      void sleep(CANVAS_ENTRY_TRANSITION_HOLD_MS).then(() => {
+        if (!cancelled) {
+          showCanvasEntryTransition = false
+        }
+      })
+    })
+
+    return () => {
+      cancelled = true
+    }
   })
 </script>
 
@@ -57,6 +84,8 @@
     isPublicViewer
     canvasTitle={data.access.canvasTitle}
     initialCanvases={data.canvasList?.items ?? []}
+    initialElements={data.initialElements ?? []}
+    initialScenes={data.initialScenes ?? []}
   />
 {:else}
   <CanvasWorkspace
@@ -66,5 +95,15 @@
     role={data.access?.role ?? 'owner'}
     canvasTitle={data.access?.canvasTitle}
     initialCanvases={data.canvasList?.items ?? []}
+    initialElements={data.initialElements ?? []}
+    initialScenes={data.initialScenes ?? []}
   />
+{/if}
+
+{#if showCanvasEntryTransition && canShowCanvasEntryTransition}
+  <div
+    out:fade={{ duration: 320 }}
+    class="fixed inset-0 z-[80] bg-background/75 backdrop-blur-md"
+    aria-hidden="true"
+  ></div>
 {/if}

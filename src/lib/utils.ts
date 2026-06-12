@@ -10,6 +10,10 @@ export async function bestEffort<T>(promise: Promise<T>): Promise<T | null> {
   return result.status === 'fulfilled' ? result.value : null
 }
 
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export function sanitizeRedirectTarget(target: string | null): string {
   if (!target) {
     return '/'

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
-  import type { Canvas } from '$lib/canvas/schema'
+  import type { Canvas, CanvasElement } from '$lib/canvas/schema'
+  import type { Scene } from '$lib/scenes/schema'
   import { createCanvasWorkspaceStore } from '$lib/stores/canvas/workspace/index.svelte'
   import { useSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
   import CanvasActionToolbar from '$lib/components/canvas/CanvasActionToolbar.svelte'
@@ -26,7 +27,9 @@
     role = 'owner',
     isPublicViewer = false,
     canvasTitle,
-    initialCanvases
+    initialCanvases,
+    initialElements,
+    initialScenes
   } = $props<{
     canvasId: string
     userId: string
@@ -35,6 +38,8 @@
     isPublicViewer?: boolean
     canvasTitle?: string
     initialCanvases?: Canvas[]
+    initialElements?: CanvasElement[]
+    initialScenes?: Scene[]
   }>()
 
   // svelte-ignore state_referenced_locally -- route usage provides context;
@@ -53,6 +58,8 @@
       isPublicViewer,
       canvasTitle,
       initialCanvases,
+      initialElements,
+      initialScenes,
       sceneDocumentsStore
     }
   }
