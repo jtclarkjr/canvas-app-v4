@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vite-plus/test'
 import {
   calculateTextBounds,
   findTextAtPoint,
+  getTextEditorWidth,
+  getTextLineBaseline,
   getTextLineHeight,
+  getTextLines,
+  getTextLineTop,
   isElementInSelection,
   isPointNearPath
 } from '$lib/canvas/drawing-utils'
@@ -39,12 +43,38 @@ describe('drawing utils', () => {
     expect(findTextAtPoint({ x: 15, y: 20 + 3 * getTextLineHeight(18) + 30 }, [text])).toBeNull()
   })
 
+  it('calculates single-line text bounds from the top-left anchor', () => {
+    const text = makeText({ fontSize: 20 })
+    const bounds = calculateTextBounds(text)
+
+    expect(bounds).toEqual({
+      x: 6,
+      y: 16,
+      width: 'hello'.length * 20 * 0.6 + 8,
+      height: 20 + 8
+    })
+  })
+
   it('calculates multiline text bounds from the longest line', () => {
     const text = makeText({ text: 'a\nlonger line', fontSize: 16 })
     const bounds = calculateTextBounds(text)
 
     expect(bounds.width).toBe('longer line'.length * 16 * 0.6 + 8)
     expect(bounds.height).toBe(getTextLineHeight(16) + 16 + 8)
+  })
+
+  it('uses shared line and editor width layout helpers', () => {
+    const text = makeText({ text: 'short\nlonger', fontSize: 16 })
+    const lines = getTextLines(text.text)
+
+    expect(lines).toEqual(['short', 'longer'])
+    expect(getTextLineTop(text, 0)).toBe(20)
+    expect(getTextLineTop(text, 1)).toBe(20 + getTextLineHeight(16))
+    expect(getTextLineBaseline(text, 0)).toBe(36)
+    expect(getTextLineBaseline(text, 1)).toBe(36 + getTextLineHeight(16))
+    expect(getTextEditorWidth(lines, 16, 2)).toBe(
+      Math.max(120, 'longer'.length * 16 * 0.6 * 2 + 16)
+    )
   })
 
   it('detects paths inside selection rectangles', () => {

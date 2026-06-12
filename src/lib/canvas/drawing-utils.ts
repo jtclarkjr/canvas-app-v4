@@ -6,9 +6,46 @@ import type {
 } from '$lib/canvas/types'
 
 export const TEXT_LINE_HEIGHT = 1.25
+export const TEXT_BOUNDS_PADDING = 4
+export const TEXT_EDITOR_MIN_WIDTH = 120
+export const TEXT_EDITOR_WIDTH_PADDING = 16
 
 export function getTextLineHeight(fontSize: number): number {
   return fontSize * TEXT_LINE_HEIGHT
+}
+
+export function getTextLines(value: string): string[] {
+  return value.split('\n')
+}
+
+export function getTextContentWidth(lines: string[], fontSize: number): number {
+  const longestLine = Math.max(...lines.map((line) => line.length), 1)
+  return longestLine * fontSize * 0.6
+}
+
+export function getTextLineTop(
+  text: Pick<TextElement, 'y' | 'fontSize'>,
+  lineIndex: number
+): number {
+  return text.y + lineIndex * getTextLineHeight(text.fontSize)
+}
+
+export function getTextLineBaseline(
+  text: Pick<TextElement, 'y' | 'fontSize'>,
+  lineIndex: number
+): number {
+  return getTextLineTop(text, lineIndex) + text.fontSize
+}
+
+export function getTextEditorWidth(
+  lines: string[],
+  fontSize: number,
+  scale: number
+): number {
+  return Math.max(
+    TEXT_EDITOR_MIN_WIDTH,
+    getTextContentWidth(lines, fontSize) * scale + TEXT_EDITOR_WIDTH_PADDING
+  )
 }
 
 export function textElementToData(text: TextElement): {
@@ -130,13 +167,15 @@ export function pathToSvgPath(points: Point[]): string {
 }
 
 export function calculateTextBounds(text: TextElement) {
-  const lines = text.text.split('\n')
-  const longestLine = Math.max(...lines.map((line) => line.length), 1)
-  const width = longestLine * text.fontSize * 0.6 + 8
-  const height = (lines.length - 1) * getTextLineHeight(text.fontSize) + text.fontSize + 8
+  const lines = getTextLines(text.text)
+  const width = getTextContentWidth(lines, text.fontSize) + TEXT_BOUNDS_PADDING * 2
+  const height =
+    (lines.length - 1) * getTextLineHeight(text.fontSize) +
+    text.fontSize +
+    TEXT_BOUNDS_PADDING * 2
   return {
-    x: text.x - 4,
-    y: text.y - 4,
+    x: text.x - TEXT_BOUNDS_PADDING,
+    y: text.y - TEXT_BOUNDS_PADDING,
     width,
     height
   }

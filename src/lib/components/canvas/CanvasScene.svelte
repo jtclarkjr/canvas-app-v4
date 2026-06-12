@@ -8,7 +8,12 @@
     TextElement,
     Tool
   } from '$lib/canvas/types'
-  import { calculateTextBounds, getTextLineHeight, pathToSvgPath } from '$lib/canvas/drawing-utils'
+  import {
+    calculateTextBounds,
+    getTextLines,
+    getTextLineBaseline,
+    pathToSvgPath
+  } from '$lib/canvas/drawing-utils'
   import { resolveCanvasDisplayColor } from '$lib/canvas/helpers/display-color'
   import { selectionRectFromPoints } from '$lib/canvas/element-mapping'
 
@@ -117,18 +122,17 @@
           {/if}
           <text
             class="select-none"
-            dominant-baseline="hanging"
             fill={resolveCanvasDisplayColor(text.color)}
             font-size={text.fontSize}
             font-style={text.isItalic ? 'italic' : 'normal'}
             font-weight={text.isBold ? 'bold' : 'normal'}
-            style="pointer-events:none"
+            style="pointer-events:none;white-space:pre;font-family:inherit"
             text-decoration={text.isUnderline ? 'underline' : 'none'}
             x={text.x}
             y={text.y}
           >
-            {#each text.text.split('\n') as line, lineIndex (lineIndex)}
-              <tspan x={text.x} y={text.y + lineIndex * getTextLineHeight(text.fontSize)}>
+            {#each getTextLines(text.text) as line, lineIndex (lineIndex)}
+              <tspan x={text.x} y={getTextLineBaseline(text, lineIndex)}>
                 {line}
               </tspan>
             {/each}
