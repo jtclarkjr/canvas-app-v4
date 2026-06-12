@@ -84,6 +84,13 @@
     box-sizing: border-box;
   }
 
+  /* Interactive elements always read as clickable, even inside surfaces
+     that set their own cursor (e.g. the canvas workspace root). */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
   html {
     color-scheme: light;
   }

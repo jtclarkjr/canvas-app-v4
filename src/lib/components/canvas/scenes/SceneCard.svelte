@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FileText, NotebookPen, Sparkles } from 'lucide-svelte'
+  import { FileText, Maximize2, NotebookPen, Sparkles } from 'lucide-svelte'
   import type { Camera } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneActivity } from '$lib/scenes/types'
@@ -45,11 +45,12 @@
 </script>
 
 <div
-  class="glass-card pointer-events-auto absolute flex cursor-grab flex-col overflow-hidden p-3 transition-shadow hover:shadow-[0_18px_60px_rgba(15,23,42,0.2)] active:cursor-grabbing"
+  class="glass-card group pointer-events-auto absolute flex cursor-grab flex-col overflow-hidden p-3 transition-shadow hover:shadow-[0_18px_60px_rgba(15,23,42,0.2)] active:cursor-grabbing"
   style={cardStyle}
   data-scene-id={scene.id}
   role="button"
   tabindex="0"
+  title="Double-click to open"
   aria-label={`Open scene ${scene.title || sceneType?.defaultTitle || 'scene'} (double-click)`}
   onpointerdown={(event) => handlers.pointerDown(event, scene.id)}
   onpointermove={(event) => handlers.pointerMove(event, scene.id)}
@@ -62,9 +63,18 @@
 >
   <div class="flex items-center gap-2">
     <TypeIcon class="size-4 shrink-0 text-muted-foreground" />
-    <span class="truncate text-sm font-semibold text-foreground">
+    <span class="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
       {scene.title || sceneType?.defaultTitle || 'Scene'}
     </span>
+    <button
+      type="button"
+      class="hidden size-6 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-primary/10 hover:text-primary group-hover:flex"
+      onclick={(event) => handlers.open(event, scene.id)}
+      title="Open scene"
+      aria-label="Open scene"
+    >
+      <Maximize2 class="size-3.5" />
+    </button>
   </div>
 
   <div class="mt-1 flex items-center gap-2 text-xs text-muted-foreground">

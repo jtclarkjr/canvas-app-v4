@@ -155,6 +155,7 @@
     canModifyScene={workspace.canModifyScene}
     activity={workspace.sceneActivity}
     handlers={workspace.sceneCardHandlers}
+    isCreatingScene={workspace.isCreatingScene}
     onCreateScene={() => void workspace.createScene('document')}
   />
 

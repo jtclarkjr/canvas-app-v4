@@ -2,9 +2,9 @@
   import { onMount } from 'svelte'
   import { slide } from 'svelte/transition'
   import {
-    Library,
     MessageSquare,
     NotebookPen,
+    PanelLeft,
     PanelLeftClose,
     PanelLeftOpen,
     PencilLine
@@ -34,6 +34,12 @@
   import DocumentLivePreview from '$lib/components/canvas/scenes/document/DocumentLivePreview.svelte'
   import DocumentListPanel from '$lib/components/canvas/scenes/document/DocumentListPanel.svelte'
   import NotesSceneView from '$lib/components/canvas/scenes/notes/NotesSceneView.svelte'
+
+  // Module-level caches so reopening a scene shows its documents and chat
+  // instantly (no skeleton/blank flash); fresh data still loads in the
+  // background and replaces the cache for next time.
+  const documentsCache = new Map<string, SceneDocument[]>()
+  const messagesCache = new Map<string, UIMessage[]>()
 
   let {
     canvasId,
@@ -88,6 +94,8 @@
   // lazily-created draft's chat mounts.
   let localPendingPrompt = $state<string | null>(null)
   let creatingDraft = false
+  // Gates the hide-chat toggle: only meaningful once a conversation exists.
+  let conversationStarted = $state(false)
 
   const activeDocument = $derived(
     documents.find((document) => document.id === activeDocumentId) ?? null
@@ -110,10 +118,9 @@
     return parsed.success && parsed.data.markdown.trim() !== ''
   }
 
-  async function loadDocuments() {
-    const response = await listSceneDocuments(canvasId, scene.id)
+  function applyDocuments(items: SceneDocument[]) {
     // Notes live in their own view (kind 'notes'), not in the library.
-    documents = response.items.filter((item) => item.kind === 'markdown')
+    documents = items.filter((item) => item.kind === 'markdown')
 
     // Keep the current selection; otherwise pick the latest draft with
     // actual content. No auto-selection of empty drafts or saved docs —
@@ -128,6 +135,12 @@
     contextDocumentIds = contextDocumentIds.filter((id) =>
       documents.some((document) => document.id === id && document.status === 'saved')
     )
+  }
+
+  async function loadDocuments() {
+    const response = await listSceneDocuments(canvasId, scene.id)
+    documentsCache.set(scene.id, response.items)
+    applyDocuments(response.items)
   }
 
   // Drafts are created lazily: only when the first prompt is sent, never
@@ -152,6 +165,13 @@
   }
 
   onMount(() => {
+    // Cache-first: reopening a scene restores its state instantly.
+    const cached = documentsCache.get(scene.id)
+    if (cached) {
+      applyDocuments(cached)
+      documentsLoaded = true
+    }
+
     void (async () => {
       try {
         await loadDocuments()
@@ -192,21 +212,34 @@
     }
 
     loadedMessagesForDocumentId = documentId
-    initialMessages = null
     // The chat panel remounts for the new thread; drop any stale preview.
     liveDraft = null
+
+    // Cache-first: a previously opened thread mounts instantly; the fresh
+    // fetch below refreshes the cache for the next mount.
+    const cached = messagesCache.get(documentId)
+    initialMessages = cached ?? null
+    conversationStarted = (cached?.length ?? 0) > 0
 
     void (async () => {
       try {
         const history = await listSceneMessages(canvasId, scene.id, documentId)
-        if (activeDocumentId !== documentId) {
-          return
-        }
-        initialMessages = history.items.map((message) => ({
+        const messages = history.items.map((message) => ({
           id: message.id,
           role: message.role,
           parts: message.parts
         })) as unknown as UIMessage[]
+
+        messagesCache.set(documentId, messages)
+        if (activeDocumentId !== documentId) {
+          return
+        }
+        if (initialMessages === null) {
+          initialMessages = messages
+        }
+        if (messages.length > 0) {
+          conversationStarted = true
+        }
       } catch (cause) {
         reportError(cause, 'Failed to load the conversation.')
       }
@@ -286,15 +319,19 @@
     }
   }
 
-  async function handleSaveDocument(title: string, markdown: string) {
-    if (!activeDocument) {
+  // Saves target an explicit document id: the editor's unmount flush can
+  // fire after the active selection has already changed, and must never
+  // write the old draft's text into the newly selected document.
+  async function handleSaveDocument(documentId: string, title: string, markdown: string) {
+    const target = documents.find((document) => document.id === documentId)
+    if (!target) {
       return
     }
 
     isSavingDocument = true
     try {
-      const parsed = markdownDocumentContentSchema.safeParse(activeDocument.content)
-      await updateSceneDocument(canvasId, scene.id, activeDocument.id, {
+      const parsed = markdownDocumentContentSchema.safeParse(target.content)
+      await updateSceneDocument(canvasId, scene.id, documentId, {
         title,
         content: {
           docType: parsed.success ? parsed.data.docType : undefined,
@@ -314,7 +351,14 @@
   }
 
   function handleTurnFinished() {
+    conversationStarted = true
     void loadDocuments().catch((cause) => reportError(cause, 'Failed to refresh documents.'))
+  }
+
+  function handleMessagesSnapshot(messages: UIMessage[]) {
+    if (activeDocumentId) {
+      messagesCache.set(activeDocumentId, messages)
+    }
   }
 
   // The document section only exists once there is something to show — a
@@ -347,18 +391,34 @@
   {/if}
 
   <div class="flex min-h-0 min-w-0 flex-1 flex-col">
-    <div class="flex items-center gap-1 border-b border-border/50 px-5 py-2">
+    <div class="flex items-center gap-1 border-b border-border/50 px-3 py-2">
       <button
         type="button"
-        class={`flex h-7 items-center gap-1.5 rounded-full px-3 text-xs transition ${
+        class={`flex size-7 items-center justify-center rounded-full transition ${
           showLibrary ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => (showLibrary = !showLibrary)}
         title="Toggle document library"
+        aria-pressed={showLibrary}
       >
-        <Library class="size-3.5" />
-        Library
+        <PanelLeft class="size-4" />
       </button>
+
+      {#if showWorkPane && conversationStarted}
+        <button
+          type="button"
+          class="hidden size-7 items-center justify-center rounded-full text-muted-foreground transition hover:text-foreground md:flex"
+          onclick={() => (chatCollapsed = !chatCollapsed)}
+          title={chatCollapsed ? 'Show the AI chat' : 'Hide the AI chat'}
+          aria-pressed={chatCollapsed}
+        >
+          {#if chatCollapsed}
+            <PanelLeftOpen class="size-4" />
+          {:else}
+            <PanelLeftClose class="size-4" />
+          {/if}
+        </button>
+      {/if}
       <!-- Chat/editor toggles only matter below md; at md+ both panes show side by side. -->
       <button
         type="button"
@@ -385,37 +445,22 @@
         <PencilLine class="size-3.5" />
         Editor
       </button>
-      <button
-        type="button"
-        class={`flex h-7 items-center gap-1.5 rounded-full px-3 text-xs transition disabled:opacity-40 ${
-          view === 'notes'
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-        onclick={() => (view = view === 'notes' ? 'chat' : 'notes')}
-        disabled={!activeDocument}
-        title="Draw, underline, and highlight on this document"
-        aria-pressed={view === 'notes'}
-      >
-        <NotebookPen class="size-3.5" />
-        Notes
-      </button>
-      <button
-        type="button"
-        class="hidden h-7 items-center gap-1.5 rounded-full px-3 text-xs text-muted-foreground transition hover:text-foreground disabled:opacity-40 md:flex"
-        onclick={() => (chatCollapsed = !chatCollapsed)}
-        disabled={!showWorkPane}
-        title={chatCollapsed ? 'Show the AI chat' : 'Hide the AI chat'}
-        aria-pressed={chatCollapsed}
-      >
-        {#if chatCollapsed}
-          <PanelLeftOpen class="size-3.5" />
-          Show chat
-        {:else}
-          <PanelLeftClose class="size-3.5" />
-          Hide chat
-        {/if}
-      </button>
+      {#if activeDocument}
+        <button
+          type="button"
+          class={`flex h-7 items-center gap-1.5 rounded-full px-3 text-xs transition ${
+            view === 'notes'
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          onclick={() => (view = view === 'notes' ? 'chat' : 'notes')}
+          title="Draw, underline, and highlight on this document"
+          aria-pressed={view === 'notes'}
+        >
+          <NotebookPen class="size-3.5" />
+          Notes
+        </button>
+      {/if}
 
       {#if activeDocument}
         <span class="ml-auto truncate text-xs text-muted-foreground">
@@ -441,10 +486,12 @@
          toggling; the document section only exists once there is content,
          and slides in when it appears. -->
     <div class="flex min-h-0 flex-1">
+      <!-- Width-animated (not unmounted): a running stream must survive
+           collapsing the chat. -->
       <div
-        class={`${view === 'chat' ? 'flex' : 'hidden'} min-h-0 min-w-0 flex-1 flex-col ${
-          chatCollapsed ? 'md:hidden' : 'md:flex'
-        }`}
+        class={`${view === 'chat' ? 'flex' : 'hidden'} min-h-0 min-w-0 flex-col md:flex md:flex-none md:overflow-hidden md:transition-[width] md:duration-300 md:ease-out ${
+          chatCollapsed ? 'md:w-0' : showWorkPane ? 'md:w-[56%]' : 'md:w-full'
+        } ${view === 'chat' ? 'flex-1' : ''}`}
       >
         {#if initialMessages !== null && activeDocumentId}
           {#key activeDocumentId}
@@ -464,6 +511,7 @@
               {onBroadcastActivity}
               onTurnFinished={handleTurnFinished}
               onLiveDraftChange={(draft) => (liveDraft = draft)}
+              onMessagesSnapshot={handleMessagesSnapshot}
               {modelId}
               onModelChange={(next) => (modelId = next)}
               {webSearch}
@@ -473,9 +521,10 @@
               onToggleContext={toggleContext}
             />
           {/key}
-        {:else if documentsLoaded && !activeDocumentId}
-          <!-- Blank state, centered like the scene entry screen: no draft
-               exists yet — it's created on first send. -->
+        {:else if !activeDocumentId}
+          <!-- Blank state, centered like the scene entry screen, shown
+               immediately on open: no draft exists yet — it's created on
+               first send. -->
           <div class="flex flex-1 flex-col items-center justify-center gap-6 p-8">
             <div class="text-center">
               <h3 class="text-lg font-semibold text-foreground">What do you want to draft?</h3>
@@ -500,8 +549,13 @@
             </div>
           </div>
         {:else}
-          <div class="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Loading conversation…
+          <!-- Skeleton while a thread loads for the first time (cached
+               threads mount instantly and never reach this branch). -->
+          <div class="flex h-full flex-col gap-3 px-5 py-4" aria-hidden="true">
+            <div class="ml-auto h-9 w-3/5 animate-pulse rounded-2xl bg-muted/80"></div>
+            <div class="h-16 w-4/5 animate-pulse rounded-2xl bg-muted/60"></div>
+            <div class="ml-auto h-9 w-2/5 animate-pulse rounded-2xl bg-muted/80"></div>
+            <div class="h-12 w-3/4 animate-pulse rounded-2xl bg-muted/60"></div>
           </div>
         {/if}
       </div>
@@ -509,8 +563,10 @@
       {#if showWorkPane}
         <div
           transition:slide={{ axis: 'x', duration: 280 }}
-          class={`${view !== 'chat' ? 'flex' : 'hidden'} min-h-0 min-w-0 flex-1 flex-col md:flex ${
-            chatCollapsed ? '' : 'md:w-[44%] md:flex-none md:border-l md:border-border/50'
+          class={`${view !== 'chat' ? 'flex' : 'hidden'} min-h-0 min-w-0 flex-1 flex-col md:flex md:transition-[width] md:duration-300 md:ease-out ${
+            chatCollapsed
+              ? 'md:w-full md:flex-none'
+              : 'md:w-[44%] md:flex-none md:border-l md:border-border/50'
           }`}
         >
           {#if view === 'notes' && activeDocument}
@@ -527,13 +583,17 @@
           {:else if liveDraft}
             <DocumentLivePreview title={liveDraft.title} content={liveDraft.content} />
           {:else if activeDocument}
-            {#key `${activeDocument.id}:${activeDocument.updatedAt}`}
+            <!-- Keyed by id only: remote updates sync in place inside the
+                 editor, preserving the caret during auto-saves. -->
+            {#key activeDocument.id}
+              {@const editingDocumentId = activeDocument.id}
               <DocumentEditorView
                 document={activeDocument}
                 {canModify}
                 isSaving={isSavingDocument}
-                onSave={(title, markdown) => void handleSaveDocument(title, markdown)}
-                onPromote={() => activeDocument && void handlePromote(activeDocument.id)}
+                onSave={(title, markdown) =>
+                  void handleSaveDocument(editingDocumentId, title, markdown)}
+                onPromote={() => void handlePromote(editingDocumentId)}
                 onBack={() => (view = 'chat')}
               />
             {/key}

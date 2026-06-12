@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { onMount, untrack } from 'svelte'
   import { BookMarked, Download, MessageSquare, Save } from 'lucide-svelte'
   import { markdownDocumentContentSchema, type SceneDocument } from '$lib/scenes/schema'
   import { downloadMarkdown } from '$lib/scenes/download'
+
+  const AUTO_SAVE_DEBOUNCE_MS = 1200
 
   let {
     document: sceneDocument,
@@ -24,14 +27,76 @@
     return parsed.success ? parsed.data.markdown : ''
   }
 
-  // svelte-ignore state_referenced_locally -- seeds the editor once per document
+  // svelte-ignore state_referenced_locally -- seeds the editor once on mount
+  let seededTitle = $state(sceneDocument.title)
+  // svelte-ignore state_referenced_locally -- seeds the editor once on mount
+  let seededMarkdown = $state(parseMarkdown(sceneDocument))
+  // svelte-ignore state_referenced_locally -- seeds the editor once on mount
   let title = $state(sceneDocument.title)
-  // svelte-ignore state_referenced_locally -- seeds the editor once per document
+  // svelte-ignore state_referenced_locally -- seeds the editor once on mount
   let markdown = $state(parseMarkdown(sceneDocument))
 
-  const isDirty = $derived(
-    title !== sceneDocument.title || markdown !== parseMarkdown(sceneDocument)
-  )
+  const isDirty = $derived(title !== seededTitle || markdown !== seededMarkdown)
+
+  // Sync remote document changes (AI writes, collaborators, save echoes)
+  // into the editor IN PLACE — no remount, so the caret is preserved.
+  $effect(() => {
+    const documentTitle = sceneDocument.title
+    const documentMarkdown = parseMarkdown(sceneDocument)
+
+    untrack(() => {
+      if (documentTitle === seededTitle && documentMarkdown === seededMarkdown) {
+        return
+      }
+      // Our own save round-tripped: adopt it as the new baseline.
+      if (documentTitle === title && documentMarkdown === markdown) {
+        seededTitle = documentTitle
+        seededMarkdown = documentMarkdown
+        return
+      }
+      // Remote change while the user has local edits: keep theirs — the
+      // pending auto-save resolves the conflict (last write wins).
+      if (title !== seededTitle || markdown !== seededMarkdown) {
+        return
+      }
+      seededTitle = documentTitle
+      seededMarkdown = documentMarkdown
+      title = documentTitle
+      markdown = documentMarkdown
+    })
+  })
+
+  // Auto-save manual edits so the AI always works from the latest content
+  // (the chat route injects the persisted document into the prompt).
+  $effect(() => {
+    const nextTitle = title
+    const nextMarkdown = markdown
+    if (!canModify) {
+      return
+    }
+    if (untrack(() => nextTitle === seededTitle && nextMarkdown === seededMarkdown)) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      onSave(nextTitle, nextMarkdown)
+    }, AUTO_SAVE_DEBOUNCE_MS)
+
+    return () => clearTimeout(timer)
+  })
+
+  // Flush pending edits when the editor unmounts (view switch, close).
+  onMount(() => () => {
+    if (canModify && (title !== seededTitle || markdown !== seededMarkdown)) {
+      onSave(title, markdown)
+    }
+  })
+
+  const saveStateLabel = $derived.by(() => {
+    if (isSaving) return 'Saving…'
+    if (isDirty) return 'Unsaved edits'
+    return 'Saved'
+  })
 </script>
 
 <div class="flex h-full flex-col">
@@ -47,6 +112,9 @@
     />
 
     <div class="flex items-center gap-1.5">
+      {#if canModify}
+        <span class="text-xs text-muted-foreground">{saveStateLabel}</span>
+      {/if}
       <!-- Only useful below md, where chat and editor are toggled. -->
       <button
         type="button"
@@ -83,10 +151,10 @@
           class="flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-white transition disabled:opacity-40"
           onclick={() => onSave(title, markdown)}
           disabled={!isDirty || isSaving}
-          title="Save changes"
+          title="Save now"
         >
           <Save class="size-3.5" />
-          {isSaving ? 'Saving…' : 'Save'}
+          Save
         </button>
       {/if}
     </div>

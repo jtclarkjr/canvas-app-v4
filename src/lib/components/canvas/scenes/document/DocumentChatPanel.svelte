@@ -27,6 +27,7 @@
     onBroadcastActivity,
     onTurnFinished,
     onLiveDraftChange,
+    onMessagesSnapshot,
     modelId,
     onModelChange,
     webSearch,
@@ -47,6 +48,7 @@
     onBroadcastActivity: (kind: SceneActivityKind, textDelta?: string) => void
     onTurnFinished: () => void
     onLiveDraftChange: (draft: DraftToolPart | null) => void
+    onMessagesSnapshot: (messages: UIMessage[]) => void
     modelId: string
     onModelChange: (modelId: string) => void
     webSearch: boolean
@@ -69,6 +71,7 @@
     }),
     onFinish: () => {
       onTurnFinished()
+      onMessagesSnapshot($state.snapshot(chat.messages) as UIMessage[])
     }
   })
 

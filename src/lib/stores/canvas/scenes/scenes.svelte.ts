@@ -57,6 +57,7 @@ export function createWorkspaceScenesStore({
 }: WorkspaceScenesInput) {
   let scenes = $state<Scene[]>([])
   let isLoading = $state(false)
+  let isCreatingScene = $state(false)
   let error = $state<string | null>(null)
   let openScene = $state<OpenScene | null>(null)
   let draggingSceneId = $state<string | null>(null)
@@ -115,6 +116,12 @@ export function createWorkspaceScenesStore({
       return null
     }
 
+    // Latch: rapid clicks on "New scene" must create exactly one card.
+    if (isCreatingScene) {
+      return null
+    }
+    isCreatingScene = true
+
     const sceneType = getSceneType(type)
     const size = sceneType?.defaultSize ?? { width: 320, height: 200 }
     const rect = rootEl.getBoundingClientRect()
@@ -144,6 +151,8 @@ export function createWorkspaceScenesStore({
     } catch (cause) {
       error = cause instanceof Error ? cause.message : 'Failed to create scene.'
       return null
+    } finally {
+      isCreatingScene = false
     }
   }
 
@@ -286,10 +295,12 @@ export function createWorkspaceScenesStore({
     // so clicks and drags never fight each other.
   }
 
-  // Double-click (or Enter on the focused card) expands the scene.
+  // Expands the scene: double-click / Enter on the card, or a click on the
+  // card's maximize button — the FLIP origin is always the card rect.
   function handleCardOpen(event: Event, sceneId: string) {
     event.stopPropagation()
-    const cardEl = event.currentTarget as HTMLElement
+    const target = event.currentTarget as HTMLElement
+    const cardEl = (target.closest('[data-scene-id]') as HTMLElement) ?? target
     openScene = { sceneId, originRect: cardEl.getBoundingClientRect() }
   }
 
@@ -427,6 +438,9 @@ export function createWorkspaceScenesStore({
     },
     get isLoading() {
       return isLoading
+    },
+    get isCreatingScene() {
+      return isCreatingScene
     },
     get error() {
       return error

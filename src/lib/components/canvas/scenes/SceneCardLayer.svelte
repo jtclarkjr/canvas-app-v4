@@ -17,17 +17,27 @@
     resizePointerCancel: (event: PointerEvent, sceneId: string) => void
   }
 
-  let { scenes, camera, mode, canEdit, canModifyScene, activity, handlers, onCreateScene } =
-    $props<{
-      scenes: Scene[]
-      camera: Camera
-      mode: WorkspaceMode
-      canEdit: boolean
-      canModifyScene: (sceneId: string) => boolean
-      activity: Record<string, SceneActivity>
-      handlers: CardHandlers
-      onCreateScene: () => void
-    }>()
+  let {
+    scenes,
+    camera,
+    mode,
+    canEdit,
+    canModifyScene,
+    activity,
+    handlers,
+    isCreatingScene = false,
+    onCreateScene
+  } = $props<{
+    scenes: Scene[]
+    camera: Camera
+    mode: WorkspaceMode
+    canEdit: boolean
+    canModifyScene: (sceneId: string) => boolean
+    activity: Record<string, SceneActivity>
+    handlers: CardHandlers
+    isCreatingScene?: boolean
+    onCreateScene: () => void
+  }>()
 </script>
 
 <!-- Cards live above the drawing SVG in both modes; each card handles its
@@ -48,10 +58,11 @@
 {#if mode === 'scenes' && canEdit}
   <button
     type="button"
-    class="toolbar-pill fixed bottom-6 left-1/2 z-20 flex h-11 -translate-x-1/2 items-center gap-2 px-4 text-sm font-medium transition hover:border-slate-700 hover:bg-slate-900"
+    class="toolbar-pill fixed bottom-6 left-1/2 z-20 flex h-11 -translate-x-1/2 items-center gap-2 px-4 text-sm font-medium transition hover:border-slate-700 hover:bg-slate-900 disabled:opacity-60"
     onclick={onCreateScene}
+    disabled={isCreatingScene}
   >
     <Plus class="size-4" />
-    New scene
+    {isCreatingScene ? 'Creating…' : 'New scene'}
   </button>
 {/if}

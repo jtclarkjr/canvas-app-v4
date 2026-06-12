@@ -2,6 +2,7 @@
   import { onMount, untrack } from 'svelte'
   import { markdownDocumentContentSchema, type SceneDocument } from '$lib/scenes/schema'
   import type { SceneActivityKind } from '$lib/scenes/types'
+  import { getWorkspaceCursorStyle } from '$lib/canvas/helpers/workspace-cursor-style'
   import { renderMarkdown } from '$lib/scenes/markdown'
   import { exportAnnotatedNotesPdf } from '$lib/scenes/notes-pdf'
   import { createNotesSceneStore } from '$lib/stores/canvas/scenes/notes.svelte'
@@ -123,8 +124,12 @@
 
   <!-- The rendered document is the annotation surface: prose below, a
        transparent drawing layer on top, both inside one scroll container
-       so the annotations stay anchored to the text while scrolling. -->
-  <div class="min-h-0 flex-1 overflow-y-auto bg-white">
+       so the annotations stay anchored to the text while scrolling. The
+       tool cursor applies to this section only, not the whole dialog. -->
+  <div
+    class="min-h-0 flex-1 overflow-y-auto bg-white"
+    style={canModify ? `cursor:${getWorkspaceCursorStyle(false, notes.selectedTool)}` : undefined}
+  >
     <div bind:this={contentEl} class="relative min-h-full">
       <div class="notes-prose">
         <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via DOMPurify in renderMarkdown -->

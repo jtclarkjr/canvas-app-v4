@@ -546,6 +546,9 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     get scenesError() {
       return scenesStore.error
     },
+    get isCreatingScene() {
+      return scenesStore.isCreatingScene
+    },
     get openScene() {
       const open = scenesStore.openScene
       if (!open) {

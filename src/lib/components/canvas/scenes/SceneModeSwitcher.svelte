@@ -11,19 +11,24 @@
     { id: 'editor' as WorkspaceMode, icon: PenLine, label: 'Editor' },
     { id: 'scenes' as WorkspaceMode, icon: LayoutGrid, label: 'Scenes' }
   ]
+
+  const thumbStyle = $derived(`transform: translateX(${mode === 'scenes' ? '100%' : '0%'})`)
 </script>
 
 <!-- Bottom-left: top-center belongs to the drawing/text formatting
      toolbars, which would overlap the switcher there. -->
 <div class="fixed bottom-6 left-6 z-20">
-  <div class="toolbar-pill flex items-center gap-1 p-1">
+  <div class="toolbar-pill relative grid grid-cols-2 p-1">
+    <span
+      class="pointer-events-none absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/2)] rounded-full bg-primary shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none"
+      style={thumbStyle}
+      aria-hidden="true"
+    ></span>
     {#each modes as entry (entry.id)}
       <button
         type="button"
-        class={`flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition ${
-          mode === entry.id
-            ? 'bg-primary text-white'
-            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+        class={`relative z-10 flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
+          mode === entry.id ? 'text-white' : 'text-slate-300 hover:text-white'
         }`}
         aria-pressed={mode === entry.id}
         onclick={() => onModeChange(entry.id)}

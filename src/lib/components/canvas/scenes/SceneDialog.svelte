@@ -161,7 +161,7 @@
 
 <div
   bind:this={backdropEl}
-  class="fixed inset-0 z-40 bg-black/45 backdrop-blur-sm"
+  class="fixed inset-0 z-40 cursor-auto bg-black/45 backdrop-blur-sm"
   role="presentation"
   data-camera-exempt
   onpointerdown={() => void minimize()}
@@ -169,7 +169,7 @@
 
 <div
   bind:this={dialogEl}
-  class="glass-card fixed inset-x-[6vw] inset-y-[5vh] z-50 flex flex-col overflow-hidden md:inset-x-[10vw]"
+  class="glass-card fixed inset-x-[6vw] inset-y-[5vh] z-50 flex cursor-auto flex-col overflow-hidden md:inset-x-[10vw]"
   role="dialog"
   aria-modal="true"
   aria-label={scene.title || sceneType?.defaultTitle || 'Scene'}

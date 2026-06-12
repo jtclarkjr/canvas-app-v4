@@ -35,7 +35,7 @@ export function buildDocumentSystemPrompt({
 
   if (activeDocument) {
     sections.push(
-      `The user is iterating on an existing document titled "${activeDocument.title}". Current content:\n\n<current_document>\n${activeDocument.markdown}\n</current_document>\n\nWhen revising, call write_document with the complete updated document.`
+      `The user is iterating on an existing document titled "${activeDocument.title}". Current content:\n\n<current_document>\n${activeDocument.markdown}\n</current_document>\n\nIMPORTANT: this <current_document> is the authoritative latest version. The user may have edited it manually since your last write_document call, so it can differ from the version in your conversation history — ALWAYS base revisions on the content above, never on your earlier tool calls, and preserve the user's manual edits unless they ask you to change those parts. When revising, call write_document with the complete updated document.`
     )
   }
 
