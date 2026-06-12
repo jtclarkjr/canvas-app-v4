@@ -10,6 +10,7 @@
   import CanvasZoomControls from '$lib/components/canvas/CanvasZoomControls.svelte'
   import DrawingToolbar from '$lib/components/canvas/DrawingToolbar.svelte'
   import LiveCursors from '$lib/components/canvas/LiveCursors.svelte'
+  import RequestEditAccessBanner from '$lib/components/canvas/RequestEditAccessBanner.svelte'
   import ShareDialog from '$lib/components/canvas/ShareDialog.svelte'
   import TextFormattingToolbar from '$lib/components/canvas/TextFormattingToolbar.svelte'
   import SceneCardLayer from '$lib/components/canvas/scenes/SceneCardLayer.svelte'
@@ -20,16 +21,20 @@
     canvasId,
     userId,
     userEmail,
-    role = 'owner'
+    role = 'owner',
+    isPublicViewer = false,
+    canvasTitle
   } = $props<{
     canvasId: string
     userId: string
     userEmail?: string | null
     role?: CanvasRole
+    isPublicViewer?: boolean
+    canvasTitle?: string
   }>()
 
   function currentWorkspaceInput() {
-    return { canvasId, userId, userEmail, role }
+    return { canvasId, userId, userEmail, role, isPublicViewer, canvasTitle }
   }
 
   const workspace = createCanvasWorkspaceStore(currentWorkspaceInput())
@@ -95,8 +100,10 @@
     canvasTitle={workspace.currentCanvasTitle}
     role={workspace.role}
     currentUserId={userId}
+    visibility={workspace.currentCanvasVisibility}
     pendingRequests={workspace.pendingRequests}
     onRequestResolved={workspace.handleRequestResolved}
+    onVisibilityChange={workspace.saveVisibility}
   />
 
   <TextFormattingToolbar
@@ -191,6 +198,13 @@
     onZoomOut={workspace.zoomOut}
     onReset={workspace.resetView}
   />
+
+  {#if workspace.isPublicViewer || workspace.role === 'reader'}
+    <RequestEditAccessBanner
+      canvasId={workspace.canvasIdForActions}
+      isPublicViewer={workspace.isPublicViewer}
+    />
+  {/if}
 
   {#if workspace.openScene}
     {@const open = workspace.openScene}

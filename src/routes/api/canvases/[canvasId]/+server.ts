@@ -9,6 +9,7 @@ import {
 import type { CanvasRow } from '$lib/canvas/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {
+  badRequest,
   handleApiError,
   notFound,
   parseInput,
@@ -22,7 +23,8 @@ const toCanvas = (row: CanvasRow) => ({
   id: row.id,
   title: row.title,
   createdBy: row.created_by,
-  createdAt: row.created_at
+  createdAt: row.created_at,
+  visibility: row.visibility
 })
 
 export const GET: RequestHandler = async (event) =>
@@ -64,9 +66,20 @@ export const PATCH: RequestHandler = async (event) =>
       const payload = await parseJsonBody(event.request)
       const input = parseInput(updateCanvasInputSchema, payload)
 
+      const patch = {
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.visibility !== undefined
+          ? { visibility: input.visibility }
+          : {})
+      }
+
+      if (Object.keys(patch).length === 0) {
+        throw badRequest('Nothing to update.')
+      }
+
       const { data, error } = await supabase
         .from('canvases')
-        .update({ title: input.title })
+        .update(patch)
         .eq('id', event.params.canvasId!)
         .select()
         .single()

@@ -9,6 +9,7 @@ type WorkspaceAccessInput = {
   getActiveCanvasId: () => string
   getRole: () => CanvasRole
   getUserId: () => string
+  getIsPublicViewer: () => boolean
   canManageCanvas: () => boolean
 }
 
@@ -16,6 +17,7 @@ export function createWorkspaceAccessStore({
   getActiveCanvasId,
   getRole,
   getUserId,
+  getIsPublicViewer,
   canManageCanvas
 }: WorkspaceAccessInput) {
   let shareDialogOpen = $state(false)
@@ -131,10 +133,18 @@ export function createWorkspaceAccessStore({
           filter: `canvas_id=eq.${id}`
         },
         (payload) => {
-          const next = payload.new as { id?: string; user_id?: string }
+          const next = payload.new as {
+            id?: string
+            user_id?: string
+            role?: CanvasRole
+          }
           if (next.user_id === userId) {
             membershipRowId = next.id ?? membershipRowId
-            kickOut('Your role on this canvas was changed.')
+            // Upserts that keep the role unchanged (e.g. approving a
+            // reader's editor request as reader) are not a role change.
+            if (next.role !== role) {
+              kickOut('Your role on this canvas was changed.')
+            }
           }
         }
       )
@@ -174,6 +184,52 @@ export function createWorkspaceAccessStore({
 
       if (cancelled) return
       membershipRowId = (membership as { id: string } | null)?.id ?? null
+      channel.subscribe()
+    })
+
+    return () => {
+      cancelled = true
+      void client.removeChannel(channel)
+    }
+  })
+
+  // Public viewers hold no membership row, so the membership channel never
+  // fires for them — they get kicked by watching the canvas row itself for
+  // a public→private flip.
+  $effect(() => {
+    const client = supabase
+    const id = getActiveCanvasId()
+    if (!client || !id || !getIsPublicViewer()) {
+      return
+    }
+
+    let cancelled = false
+
+    const channel = client.channel(`canvas:${id}:visibility`).on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'canvases',
+        filter: `id=eq.${id}`
+      },
+      (payload) => {
+        const next = payload.new as { visibility?: string }
+        if (next.visibility === 'private') {
+          toast.show({
+            title: 'Access changed',
+            description: 'This canvas is now private.'
+          })
+          void invalidateAll()
+        }
+      }
+    )
+
+    void ensureSessionInitialized().then((session) => {
+      if (cancelled) return
+      if (session?.access_token) {
+        void client.realtime.setAuth(session.access_token)
+      }
       channel.subscribe()
     })
 

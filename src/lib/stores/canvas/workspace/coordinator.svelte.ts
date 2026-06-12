@@ -46,6 +46,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   let userId = $state(input.userId)
   let userEmail = $state<string | null | undefined>(input.userEmail)
   let role = $state<CanvasRole>(input.role ?? 'owner')
+  let isPublicViewer = $state(input.isPublicViewer ?? false)
+  let canvasTitle = $state(input.canvasTitle ?? '')
 
   let rootEl = $state<HTMLDivElement | null>(null)
   let svgEl = $state<SVGSVGElement | null>(null)
@@ -77,7 +79,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getSelectedTool: () => selectedTool
   })
   const canvasesStore = createWorkspaceCanvasesStore({
-    getActiveCanvasId: () => activeCanvasId
+    getActiveCanvasId: () => activeCanvasId,
+    getFallbackTitle: () => canvasTitle
   })
   const formattingStore = createWorkspaceFormattingStore()
   const historyStore = createWorkspaceHistoryStore({
@@ -88,6 +91,7 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getActiveCanvasId: () => activeCanvasId,
     getRole: () => role,
     getUserId: () => userId,
+    getIsPublicViewer: () => isPublicViewer,
     canManageCanvas
   })
   const presenceStore = createWorkspacePresenceStore({
@@ -143,6 +147,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     userId = next.userId
     userEmail = next.userEmail
     role = next.role ?? 'owner'
+    isPublicViewer = next.isPublicViewer ?? false
+    canvasTitle = next.canvasTitle ?? ''
     activeCanvasId = next.canvasId
   }
 
@@ -422,6 +428,7 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     setElements,
     mount,
     saveTitle: canvasesStore.saveTitle,
+    saveVisibility: canvasesStore.saveVisibility,
     handleToolChange,
     handleModeChange,
     createScene: scenesStore.createSceneAtViewportCenter,
@@ -471,6 +478,14 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     },
     get currentCanvasTitle() {
       return canvasesStore.currentCanvasTitle
+    },
+    get currentCanvasVisibility() {
+      // Public viewers are not in the canvases list (it only covers owned +
+      // member canvases), but their presence here proves the canvas is public.
+      return isPublicViewer ? 'public' : canvasesStore.currentCanvasVisibility
+    },
+    get isPublicViewer() {
+      return isPublicViewer
     },
     get canEdit() {
       return canEdit()

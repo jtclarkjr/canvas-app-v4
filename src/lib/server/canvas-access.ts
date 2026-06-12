@@ -8,6 +8,7 @@ type CanvasRow = Database['public']['Tables']['canvases']['Row']
 export type CanvasAccess = {
   canvas: CanvasRow
   role: CanvasRole | null
+  publicAccess: boolean
 }
 
 export async function resolveCanvasAccess(
@@ -28,8 +29,10 @@ export async function resolveCanvasAccess(
     })
   }
 
+  const publicAccess = canvas.visibility === 'public'
+
   if (canvas.created_by === userId) {
-    return { canvas, role: 'owner' }
+    return { canvas, role: 'owner', publicAccess }
   }
 
   const { data: membership } = await supabase
@@ -39,7 +42,7 @@ export async function resolveCanvasAccess(
     .eq('user_id', userId)
     .maybeSingle()
 
-  return { canvas, role: membership?.role ?? null }
+  return { canvas, role: membership?.role ?? null, publicAccess }
 }
 
 export async function requireCanvasRole(
@@ -47,14 +50,32 @@ export async function requireCanvasRole(
   canvasId: string,
   userId: string,
   min: CanvasRole
-): Promise<{ canvas: CanvasRow; role: CanvasRole }> {
-  const { canvas, role } = await resolveCanvasAccess(supabase, canvasId, userId)
+): Promise<{ canvas: CanvasRow; role: CanvasRole; isPublicViewer: boolean }> {
+  const { canvas, role, publicAccess } = await resolveCanvasAccess(
+    supabase,
+    canvasId,
+    userId
+  )
 
   if (role === null) {
-    throw forbidden('You do not have access to this canvas.', {
-      code: 'canvas_access_denied',
-      details: { canvasId }
-    })
+    if (!publicAccess) {
+      throw forbidden('You do not have access to this canvas.', {
+        code: 'canvas_access_denied',
+        details: { canvasId }
+      })
+    }
+
+    // Public viewers get readonly access; insufficient_role (not
+    // canvas_access_denied) so the client does not bounce them to the
+    // request-access screen on a write attempt.
+    if (min !== 'reader') {
+      throw forbidden('You do not have permission to do that.', {
+        code: 'insufficient_role',
+        details: { canvasId, role: 'reader' }
+      })
+    }
+
+    return { canvas, role: 'reader', isPublicViewer: true }
   }
 
   if (!roleAtLeast(role, min)) {
@@ -64,5 +85,5 @@ export async function requireCanvasRole(
     })
   }
 
-  return { canvas, role }
+  return { canvas, role, isPublicViewer: false }
 }

@@ -271,11 +271,16 @@ export async function removeMember(
 }
 
 export async function requestAccess(
-  canvasId: string
+  canvasId: string,
+  requestedRole?: MemberRole
 ): Promise<AccessRequestResponse> {
   const response = await fetch(`/api/canvases/${canvasId}/access-requests`, {
     method: 'POST',
-    headers: await getApiHeaders({ accept: 'application/json' })
+    headers: await getApiHeaders({
+      accept: 'application/json',
+      ...(requestedRole ? { 'content-type': 'application/json' } : {})
+    }),
+    ...(requestedRole ? { body: JSON.stringify({ requestedRole }) } : {})
   })
 
   return parseResponse(

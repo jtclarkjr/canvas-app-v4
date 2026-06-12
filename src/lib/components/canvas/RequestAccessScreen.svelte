@@ -115,6 +115,49 @@
       }
     })
   })
+
+  // This screen only renders while the canvas is private; if it flips to
+  // public, re-run the page load so the visitor enters as a public viewer.
+  $effect(() => {
+    const client = supabase
+    if (!client || !canvasId) {
+      return
+    }
+
+    return untrack(() => {
+      let cancelled = false
+
+      const channel = client.channel(`canvas:${canvasId}:visibility-watch`).on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'canvases',
+          filter: `id=eq.${canvasId}`
+        },
+        (payload) => {
+          const next = payload.new as { visibility?: string }
+          if (next.visibility === 'public' && !reloadRequested) {
+            reloadRequested = true
+            void invalidateAll()
+          }
+        }
+      )
+
+      void ensureSessionInitialized().then((session) => {
+        if (cancelled) return
+        if (session?.access_token) {
+          client.realtime.setAuth(session.access_token)
+        }
+        channel.subscribe()
+      })
+
+      return () => {
+        cancelled = true
+        void client.removeChannel(channel)
+      }
+    })
+  })
 </script>
 
 <div class="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6">

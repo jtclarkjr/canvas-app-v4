@@ -30,7 +30,7 @@ export const PATCH: RequestHandler = async (event) =>
 
       const { data: request, error: requestError } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, requester_id, status, created_at')
+        .select('id, canvas_id, requester_id, status, requested_role, created_at')
         .eq('id', requestId)
         .eq('canvas_id', canvasId)
         .maybeSingle()
@@ -81,7 +81,7 @@ export const PATCH: RequestHandler = async (event) =>
           resolved_role: input.action === 'approve' ? input.role : null
         })
         .eq('id', requestId)
-        .select('id, canvas_id, status, created_at')
+        .select('id, canvas_id, status, requested_role, created_at')
         .single()
 
       if (error || !data) {
@@ -94,6 +94,7 @@ export const PATCH: RequestHandler = async (event) =>
             id: data.id,
             canvasId: data.canvas_id,
             status: data.status,
+            requestedRole: data.requested_role,
             createdAt: data.created_at
           }
         })

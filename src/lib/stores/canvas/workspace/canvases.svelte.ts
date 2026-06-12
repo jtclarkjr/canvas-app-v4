@@ -1,11 +1,15 @@
 import { listCanvases, updateCanvas } from '$lib/canvas/api'
-import type { Canvas } from '$lib/canvas/schema'
+import type { Canvas, CanvasVisibility } from '$lib/canvas/schema'
 
 type WorkspaceCanvasesInput = {
   getActiveCanvasId: () => string
+  getFallbackTitle?: () => string
 }
 
-export function createWorkspaceCanvasesStore({ getActiveCanvasId }: WorkspaceCanvasesInput) {
+export function createWorkspaceCanvasesStore({
+  getActiveCanvasId,
+  getFallbackTitle
+}: WorkspaceCanvasesInput) {
   let canvases = $state<Canvas[]>([])
   let error = $state<string | null>(null)
   let isLoading = $state(false)
@@ -48,15 +52,29 @@ export function createWorkspaceCanvasesStore({ getActiveCanvasId }: WorkspaceCan
     }
   }
 
+  async function saveVisibility(visibility: CanvasVisibility) {
+    const canvas = currentCanvas()
+    if (!canvas) {
+      return
+    }
+
+    const response = await updateCanvas(canvas.id, { visibility })
+    canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
+  }
+
   return {
     loadCanvasesList,
     saveTitle,
+    saveVisibility,
     setError,
     get canvases() {
       return canvases
     },
     get currentCanvasTitle() {
-      return currentCanvas()?.title ?? ''
+      return currentCanvas()?.title ?? getFallbackTitle?.() ?? ''
+    },
+    get currentCanvasVisibility() {
+      return currentCanvas()?.visibility ?? 'private'
     },
     get error() {
       return error

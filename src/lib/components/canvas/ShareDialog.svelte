@@ -10,7 +10,12 @@
     searchUsers,
     updateMemberRole
   } from '$lib/canvas/api'
-  import type { AccessRequest, CanvasMember, UserSearchResult } from '$lib/canvas/schema'
+  import type {
+    AccessRequest,
+    CanvasMember,
+    CanvasVisibility,
+    UserSearchResult
+  } from '$lib/canvas/schema'
   import {
     MEMBER_ROLES,
     ROLE_LABELS,
@@ -26,16 +31,20 @@
     canvasTitle = '',
     role,
     currentUserId,
+    visibility = 'private',
     pendingRequests = [],
-    onRequestResolved
+    onRequestResolved,
+    onVisibilityChange
   } = $props<{
     open?: boolean
     canvasId: string
     canvasTitle?: string
     role: CanvasRole
     currentUserId: string
+    visibility?: CanvasVisibility
     pendingRequests?: AccessRequest[]
     onRequestResolved?: (requestId: string) => void
+    onVisibilityChange?: (visibility: CanvasVisibility) => Promise<void> | void
   }>()
 
   const canManage = $derived(roleAtLeast(role, 'admin'))
@@ -53,6 +62,27 @@
   let busyIds = $state<Set<string>>(new Set())
   let errorMessage = $state<string | null>(null)
   let copied = $state(false)
+  // Optimistic visibility while the PATCH is in flight; null defers to the
+  // prop, which catches up (or stays put on failure) once the call settles.
+  let visibilityOverride = $state<CanvasVisibility | null>(null)
+  let visibilityBusy = $state(false)
+  const effectiveVisibility = $derived(visibilityOverride ?? visibility)
+
+  async function handleVisibilityToggle() {
+    if (visibilityBusy || !canManage) return
+    const next: CanvasVisibility = effectiveVisibility === 'public' ? 'private' : 'public'
+    visibilityOverride = next
+    visibilityBusy = true
+    errorMessage = null
+    try {
+      await onVisibilityChange?.(next)
+    } catch (error) {
+      reportError(error, 'Failed to update canvas visibility.')
+    } finally {
+      visibilityOverride = null
+      visibilityBusy = false
+    }
+  }
 
   function setBusy(id: string, busy: boolean) {
     const next = new Set(busyIds)
@@ -141,7 +171,9 @@
       await resolveAccessRequest(
         canvasId,
         request.id,
-        action === 'approve' ? { action, role: approveRoles[request.id] ?? 'reader' } : { action }
+        action === 'approve'
+          ? { action, role: approveRoles[request.id] ?? request.requestedRole ?? 'reader' }
+          : { action }
       )
       onRequestResolved?.(request.id)
       if (action === 'approve') {
@@ -223,11 +255,54 @@
         </button>
       </div>
       <p class="text-xs text-muted-foreground">
-        Anyone with the link must request access before they can view this canvas.
+        {#if effectiveVisibility === 'public'}
+          Anyone signed in with the link can view this canvas.
+        {:else}
+          Anyone with the link must request access before they can view this canvas.
+        {/if}
       </p>
     </section>
 
     {#if canManage}
+      <section class="grid gap-2">
+        <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          General access
+        </h3>
+        <div
+          class="flex items-center gap-3 rounded-xl border border-border bg-secondary/40 px-3 py-2.5"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-foreground">
+              {effectiveVisibility === 'public' ? 'Public' : 'Private'}
+            </p>
+            <p class="text-xs text-muted-foreground">
+              {#if effectiveVisibility === 'public'}
+                Anyone signed in can view. Viewers can request edit access.
+              {:else}
+                Only invited people can access this canvas.
+              {/if}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={effectiveVisibility === 'public'}
+            aria-label="Make canvas public"
+            disabled={visibilityBusy}
+            class={`relative h-6 w-11 shrink-0 rounded-full transition disabled:opacity-50 ${
+              effectiveVisibility === 'public' ? 'bg-primary' : 'bg-muted-foreground/30'
+            }`}
+            onclick={() => void handleVisibilityToggle()}
+          >
+            <span
+              class={`absolute top-0.5 size-5 rounded-full bg-white shadow transition-all ${
+                effectiveVisibility === 'public' ? 'left-[22px]' : 'left-0.5'
+              }`}
+            ></span>
+          </button>
+        </div>
+      </section>
+
       <section class="grid gap-2">
         <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
           Add people
@@ -318,7 +393,7 @@
                 </div>
                 <select
                   class="shrink-0 rounded-xl border border-border bg-secondary/40 px-2 py-1.5 text-xs text-foreground outline-none"
-                  value={approveRoles[request.id] ?? 'reader'}
+                  value={approveRoles[request.id] ?? request.requestedRole ?? 'reader'}
                   aria-label="Role to grant"
                   onchange={(event) => {
                     approveRoles = {

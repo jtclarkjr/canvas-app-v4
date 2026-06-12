@@ -74,6 +74,8 @@ export type CanvasWorkspaceStoreInput = {
   userId: string
   userEmail?: string | null
   role?: CanvasRole
+  isPublicViewer?: boolean
+  canvasTitle?: string
 }
 
 export type RealtimeCanvasElementRow = {

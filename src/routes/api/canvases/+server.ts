@@ -20,6 +20,7 @@ const toCanvas = (row: CanvasRow, role?: 'owner' | 'admin' | 'editor' | 'reader'
     title: row.title,
     createdBy: row.created_by,
     createdAt: row.created_at,
+    visibility: row.visibility,
     ...(role ? { role } : null)
 })
 

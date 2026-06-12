@@ -6,6 +6,7 @@ import type { CanvasRole } from '$lib/canvas/roles'
 
 export type CanvasPageAccess =
   | { state: 'member'; role: CanvasRole; canvasTitle: string }
+  | { state: 'public-viewer'; canvasTitle: string }
   | { state: 'no-access' }
   | { state: 'not-found' }
 
@@ -25,13 +26,17 @@ export const load: PageServerLoad = async ({ params, locals }) => {
       locals.user.id
     )
 
-    access = resolved.role
-      ? {
-          state: 'member',
-          role: resolved.role,
-          canvasTitle: resolved.canvas.title
-        }
-      : { state: 'no-access' }
+    if (resolved.role) {
+      access = {
+        state: 'member',
+        role: resolved.role,
+        canvasTitle: resolved.canvas.title
+      }
+    } else if (resolved.publicAccess) {
+      access = { state: 'public-viewer', canvasTitle: resolved.canvas.title }
+    } else {
+      access = { state: 'no-access' }
+    }
   } catch (error) {
     if (error instanceof AppError && error.code === 'canvas_not_found') {
       access = { state: 'not-found' }

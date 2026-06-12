@@ -10,6 +10,7 @@
       userEmail?: string
       access?:
         | { state: 'member'; role: CanvasRole; canvasTitle: string }
+        | { state: 'public-viewer'; canvasTitle: string }
         | { state: 'no-access' }
         | { state: 'not-found' }
     }
@@ -31,11 +32,21 @@
       Back to dashboard
     </a>
   </div>
+{:else if data.access?.state === 'public-viewer'}
+  <CanvasWorkspace
+    canvasId={data.canvasId}
+    userId={data.userId ?? ''}
+    userEmail={data.userEmail}
+    role="reader"
+    isPublicViewer
+    canvasTitle={data.access.canvasTitle}
+  />
 {:else}
   <CanvasWorkspace
     canvasId={data.canvasId}
     userId={data.userId ?? ''}
     userEmail={data.userEmail}
     role={data.access?.role ?? 'owner'}
+    canvasTitle={data.access?.canvasTitle}
   />
 {/if}

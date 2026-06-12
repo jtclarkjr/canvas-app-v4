@@ -13,7 +13,7 @@ export const GET: RequestHandler = async (event) =>
 
       const { data, error } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, status, created_at')
+        .select('id, canvas_id, status, requested_role, created_at')
         .eq('canvas_id', canvasId)
         .eq('requester_id', user.id)
         .order('created_at', { ascending: false })
@@ -31,6 +31,7 @@ export const GET: RequestHandler = async (event) =>
                 id: data.id,
                 canvasId: data.canvas_id,
                 status: data.status,
+                requestedRole: data.requested_role,
                 createdAt: data.created_at
               }
             : null

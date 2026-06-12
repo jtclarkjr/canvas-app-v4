@@ -4,6 +4,8 @@ export const roleSchema = z.enum(['owner', 'admin', 'editor', 'reader'])
 
 export const memberRoleSchema = z.enum(['admin', 'editor', 'reader'])
 
+export const canvasVisibilitySchema = z.enum(['private', 'public'])
+
 export const accessRequestStatusSchema = z.enum([
   'pending',
   'approved',
@@ -14,7 +16,8 @@ export const canvasRowSchema = z.object({
   id: z.string(),
   title: z.string(),
   created_by: z.string(),
-  created_at: z.string()
+  created_at: z.string(),
+  visibility: canvasVisibilitySchema.default('private')
 })
 
 export const canvasElementRowSchema = z.object({
@@ -39,7 +42,8 @@ export const createCanvasInputSchema = z.object({
 })
 
 export const updateCanvasInputSchema = z.object({
-  title: createCanvasInputSchema.shape.title.optional()
+  title: createCanvasInputSchema.shape.title.optional(),
+  visibility: canvasVisibilitySchema.optional()
 })
 
 export const canvasSchema = z.object({
@@ -47,6 +51,7 @@ export const canvasSchema = z.object({
   title: z.string(),
   createdBy: z.string(),
   createdAt: z.string(),
+  visibility: canvasVisibilitySchema.default('private'),
   role: roleSchema.optional()
 })
 
@@ -146,8 +151,13 @@ export const accessRequestSchema = z.object({
   id: z.string(),
   canvasId: z.string(),
   status: accessRequestStatusSchema,
+  requestedRole: memberRoleSchema.nullable().optional(),
   createdAt: z.string(),
   requester: userSearchResultSchema.optional()
+})
+
+export const requestAccessInputSchema = z.object({
+  requestedRole: memberRoleSchema.optional()
 })
 
 export const accessRequestResponseSchema = z.object({
@@ -172,6 +182,7 @@ export const resolveAccessRequestInputSchema = z.discriminatedUnion('action', [
 
 export type CanvasRole = z.infer<typeof roleSchema>
 export type MemberRole = z.infer<typeof memberRoleSchema>
+export type CanvasVisibility = z.infer<typeof canvasVisibilitySchema>
 export type AccessRequestStatus = z.infer<typeof accessRequestStatusSchema>
 export type CanvasRow = z.infer<typeof canvasRowSchema>
 export type CanvasElementRow = z.infer<typeof canvasElementRowSchema>
@@ -196,6 +207,7 @@ export type AddMemberInput = z.infer<typeof addMemberInputSchema>
 export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleInputSchema>
 export type MemberResponse = z.infer<typeof memberResponseSchema>
 export type AccessRequest = z.infer<typeof accessRequestSchema>
+export type RequestAccessInput = z.infer<typeof requestAccessInputSchema>
 export type AccessRequestResponse = z.infer<typeof accessRequestResponseSchema>
 export type MyAccessRequestResponse = z.infer<
   typeof myAccessRequestResponseSchema

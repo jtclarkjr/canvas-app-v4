@@ -2,7 +2,8 @@ import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   accessRequestResponseSchema,
   accessRequestStatusSchema,
-  listAccessRequestsResponseSchema
+  listAccessRequestsResponseSchema,
+  requestAccessInputSchema
 } from '$lib/canvas/schema'
 import {
   requireCanvasRole,
@@ -11,8 +12,11 @@ import {
 import {
   badRequest,
   handleApiError,
+  parseInput,
+  parseJsonBody,
   withAuth
 } from '$lib/server/api-error'
+import { roleAtLeast } from '$lib/canvas/roles'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 import type { Database } from '$lib/server/database.types'
@@ -25,12 +29,16 @@ type ProfileRow = Pick<
 >
 
 const toAccessRequest = (
-  row: Pick<AccessRequestRow, 'id' | 'canvas_id' | 'status' | 'created_at'>,
+  row: Pick<
+    AccessRequestRow,
+    'id' | 'canvas_id' | 'status' | 'requested_role' | 'created_at'
+  >,
   requester?: ProfileRow
 ) => ({
   id: row.id,
   canvasId: row.canvas_id,
   status: row.status,
+  requestedRole: row.requested_role,
   createdAt: row.created_at,
   ...(requester
     ? {
@@ -60,7 +68,7 @@ export const GET: RequestHandler = async (event) =>
 
       const { data: requests, error } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, requester_id, status, created_at')
+        .select('id, canvas_id, requester_id, status, requested_role, created_at')
         .eq('canvas_id', canvasId)
         .eq('status', status)
         .order('created_at', { ascending: true })
@@ -106,7 +114,21 @@ export const POST: RequestHandler = async (event) =>
 
       const { role } = await resolveCanvasAccess(supabase, canvasId, user.id)
 
-      if (role !== null) {
+      // Body is optional: a bare POST requests unspecified access (admin
+      // picks the role); public viewers and readers send
+      // { requestedRole: 'editor' }.
+      const hasJsonBody = event.request.headers
+        .get('content-type')
+        ?.includes('application/json')
+      const payload = hasJsonBody ? await parseJsonBody(event.request) : {}
+      const input = parseInput(requestAccessInputSchema, payload)
+
+      // Existing members may only request an upgrade above their current
+      // role (e.g. a reader asking for editor); anything else is a no-op.
+      if (
+        role !== null &&
+        (!input.requestedRole || roleAtLeast(role, input.requestedRole))
+      ) {
         throw badRequest('You already have access to this canvas.', {
           code: 'already_member'
         })
@@ -114,7 +136,7 @@ export const POST: RequestHandler = async (event) =>
 
       const { data: pending, error: pendingError } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, status, created_at')
+        .select('id, canvas_id, status, requested_role, created_at')
         .eq('canvas_id', canvasId)
         .eq('requester_id', user.id)
         .eq('status', 'pending')
@@ -125,6 +147,28 @@ export const POST: RequestHandler = async (event) =>
       }
 
       if (pending) {
+        if (
+          input.requestedRole &&
+          pending.requested_role !== input.requestedRole
+        ) {
+          const { data: updated, error: updateError } = await supabase
+            .from('canvas_access_requests')
+            .update({ requested_role: input.requestedRole })
+            .eq('id', pending.id)
+            .select('id, canvas_id, status, requested_role, created_at')
+            .single()
+
+          if (updateError || !updated) {
+            throw updateError ?? new Error('Failed to update access request')
+          }
+
+          return json(
+            accessRequestResponseSchema.parse({
+              item: toAccessRequest(updated)
+            })
+          )
+        }
+
         return json(
           accessRequestResponseSchema.parse({ item: toAccessRequest(pending) })
         )
@@ -132,8 +176,12 @@ export const POST: RequestHandler = async (event) =>
 
       const { data, error } = await supabase
         .from('canvas_access_requests')
-        .insert({ canvas_id: canvasId, requester_id: user.id })
-        .select('id, canvas_id, status, created_at')
+        .insert({
+          canvas_id: canvasId,
+          requester_id: user.id,
+          requested_role: input.requestedRole ?? null
+        })
+        .select('id, canvas_id, status, requested_role, created_at')
         .single()
 
       if (error || !data) {

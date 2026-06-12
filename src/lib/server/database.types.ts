@@ -15,18 +15,21 @@ export interface Database {
           title: string
           created_by: string
           created_at: string
+          visibility: Database['public']['Enums']['canvas_visibility']
         }
         Insert: {
           id?: string
           title: string
           created_by: string
           created_at?: string
+          visibility?: Database['public']['Enums']['canvas_visibility']
         }
         Update: {
           id?: string
           title?: string
           created_by?: string
           created_at?: string
+          visibility?: Database['public']['Enums']['canvas_visibility']
         }
         Relationships: []
       }
@@ -153,6 +156,7 @@ export interface Database {
           canvas_id: string
           requester_id: string
           status: Database['public']['Enums']['access_request_status']
+          requested_role: Database['public']['Enums']['canvas_role'] | null
           resolved_by: string | null
           resolved_role: Database['public']['Enums']['canvas_role'] | null
           created_at: string
@@ -163,6 +167,7 @@ export interface Database {
           canvas_id: string
           requester_id: string
           status?: Database['public']['Enums']['access_request_status']
+          requested_role?: Database['public']['Enums']['canvas_role'] | null
           resolved_by?: string | null
           resolved_role?: Database['public']['Enums']['canvas_role'] | null
           created_at?: string
@@ -173,6 +178,7 @@ export interface Database {
           canvas_id?: string
           requester_id?: string
           status?: Database['public']['Enums']['access_request_status']
+          requested_role?: Database['public']['Enums']['canvas_role'] | null
           resolved_by?: string | null
           resolved_role?: Database['public']['Enums']['canvas_role'] | null
           created_at?: string
@@ -365,6 +371,7 @@ export interface Database {
     Enums: {
       canvas_role: 'admin' | 'editor' | 'reader'
       access_request_status: 'pending' | 'approved' | 'denied'
+      canvas_visibility: 'private' | 'public'
     }
   }
 }
