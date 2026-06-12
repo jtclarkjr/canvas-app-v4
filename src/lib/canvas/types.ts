@@ -7,6 +7,16 @@ export type Tool = 'select' | 'hand' | 'pencil' | 'eraser' | 'text'
 
 export type Point = { x: number; y: number }
 
+export type CursorCoordinateSpace = 'canvas' | 'viewport'
+
+export type CursorEventPayload = {
+  position: Point
+  coordinateSpace?: CursorCoordinateSpace
+  user: { id: string; name: string }
+  color: string
+  timestamp: number
+}
+
 export type Path = {
   id: string
   points: Point[]

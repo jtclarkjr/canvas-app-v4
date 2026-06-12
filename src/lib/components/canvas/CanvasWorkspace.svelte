@@ -206,7 +206,7 @@
     onSelectionChange={workspace.syncEditorSelection}
   />
 
-  <LiveCursors cursors={workspace.cursors} />
+  <LiveCursors cursors={workspace.cursors} camera={workspace.camera} />
 
   {#if workspace.canEdit && workspace.mode === 'editor'}
     <CanvasActionToolbar

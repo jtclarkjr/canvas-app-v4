@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test'
 import {
   calculateTextBounds,
+  canvasToScreen,
   findTextAtPoint,
   getTextEditorWidth,
   getTextLineBaseline,
@@ -8,7 +9,8 @@ import {
   getTextLines,
   getTextLineTop,
   isElementInSelection,
-  isPointNearPath
+  isPointNearPath,
+  screenToCanvas
 } from '$lib/canvas/drawing-utils'
 import type { Path, TextElement } from '$lib/canvas/types'
 
@@ -125,5 +127,14 @@ describe('drawing utils', () => {
     expect(isPointNearPath({ x: 100, y: 5 }, path, 10)).toBe(true)
     expect(isPointNearPath({ x: 100, y: 20 }, path, 10)).toBe(false)
     expect(isPointNearPath({ x: -15, y: 0 }, path, 10)).toBe(false)
+  })
+
+  it('keeps canvas and screen coordinates inverse-compatible with camera transforms', () => {
+    const camera = { x: 50, y: 30, scale: 2 }
+    const svgRect = { left: 10, top: 20 } as DOMRect
+    const canvasPoint = screenToCanvas(160, 120, svgRect, camera)
+
+    expect(canvasPoint).toEqual({ x: 50, y: 35 })
+    expect(canvasToScreen(canvasPoint, camera)).toEqual({ x: 150, y: 100 })
   })
 })

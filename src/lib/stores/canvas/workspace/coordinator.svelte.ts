@@ -102,7 +102,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getActiveCanvasId: () => activeCanvasId,
     getCanvasId: () => canvasId,
     getUserId: () => userId,
-    getUserEmail: () => userEmail
+    getUserEmail: () => userEmail,
+    screenToCanvasPoint
   })
   createWorkspaceRealtimeElementsStore({
     getActiveCanvasId: () => activeCanvasId,

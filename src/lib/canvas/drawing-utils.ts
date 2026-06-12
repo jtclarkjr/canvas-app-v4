@@ -155,6 +155,13 @@ export function screenToCanvas(
   }
 }
 
+export function canvasToScreen(point: Point, camera: Camera): Point {
+  return {
+    x: camera.x + point.x * camera.scale,
+    y: camera.y + point.y * camera.scale
+  }
+}
+
 export function pathToSvgPath(points: Point[]): string {
   if (points.length === 0) return ''
   const [first, ...rest] = points

@@ -3,27 +3,22 @@ import { supabase } from '$lib/auth/session-store'
 import { colorFromId } from '$lib/canvas/helpers/color-from-id'
 import { displayMembers as getDisplayMembers } from '$lib/canvas/helpers/display-members'
 import { createThrottledCursorSender } from '$lib/canvas/helpers/throttled-cursor-sender'
-import type { WorkspaceMember } from '$lib/canvas/types'
-
-type CursorEventPayload = {
-  position: { x: number; y: number }
-  user: { id: string; name: string }
-  color: string
-  timestamp: number
-}
+import type { CursorEventPayload, Point, WorkspaceMember } from '$lib/canvas/types'
 
 type WorkspacePresenceInput = {
   getActiveCanvasId: () => string
   getCanvasId: () => string
   getUserId: () => string
   getUserEmail: () => string | null | undefined
+  screenToCanvasPoint: (clientX: number, clientY: number) => Point
 }
 
 export function createWorkspacePresenceStore({
   getActiveCanvasId,
   getCanvasId,
   getUserId,
-  getUserEmail
+  getUserEmail,
+  screenToCanvasPoint
 }: WorkspacePresenceInput) {
   let cursors = $state<Record<string, CursorEventPayload>>({})
   let members = $state<Record<string, WorkspaceMember>>({})
@@ -52,7 +47,8 @@ export function createWorkspacePresenceStore({
 
     const sendCursor = (event: MouseEvent) => {
       const payload: CursorEventPayload = {
-        position: { x: event.clientX, y: event.clientY },
+        position: screenToCanvasPoint(event.clientX, event.clientY),
+        coordinateSpace: 'canvas',
         user: { id: userId, name: userEmail ?? 'anon' },
         color: colorFromId(userId),
         timestamp: Date.now()

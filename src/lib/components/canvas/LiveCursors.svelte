@@ -1,15 +1,11 @@
 <script lang="ts">
   import { MousePointer2 } from 'lucide-svelte'
+  import { canvasToScreen } from '$lib/canvas/drawing-utils'
+  import type { Camera, CursorEventPayload, Point } from '$lib/canvas/types'
 
-  type CursorEventPayload = {
-    position: { x: number; y: number }
-    user: { id: string; name: string }
-    color: string
-    timestamp: number
-  }
-
-  let { cursors } = $props<{
+  let { cursors, camera } = $props<{
     cursors: Record<string, CursorEventPayload>
+    camera: Camera
   }>()
 
   function getInitials(name: string) {
@@ -24,15 +20,23 @@
   function cursorEntries() {
     return Object.entries(cursors) as Array<[string, CursorEventPayload]>
   }
+
+  function getCursorScreenPosition(cursor: CursorEventPayload): Point {
+    return cursor.coordinateSpace === 'canvas'
+      ? canvasToScreen(cursor.position, camera)
+      : cursor.position
+  }
+
+  function getCursorStyle(cursor: CursorEventPayload) {
+    const position = getCursorScreenPosition(cursor)
+    return `left:${position.x}px;top:${position.y}px;transform:translateX(-2px) translateY(-2px)`
+  }
 </script>
 
 <div class="pointer-events-none absolute inset-0 z-50">
   <div class="absolute inset-0">
     {#each cursorEntries() as [id, cursor] (id)}
-      <div
-        class="absolute"
-        style={`left:${cursor.position.x}px;top:${cursor.position.y}px;transform:translateX(-2px) translateY(-2px)`}
-      >
+      <div class="absolute" style={getCursorStyle(cursor)}>
         <div class="relative">
           <MousePointer2
             aria-label="User cursor"
