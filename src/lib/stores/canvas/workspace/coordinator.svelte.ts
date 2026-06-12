@@ -80,7 +80,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   })
   const canvasesStore = createWorkspaceCanvasesStore({
     getActiveCanvasId: () => activeCanvasId,
-    getFallbackTitle: () => canvasTitle
+    getFallbackTitle: () => canvasTitle,
+    initialCanvases: input.initialCanvases
   })
   const formattingStore = createWorkspaceFormattingStore()
   const historyStore = createWorkspaceHistoryStore({
@@ -150,6 +151,7 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     isPublicViewer = next.isPublicViewer ?? false
     canvasTitle = next.canvasTitle ?? ''
     activeCanvasId = next.canvasId
+    canvasesStore.setCanvases(next.initialCanvases)
   }
 
   function setElements(next: WorkspaceElements) {

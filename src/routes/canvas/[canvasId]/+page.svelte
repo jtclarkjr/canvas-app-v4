@@ -2,12 +2,14 @@
   import CanvasWorkspace from '$lib/components/canvas/CanvasWorkspace.svelte'
   import RequestAccessScreen from '$lib/components/canvas/RequestAccessScreen.svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
+  import type { Canvas } from '$lib/canvas/schema'
 
   let { data } = $props<{
     data: {
       canvasId: string
       userId?: string
       userEmail?: string
+      canvasList?: { items: Canvas[] }
       access?:
         | { state: 'member'; role: CanvasRole; canvasTitle: string }
         | { state: 'public-viewer'; canvasTitle: string }
@@ -40,6 +42,7 @@
     role="reader"
     isPublicViewer
     canvasTitle={data.access.canvasTitle}
+    initialCanvases={data.canvasList?.items ?? []}
   />
 {:else}
   <CanvasWorkspace
@@ -48,5 +51,6 @@
     userEmail={data.userEmail}
     role={data.access?.role ?? 'owner'}
     canvasTitle={data.access?.canvasTitle}
+    initialCanvases={data.canvasList?.items ?? []}
   />
 {/if}

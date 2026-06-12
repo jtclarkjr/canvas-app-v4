@@ -14,7 +14,7 @@
   const loginHref = $derived(
     `/login?redirect=${encodeURIComponent(`${page.url.pathname}${page.url.search}`)}`
   )
-  const user = $derived(session.data?.user ?? null)
+  const user = $derived(session.data?.user ?? page.data.user ?? null)
   const userDisplayName = $derived(user ? getUserDisplayName(user) : 'Guest')
   const userEmail = $derived(user?.email ?? 'Signed in')
   const userAvatarUrl = $derived(user ? getUserAvatarUrl(user) : null)

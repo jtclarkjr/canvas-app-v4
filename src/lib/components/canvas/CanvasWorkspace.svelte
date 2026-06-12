@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
+  import type { Canvas } from '$lib/canvas/schema'
   import { createCanvasWorkspaceStore } from '$lib/stores/canvas/workspace/index.svelte'
   import CanvasActionToolbar from '$lib/components/canvas/CanvasActionToolbar.svelte'
   import CanvasPresenceActions from '$lib/components/canvas/CanvasPresenceActions.svelte'
@@ -23,7 +24,8 @@
     userEmail,
     role = 'owner',
     isPublicViewer = false,
-    canvasTitle
+    canvasTitle,
+    initialCanvases
   } = $props<{
     canvasId: string
     userId: string
@@ -31,10 +33,19 @@
     role?: CanvasRole
     isPublicViewer?: boolean
     canvasTitle?: string
+    initialCanvases?: Canvas[]
   }>()
 
   function currentWorkspaceInput() {
-    return { canvasId, userId, userEmail, role, isPublicViewer, canvasTitle }
+    return {
+      canvasId,
+      userId,
+      userEmail,
+      role,
+      isPublicViewer,
+      canvasTitle,
+      initialCanvases
+    }
   }
 
   const workspace = createCanvasWorkspaceStore(currentWorkspaceInput())

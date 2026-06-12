@@ -1,6 +1,7 @@
 import type { User } from '$lib/auth/types'
 
 type LooseRecord = Record<string, unknown>
+type DisplayUser = User | LooseRecord
 
 const avatarKeys = [
   'avatar_url',
@@ -44,8 +45,9 @@ function getFirstNonEmptyString(
   return null
 }
 
-function getIdentityValue(user: User, keys: string[]): string | null {
-  const identities = Array.isArray(user.identities) ? user.identities : []
+function getIdentityValue(user: DisplayUser, keys: string[]): string | null {
+  const userRecord = asRecord(user)
+  const identities = Array.isArray(userRecord?.identities) ? userRecord.identities : []
 
   for (const identity of identities) {
     const record = asRecord(
@@ -60,28 +62,40 @@ function getIdentityValue(user: User, keys: string[]): string | null {
   return null
 }
 
-export function getUserDisplayName(user: User | null | undefined) {
+export function getUserDisplayName(user: DisplayUser | null | undefined) {
   if (!user) {
     return 'Guest'
   }
 
-  const metadata = asRecord(user.user_metadata)
+  const userRecord = asRecord(user)
+  const directName = getFirstNonEmptyString(userRecord, ['name'])
+  if (directName) {
+    return directName
+  }
+
+  const metadata = asRecord(userRecord?.user_metadata)
   const name =
     getFirstNonEmptyString(metadata, nameKeys) ?? getIdentityValue(user, nameKeys)
   if (name) {
     return name
   }
 
-  const email = typeof user.email === 'string' ? user.email.trim() : ''
+  const email = getFirstNonEmptyString(userRecord, ['email']) ?? ''
   return email || 'User'
 }
 
-export function getUserAvatarUrl(user: User | null | undefined) {
+export function getUserAvatarUrl(user: DisplayUser | null | undefined) {
   if (!user) {
     return null
   }
 
-  const metadata = asRecord(user.user_metadata)
+  const userRecord = asRecord(user)
+  const directImage = getFirstNonEmptyString(userRecord, ['image'])
+  if (directImage) {
+    return directImage
+  }
+
+  const metadata = asRecord(userRecord?.user_metadata)
   return (
     getFirstNonEmptyString(metadata, avatarKeys) ??
     getIdentityValue(user, avatarKeys)

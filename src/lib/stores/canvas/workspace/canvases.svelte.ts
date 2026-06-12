@@ -1,18 +1,23 @@
+import { invalidate } from '$app/navigation'
 import { listCanvases, updateCanvas } from '$lib/canvas/api'
+import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
 import type { Canvas, CanvasVisibility } from '$lib/canvas/schema'
 
 type WorkspaceCanvasesInput = {
   getActiveCanvasId: () => string
   getFallbackTitle?: () => string
+  initialCanvases?: Canvas[]
 }
 
 export function createWorkspaceCanvasesStore({
   getActiveCanvasId,
-  getFallbackTitle
+  getFallbackTitle,
+  initialCanvases
 }: WorkspaceCanvasesInput) {
-  let canvases = $state<Canvas[]>([])
+  let canvases = $state<Canvas[]>(initialCanvases ?? [])
   let error = $state<string | null>(null)
   let isLoading = $state(false)
+  let hasLoadedCanvases = $state(initialCanvases !== undefined)
 
   function currentCanvas() {
     return canvases.find((canvas) => canvas.id === getActiveCanvasId()) ?? null
@@ -22,13 +27,27 @@ export function createWorkspaceCanvasesStore({
     error = message
   }
 
-  async function loadCanvasesList() {
+  function setCanvases(nextCanvases: Canvas[] | undefined) {
+    if (nextCanvases === undefined) {
+      return
+    }
+
+    canvases = nextCanvases
+    hasLoadedCanvases = true
+  }
+
+  async function loadCanvasesList({ force = false }: { force?: boolean } = {}) {
+    if (hasLoadedCanvases && !force) {
+      return
+    }
+
     isLoading = true
     error = null
 
     try {
       const response = await listCanvases()
       canvases = response.items
+      hasLoadedCanvases = true
     } catch (loadError) {
       error = loadError instanceof Error ? loadError.message : 'Failed to load canvases.'
     } finally {
@@ -47,6 +66,7 @@ export function createWorkspaceCanvasesStore({
         title: title.trim()
       })
       canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
+      void invalidate(CANVASES_DEPENDENCY)
     } catch (saveError) {
       error = saveError instanceof Error ? saveError.message : 'Failed to update title.'
     }
@@ -60,12 +80,14 @@ export function createWorkspaceCanvasesStore({
 
     const response = await updateCanvas(canvas.id, { visibility })
     canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
+    void invalidate(CANVASES_DEPENDENCY)
   }
 
   return {
     loadCanvasesList,
     saveTitle,
     saveVisibility,
+    setCanvases,
     setError,
     get canvases() {
       return canvases

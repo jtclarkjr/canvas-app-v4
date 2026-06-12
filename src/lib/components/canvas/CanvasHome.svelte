@@ -1,14 +1,30 @@
 <script lang="ts">
   import { FileText, Plus, Trash2 } from 'lucide-svelte'
+  import { goto, invalidate } from '$app/navigation'
   import { scale } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { createCanvas, deleteCanvas, listCanvases } from '$lib/canvas/api'
+  import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
   import Modal from '$lib/components/shared/Modal.svelte'
   import RoleBadge from '$lib/components/shared/RoleBadge.svelte'
   import type { Canvas } from '$lib/canvas/schema'
   import { session } from '$lib/stores/session.svelte'
 
-  let canvases = $state<Canvas[]>([])
+  let {
+    initialCanvases = [],
+    initialError = null,
+    user = null
+  } = $props<{
+    initialCanvases?: Canvas[]
+    initialError?: string | null
+    user?: { id: string } | null
+  }>()
+
+  function getInitialCanvases() {
+    return initialCanvases
+  }
+
+  let canvases = $state<Canvas[]>(getInitialCanvases())
 
   const ownedCanvases = $derived(
     canvases.filter((canvas) => !canvas.role || canvas.role === 'owner')
@@ -16,12 +32,15 @@
   const sharedCanvases = $derived(
     canvases.filter((canvas) => canvas.role && canvas.role !== 'owner')
   )
+  const activeUser = $derived(user ?? session.data?.user ?? null)
   let isLoading = $state(false)
   let isCreating = $state(false)
   let isDeleteDialogOpen = $state(false)
   let deleteTarget = $state<Canvas | null>(null)
   let isDeletingId = $state<string | null>(null)
-  let error = $state<string | null>(null)
+  let localError = $state<string | null>(null)
+  let hasLoadedFallback = $state(false)
+  const error = $derived(localError ?? initialError)
 
   function formatCanvasDate(dateString: string | null | undefined): string {
     if (!dateString) return ''
@@ -30,39 +49,41 @@
   }
 
   async function loadCanvases() {
-    if (!session.data?.user) {
+    if (!activeUser) {
       canvases = []
       isLoading = false
       return
     }
 
     isLoading = true
-    error = null
+    localError = null
 
     try {
       const response = await listCanvases()
       canvases = response.items
     } catch (nextError) {
-      error = nextError instanceof Error ? nextError.message : 'Failed to load canvases.'
+      localError = nextError instanceof Error ? nextError.message : 'Failed to load canvases.'
     } finally {
       isLoading = false
     }
   }
 
   async function handleCreate() {
-    if (!session.data?.user) {
+    if (!activeUser) {
       window.location.assign('/login?redirect=%2F')
       return
     }
 
     isCreating = true
-    error = null
+    localError = null
 
     try {
       const response = await createCanvas({ title: 'Untitled' })
-      window.location.assign(`/canvas/${response.item.id}`)
+      canvases = [response.item, ...canvases]
+      await invalidate(CANVASES_DEPENDENCY)
+      await goto(`/canvas/${response.item.id}`)
     } catch (nextError) {
-      error = nextError instanceof Error ? nextError.message : 'Failed to create canvas.'
+      localError = nextError instanceof Error ? nextError.message : 'Failed to create canvas.'
     } finally {
       isCreating = false
     }
@@ -70,7 +91,7 @@
 
   function handleDeleteRequest(canvas: Canvas) {
     deleteTarget = canvas
-    error = null
+    localError = null
     isDeleteDialogOpen = true
   }
 
@@ -81,15 +102,16 @@
 
     const canvas = deleteTarget
     isDeletingId = canvas.id
-    error = null
+    localError = null
 
     try {
       await deleteCanvas(canvas.id)
       canvases = canvases.filter((entry) => entry.id !== canvas.id)
       deleteTarget = null
       isDeleteDialogOpen = false
+      void invalidate(CANVASES_DEPENDENCY)
     } catch (nextError) {
-      error = nextError instanceof Error ? nextError.message : 'Failed to delete canvas.'
+      localError = nextError instanceof Error ? nextError.message : 'Failed to delete canvas.'
     } finally {
       isDeletingId = null
     }
@@ -102,10 +124,19 @@
   })
 
   $effect(() => {
-    if (session.data?.user?.id) {
-      void loadCanvases()
-    } else {
+    canvases = initialCanvases
+  })
+
+  $effect(() => {
+    if (!activeUser) {
       canvases = []
+      isLoading = false
+      return
+    }
+
+    if (!user && session.data?.user?.id && !hasLoadedFallback) {
+      hasLoadedFallback = true
+      void loadCanvases()
     }
   })
 </script>
@@ -245,7 +276,7 @@
     </div>
   {/if}
 
-  {#if !isLoading && session.data?.user && canvases.length === 0}
+  {#if !isLoading && activeUser && canvases.length === 0}
     <div class="py-12 text-center text-muted-foreground">
       No canvases yet. Create your first one to get started.
     </div>

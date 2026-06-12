@@ -1,4 +1,5 @@
 import type { CanvasRole } from '$lib/canvas/roles'
+import type { Canvas } from '$lib/canvas/schema'
 
 export type Tool = 'select' | 'hand' | 'pencil' | 'eraser' | 'text'
 
@@ -76,6 +77,7 @@ export type CanvasWorkspaceStoreInput = {
   role?: CanvasRole
   isPublicViewer?: boolean
   canvasTitle?: string
+  initialCanvases?: Canvas[]
 }
 
 export type RealtimeCanvasElementRow = {
