@@ -10,7 +10,7 @@ import { getSupabase } from '$lib/server/supabase'
 function sanitizeName(raw: string): string {
   return raw
     .replace(/<[^>]*>/g, '')
-    .replace(/[\u0000-\u001f\u007f-\u009f]/gu, '')
+    .replace(/\p{Cc}/gu, '')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 100)
