@@ -179,6 +179,14 @@
     box-shadow: 0 14px 34px rgb(15 23 42 / 0.14);
   }
 
+  .toolbar-button {
+    @apply flex h-9 w-9 items-center justify-center;
+  }
+
+  .toolbar-label {
+    @apply flex h-9 items-center px-3 text-[11px] font-semibold uppercase tracking-[0.18em];
+  }
+
   .dark .toolbar-pill {
     box-shadow: 0 14px 34px rgb(0 0 0 / 0.36);
   }

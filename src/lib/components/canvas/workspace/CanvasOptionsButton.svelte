@@ -42,7 +42,7 @@
   {#snippet trigger({ id, expanded })}
     <button
       type="button"
-      class="toolbar-pill relative flex h-9 w-9 items-center justify-center rounded-full"
+      class="toolbar-pill toolbar-button relative"
       aria-controls={id}
       aria-expanded={expanded}
       onclick={() => (open = !open)}

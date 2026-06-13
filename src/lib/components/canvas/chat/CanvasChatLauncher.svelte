@@ -9,14 +9,14 @@
   const store = useCanvasChatStore()
 </script>
 
-<!-- bottom-42 = 168px: the zoom stack in CanvasZoomControls (3 × h-10
-     buttons + 2 × gap-2 = 136px) + its bottom-6 (24px) + an 8px gap. While
+<!-- bottom-[156px]: the zoom stack in CanvasZoomControls (3 × h-9
+     buttons + 2 × gap-2 = 124px) + its bottom-6 (24px) + an 8px gap. While
      the window is open the launcher hides but stays in the DOM so the
      minimize FLIP can measure its live rect. -->
 <button
   bind:this={buttonEl}
   type="button"
-  class={`toolbar-pill fixed bottom-42 right-6 z-30 flex h-10 w-10 items-center justify-center transition-opacity ${
+  class={`toolbar-pill toolbar-button fixed bottom-[156px] right-6 z-30 transition-opacity ${
     store.open ? 'pointer-events-none opacity-0' : 'pointer-events-auto'
   }`}
   onclick={() => store.openWindow()}

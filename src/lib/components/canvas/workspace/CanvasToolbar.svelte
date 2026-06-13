@@ -44,10 +44,10 @@
   const CurrentIcon = $derived(currentTool().icon)
 </script>
 
-<div class="relative w-10">
+<div class="relative w-9">
   <button
     type="button"
-    class="toolbar-pill flex h-10 w-10 items-center justify-center"
+    class="toolbar-pill toolbar-button"
     onclick={() => (isExpanded = !isExpanded)}
     title="Tools"
   >
@@ -57,7 +57,7 @@
   {#if isExpanded}
     <div
       transition:slide={{ duration: 200, axis: 'y' }}
-      class="absolute left-0 top-12 overflow-hidden rounded-2xl border border-border/70 bg-popover text-popover-foreground shadow-xl backdrop-blur"
+      class="absolute left-0 top-11 overflow-hidden rounded-2xl border border-border/70 bg-popover text-popover-foreground shadow-xl backdrop-blur"
       style="transform-origin: top center"
     >
       <div class="flex flex-col gap-1 p-1">

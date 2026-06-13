@@ -14,7 +14,7 @@
 >
   <button
     type="button"
-    class="toolbar-pill flex h-10 w-10 items-center justify-center"
+    class="toolbar-pill toolbar-button"
     onclick={onZoomIn}
     title="Zoom in"
   >
@@ -22,7 +22,7 @@
   </button>
   <button
     type="button"
-    class="toolbar-pill flex h-10 w-10 items-center justify-center"
+    class="toolbar-pill toolbar-button"
     onclick={onZoomOut}
     title="Zoom out"
   >
@@ -30,7 +30,7 @@
   </button>
   <button
     type="button"
-    class="toolbar-pill flex h-10 w-10 items-center justify-center text-[11px] font-semibold"
+    class="toolbar-pill toolbar-button text-[11px] font-semibold"
     onclick={onReset}
     title="Reset view"
   >

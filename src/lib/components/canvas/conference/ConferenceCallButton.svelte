@@ -10,7 +10,7 @@
 {:else if store.status === 'idle' && !store.callActive}
   <button
     type="button"
-    class="toolbar-pill flex h-9 w-9 items-center justify-center"
+    class="toolbar-pill toolbar-button"
     onclick={() => void store.join()}
     title="Start a call"
     aria-label="Start a call"

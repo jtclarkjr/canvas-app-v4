@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { House } from 'lucide-svelte'
+  import { ChevronDown, House } from 'lucide-svelte'
   import { onMount } from 'svelte'
   import type { Canvas } from '$lib/canvas/schema'
   import type { Tool } from '$lib/canvas/types'
@@ -73,13 +73,9 @@
   }
 </script>
 
-<div class="fixed left-4 top-4 z-20 flex items-start gap-4">
+<div class="fixed left-4 top-4 z-20 flex items-start gap-3">
   <div class="flex flex-col gap-2">
-    <a
-      href="/"
-      class="toolbar-pill flex h-10 w-10 items-center justify-center"
-      title="Back to dashboard"
-    >
+    <a href="/" class="toolbar-pill toolbar-button" title="Back to dashboard">
       <House class="size-5" />
     </a>
     <CanvasToolbar {selectedTool} {readOnly} {onToolChange} />
@@ -87,7 +83,7 @@
 
   <div class="flex items-start gap-2">
     {#if isEditingTitle}
-      <div class="toolbar-pill flex items-center gap-1 px-3 py-1">
+      <div class="toolbar-pill toolbar-label gap-1">
         <input
           bind:this={titleInputEl}
           class="w-[200px] border-0 bg-transparent text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground outline-none"
@@ -105,15 +101,13 @@
     {:else if canManageCanvas}
       <button
         type="button"
-        class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+        class="toolbar-pill toolbar-label"
         onclick={beginTitleEdit}
       >
         {currentTitle || 'Select Canvas'}
       </button>
     {:else}
-      <span
-        class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
-      >
+      <span class="toolbar-pill toolbar-label">
         {currentTitle || 'Canvas'}
       </span>
     {/if}
@@ -121,11 +115,11 @@
     <div bind:this={dropdownEl} class="relative">
       <button
         type="button"
-        class="toolbar-pill flex h-8 w-8 items-center justify-center"
+        class="toolbar-pill toolbar-button"
         onclick={() => (showCanvasSelector = !showCanvasSelector)}
         title="Switch canvas"
       >
-        ▾
+        <ChevronDown class="size-4" />
       </button>
       {#if showCanvasSelector}
         <div
