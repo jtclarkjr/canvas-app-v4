@@ -34,6 +34,13 @@
   let isEditingTitle = $state(false)
   let editedTitle = $state('')
 
+  const MAX_TITLE_CHARS = 20
+  const displayTitle = $derived(
+    currentTitle && currentTitle.length > MAX_TITLE_CHARS
+      ? currentTitle.slice(0, MAX_TITLE_CHARS) + '…'
+      : currentTitle
+  )
+
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -104,11 +111,11 @@
         class="toolbar-pill toolbar-label"
         onclick={beginTitleEdit}
       >
-        {currentTitle || 'Select Canvas'}
+        {displayTitle || 'Select Canvas'}
       </button>
     {:else}
       <span class="toolbar-pill toolbar-label">
-        {currentTitle || 'Canvas'}
+        {displayTitle || 'Canvas'}
       </span>
     {/if}
 
