@@ -61,9 +61,7 @@ export const POST: RequestHandler = async (event) =>
         maxOutputTokens: 400
       })
 
-      return json(
-        translateCaptionResponseSchema.parse({ text: text.trim() })
-      )
+      return json(translateCaptionResponseSchema.parse({ text: text.trim() }))
     } catch (error) {
       return handleApiError(error, event.request)
     }

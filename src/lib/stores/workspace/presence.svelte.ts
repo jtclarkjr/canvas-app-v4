@@ -1,4 +1,7 @@
-import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from '@supabase/supabase-js'
+import {
+  REALTIME_SUBSCRIBE_STATES,
+  type RealtimeChannel
+} from '@supabase/supabase-js'
 import { supabase } from '$lib/auth/session-store'
 import { colorFromId } from '$lib/canvas/helpers/color-from-id'
 import { displayMembers as getDisplayMembers } from '$lib/workspace/display-members'
@@ -70,10 +73,14 @@ export function createWorkspacePresenceStore({
       .on('presence', { event: 'leave' }, ({ leftPresences }) => {
         leftPresences.forEach((presence) => {
           cursors = Object.fromEntries(
-            Object.entries(cursors).filter(([key]) => key !== String(presence.key))
+            Object.entries(cursors).filter(
+              ([key]) => key !== String(presence.key)
+            )
           )
           members = Object.fromEntries(
-            Object.entries(members).filter(([key]) => key !== String(presence.key))
+            Object.entries(members).filter(
+              ([key]) => key !== String(presence.key)
+            )
           )
         })
       })
@@ -82,16 +89,15 @@ export function createWorkspacePresenceStore({
           string,
           Array<{ name: string; color: string }>
         >
-        const participants = Object.entries(state).reduce<Record<string, WorkspaceMember>>(
-          (accumulator, [key, values]) => {
-            const latest = values.length > 0 ? values[values.length - 1] : null
-            if (latest) {
-              accumulator[key] = { name: latest.name, color: latest.color }
-            }
-            return accumulator
-          },
-          {}
-        )
+        const participants = Object.entries(state).reduce<
+          Record<string, WorkspaceMember>
+        >((accumulator, [key, values]) => {
+          const latest = values.length > 0 ? values[values.length - 1] : null
+          if (latest) {
+            accumulator[key] = { name: latest.name, color: latest.color }
+          }
+          return accumulator
+        }, {})
 
         members = participants
 
@@ -126,16 +132,15 @@ export function createWorkspacePresenceStore({
             string,
             Array<{ name: string; color: string }>
           >
-          members = Object.entries(state).reduce<Record<string, WorkspaceMember>>(
-            (accumulator, [key, values]) => {
-              const latest = values.length > 0 ? values[values.length - 1] : null
-              if (latest) {
-                accumulator[key] = { name: latest.name, color: latest.color }
-              }
-              return accumulator
-            },
-            {}
-          )
+          members = Object.entries(state).reduce<
+            Record<string, WorkspaceMember>
+          >((accumulator, [key, values]) => {
+            const latest = values.length > 0 ? values[values.length - 1] : null
+            if (latest) {
+              accumulator[key] = { name: latest.name, color: latest.color }
+            }
+            return accumulator
+          }, {})
         } else {
           cursors = {}
           members = {}
@@ -158,7 +163,12 @@ export function createWorkspacePresenceStore({
     },
     get displayMembers() {
       const userId = getUserId()
-      return getDisplayMembers(members, userId, getUserEmail(), colorFromId(userId))
+      return getDisplayMembers(
+        members,
+        userId,
+        getUserEmail(),
+        colorFromId(userId)
+      )
     }
   }
 }

@@ -15,16 +15,22 @@ import {
   normalizeListText,
   toggleListStyle
 } from '$lib/canvas/text-lists'
-import type { createWorkspaceFormattingStore } from '$lib/stores/canvas/workspace/formatting.svelte'
+import type { createWorkspaceFormattingStore } from '$lib/stores/workspace/formatting.svelte'
 
 type ElementSetter<T> = (next: T[] | ((previous: T[]) => T[])) => void
 
 type UpsertElementMutation = {
-  mutate(variables: UpsertElementInput, options?: { onError?: (error: unknown) => void }): void
+  mutate(
+    variables: UpsertElementInput,
+    options?: { onError?: (error: unknown) => void }
+  ): void
 }
 
 type DeleteElementMutation = {
-  mutate(variables: { id: string }, options?: { onError?: (error: unknown) => void }): void
+  mutate(
+    variables: { id: string },
+    options?: { onError?: (error: unknown) => void }
+  ): void
 }
 
 type WorkspaceTextEditorInput = {
@@ -69,11 +75,17 @@ export function createWorkspaceTextEditorStore({
 
     if (!value) {
       const wasCreate = !previousTextValue
-      const existingText = getTextElements().find((entry) => entry.id === text.id)
+      const existingText = getTextElements().find(
+        (entry) => entry.id === text.id
+      )
       if (existingText && !wasCreate) {
-        addHistoryCommand(createDeleteElementCommand(existingText, 'text', getUserId()))
+        addHistoryCommand(
+          createDeleteElementCommand(existingText, 'text', getUserId())
+        )
       }
-      setTextElements((previous) => previous.filter((entry) => entry.id !== text.id))
+      setTextElements((previous) =>
+        previous.filter((entry) => entry.id !== text.id)
+      )
 
       if (!wasCreate) {
         deleteElement.mutate({ id: text.id })
@@ -108,7 +120,14 @@ export function createWorkspaceTextEditorStore({
     if (wasCreate) {
       addHistoryCommand(createCreateTextCommand(textElement, getUserId()))
     } else if (previousTextValue) {
-      addHistoryCommand(createUpdateTextCommand(text.id, previousTextValue, textElement, getUserId()))
+      addHistoryCommand(
+        createUpdateTextCommand(
+          text.id,
+          previousTextValue,
+          textElement,
+          getUserId()
+        )
+      )
     }
 
     setEditingText(null)
@@ -126,10 +145,14 @@ export function createWorkspaceTextEditorStore({
       {
         onError: () => {
           if (wasCreate) {
-            setTextElements((previous) => previous.filter((entry) => entry.id !== text.id))
+            setTextElements((previous) =>
+              previous.filter((entry) => entry.id !== text.id)
+            )
           } else if (previousTextValue) {
             setTextElements((previous) =>
-              previous.map((entry) => (entry.id === text.id ? previousTextValue : entry))
+              previous.map((entry) =>
+                entry.id === text.id ? previousTextValue : entry
+              )
             )
           }
         }
@@ -137,7 +160,12 @@ export function createWorkspaceTextEditorStore({
     )
   }
 
-  function startTextEditingAtPosition(x: number, y: number, value: string, id?: string) {
+  function startTextEditingAtPosition(
+    x: number,
+    y: number,
+    value: string,
+    id?: string
+  ) {
     const textId = id ?? crypto.randomUUID()
     let initialValue = value
 
@@ -191,7 +219,9 @@ export function createWorkspaceTextEditorStore({
     const editingText = getEditingText()
     setEditingText(editingText ? { ...editingText, value } : editingText)
     setTextElements((previous) =>
-      previous.map((entry) => (entry.id === getEditingText()?.id ? { ...entry, text: value } : entry))
+      previous.map((entry) =>
+        entry.id === getEditingText()?.id ? { ...entry, text: value } : entry
+      )
     )
   }
 
@@ -240,9 +270,13 @@ export function createWorkspaceTextEditorStore({
     } else if (event.key === 'Escape') {
       event.preventDefault()
       if (editingText?.id) {
-        const existing = getTextElements().find((entry) => entry.id === editingText?.id)
+        const existing = getTextElements().find(
+          (entry) => entry.id === editingText?.id
+        )
         if (existing && !normalizeListText(existing.text)) {
-          setTextElements((previous) => previous.filter((entry) => entry.id !== editingText?.id))
+          setTextElements((previous) =>
+            previous.filter((entry) => entry.id !== editingText?.id)
+          )
         }
       }
       setEditingText(null)
@@ -253,13 +287,17 @@ export function createWorkspaceTextEditorStore({
     const editingText = getEditingText()
     if (!editingText) return
 
-    const relatedTarget = event.relatedTarget instanceof Element ? event.relatedTarget : null
+    const relatedTarget =
+      event.relatedTarget instanceof Element ? event.relatedTarget : null
     if (relatedTarget?.closest('[data-text-formatting-toolbar]')) {
       return
     }
 
     queueMicrotask(() => {
-      const nextFocused = document.activeElement instanceof Element ? document.activeElement : null
+      const nextFocused =
+        document.activeElement instanceof Element
+          ? document.activeElement
+          : null
 
       if (nextFocused?.closest('[data-text-formatting-toolbar]')) {
         return
@@ -281,7 +319,11 @@ export function createWorkspaceTextEditorStore({
       const editingText = getEditingText()
       const editorSelection = getEditorSelection()
       return editingText
-        ? getSelectionListStyle(editingText.value, editorSelection.start, editorSelection.end)
+        ? getSelectionListStyle(
+            editingText.value,
+            editorSelection.start,
+            editorSelection.end
+          )
         : formattingStore.textFormatting.listStyle
     }
   }

@@ -42,7 +42,10 @@ type WorkspaceScenesInput = {
   getRootElement: () => HTMLDivElement | null
   getCameraScale: () => number
   initialScenes?: Scene[]
-  screenToCanvasPoint: (clientX: number, clientY: number) => {
+  screenToCanvasPoint: (
+    clientX: number,
+    clientY: number
+  ) => {
     x: number
     y: number
   }

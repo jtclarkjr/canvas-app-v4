@@ -1,6 +1,10 @@
 <script lang="ts">
   import PlatformIcons from '$lib/components/shared/PlatformIcons.svelte'
-  import { signInWithEmail, signInWithOAuth, signUpWithEmail } from '$lib/auth/session-service'
+  import {
+    signInWithEmail,
+    signInWithOAuth,
+    signUpWithEmail
+  } from '$lib/auth/session-service'
   import type { AuthConfig } from '$lib/server/auth-config'
 
   type AuthMode = 'sign-in' | 'sign-up'
@@ -23,7 +27,9 @@
   let message = $state<string | null>(null)
   let isSubmitting = $state(false)
 
-  const modeThumbStyle = $derived(`transform: translateX(${mode === 'sign-up' ? '100%' : '0'});`)
+  const modeThumbStyle = $derived(
+    `transform: translateX(${mode === 'sign-up' ? '100%' : '0'});`
+  )
 
   function setMode(nextMode: AuthMode) {
     mode = nextMode
@@ -222,7 +228,9 @@
             bind:value={password}
             class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
             placeholder="At least 8 characters"
-            autocomplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
+            autocomplete={mode === 'sign-in'
+              ? 'current-password'
+              : 'new-password'}
             type="password"
             minlength="8"
             required

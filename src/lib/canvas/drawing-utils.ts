@@ -1,9 +1,4 @@
-import type {
-  Camera,
-  Path,
-  Point,
-  TextElement
-} from '$lib/canvas/types'
+import type { Camera, Path, Point, TextElement } from '$lib/canvas/types'
 
 export const TEXT_LINE_HEIGHT = 1.25
 export const TEXT_BOUNDS_PADDING = 4
@@ -74,7 +69,10 @@ function distanceToSegment(point: Point, start: Point, end: Point): number {
     return Math.sqrt((point.x - start.x) ** 2 + (point.y - start.y) ** 2)
   }
   const t = Math.min(
-    Math.max(((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared, 0),
+    Math.max(
+      ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared,
+      0
+    ),
     1
   )
   const closestX = start.x + t * dx
@@ -91,7 +89,9 @@ export function isPointNearPath(
   if (!first) return false
 
   if (path.points.length === 1) {
-    return Math.sqrt((point.x - first.x) ** 2 + (point.y - first.y) ** 2) < threshold
+    return (
+      Math.sqrt((point.x - first.x) ** 2 + (point.y - first.y) ** 2) < threshold
+    )
   }
 
   for (let i = 0; i < path.points.length - 1; i += 1) {
@@ -184,7 +184,8 @@ export function pathToSvgPath(points: Point[]): string {
 
 export function calculateTextBounds(text: TextElement) {
   const lines = getTextLines(text.text)
-  const width = getTextContentWidth(lines, text.fontSize) + TEXT_BOUNDS_PADDING * 2
+  const width =
+    getTextContentWidth(lines, text.fontSize) + TEXT_BOUNDS_PADDING * 2
   const height =
     (lines.length - 1) * getTextLineHeight(text.fontSize) +
     text.fontSize +

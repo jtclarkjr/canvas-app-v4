@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { Camera, EditingText, TextFormatting } from '$lib/canvas/types'
-  import { getTextEditorWidth, getTextLines, TEXT_LINE_HEIGHT } from '$lib/canvas/drawing-utils'
+  import {
+    getTextEditorWidth,
+    getTextLines,
+    TEXT_LINE_HEIGHT
+  } from '$lib/canvas/drawing-utils'
   import { resolveCanvasDisplayColor } from '$lib/canvas/helpers/display-color'
 
   let {

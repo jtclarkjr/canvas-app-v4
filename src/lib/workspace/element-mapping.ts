@@ -24,7 +24,10 @@ export const textDataSchema = z
     isBold: z.boolean().default(false),
     isItalic: z.boolean().default(false),
     isUnderline: z.boolean().default(false),
-    listStyle: z.enum(['none', 'bullet', 'number']).catch('none').default('none')
+    listStyle: z
+      .enum(['none', 'bullet', 'number'])
+      .catch('none')
+      .default('none')
   })
   .nullable()
   .catch(null)
@@ -41,9 +44,14 @@ export const realtimeRowSchema = z
   .nullable()
   .catch(null)
 
-export const deletedRowSchema = z.object({ id: z.string() }).nullable().catch(null)
+export const deletedRowSchema = z
+  .object({ id: z.string() })
+  .nullable()
+  .catch(null)
 
-export function canvasElementOwnerEntries(items: CanvasElement[]): Array<[string, string | null]> {
+export function canvasElementOwnerEntries(
+  items: CanvasElement[]
+): Array<[string, string | null]> {
   return items.map((element) => [element.id, element.createdBy ?? null])
 }
 
@@ -63,7 +71,9 @@ export function canvasElementToPath(element: CanvasElement): Path | null {
   }
 }
 
-export function canvasElementToText(element: CanvasElement): TextElement | null {
+export function canvasElementToText(
+  element: CanvasElement
+): TextElement | null {
   if (element.type !== 'text') {
     return null
   }
@@ -85,8 +95,12 @@ export function canvasElementToText(element: CanvasElement): TextElement | null 
 
 export function canvasElementsToDrawingState(items: CanvasElement[]) {
   return {
-    paths: items.map(canvasElementToPath).filter((path): path is Path => path !== null),
-    textElements: items.map(canvasElementToText).filter((text): text is TextElement => text !== null),
+    paths: items
+      .map(canvasElementToPath)
+      .filter((path): path is Path => path !== null),
+    textElements: items
+      .map(canvasElementToText)
+      .filter((text): text is TextElement => text !== null),
     owners: new Map(canvasElementOwnerEntries(items))
   }
 }
@@ -110,7 +124,9 @@ export function realtimeRowToPath(row: RealtimeCanvasElementRow): Path | null {
   }
 }
 
-export function realtimeRowToText(row: RealtimeCanvasElementRow): TextElement | null {
+export function realtimeRowToText(
+  row: RealtimeCanvasElementRow
+): TextElement | null {
   if (row.type !== 'text') {
     return null
   }

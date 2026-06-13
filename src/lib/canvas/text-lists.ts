@@ -83,8 +83,10 @@ export function getSelectionListStyle(
   const starts = lineStartOffsets(lines)
   const targets = getTargetLines(lines, starts, selectionStart, selectionEnd)
   const markers = targets.map((i) => getLineMarker(lines[i] ?? ''))
-  if (markers.length > 0 && markers.every((marker) => marker === 'bullet')) return 'bullet'
-  if (markers.length > 0 && markers.every((marker) => marker === 'number')) return 'number'
+  if (markers.length > 0 && markers.every((marker) => marker === 'bullet'))
+    return 'bullet'
+  if (markers.length > 0 && markers.every((marker) => marker === 'number'))
+    return 'number'
   return 'none'
 }
 
@@ -96,9 +98,12 @@ export function toggleListStyle(
 ): { text: string; selectionStart: number; selectionEnd: number } {
   const lines = text.split('\n')
   const starts = lineStartOffsets(lines)
-  const targets = new Set(getTargetLines(lines, starts, selectionStart, selectionEnd))
+  const targets = new Set(
+    getTargetLines(lines, starts, selectionStart, selectionEnd)
+  )
   const removing =
-    targets.size > 0 && [...targets].every((i) => getLineMarker(lines[i] ?? '') === style)
+    targets.size > 0 &&
+    [...targets].every((i) => getLineMarker(lines[i] ?? '') === style)
 
   const toggled = lines.map((line, i) => {
     if (!targets.has(i)) return line
@@ -114,7 +119,10 @@ export function toggleListStyle(
     const column = position - (starts[index] ?? 0)
     const newLength = (next[index] ?? '').length
     const delta = newLength - (lines[index] ?? '').length
-    return (nextStarts[index] ?? 0) + Math.max(0, Math.min(column + delta, newLength))
+    return (
+      (nextStarts[index] ?? 0) +
+      Math.max(0, Math.min(column + delta, newLength))
+    )
   }
 
   return {
@@ -169,7 +177,11 @@ export function continueListOnEnter(
 export function normalizeListText(text: string): string {
   const lines = text.split('\n')
   while (lines.length > 0 && !(lines[0] ?? '').trim()) lines.shift()
-  while (lines.length > 0 && !stripLineMarker(lines[lines.length - 1] ?? '').trim()) lines.pop()
+  while (
+    lines.length > 0 &&
+    !stripLineMarker(lines[lines.length - 1] ?? '').trim()
+  )
+    lines.pop()
   return renumberLines(lines).join('\n')
 }
 

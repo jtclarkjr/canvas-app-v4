@@ -58,7 +58,12 @@ describe('anchorFor', () => {
 
   it('clamps to the top margin when chat plus pip overflow the viewport', () => {
     for (const height of [500, 800]) {
-      const anchor = anchorFor('bottom-right', pip, { width: 1280, height }, true)
+      const anchor = anchorFor(
+        'bottom-right',
+        pip,
+        { width: 1280, height },
+        true
+      )
       expect(anchor.y).toBe(PIP_TOP_MARGIN)
     }
   })

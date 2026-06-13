@@ -38,7 +38,9 @@ export const GET: RequestHandler = async (event) =>
 
       return json(
         sceneDocumentResponseSchema.parse({
-          item: sceneDocumentRowToDocument(sceneDocumentRowSchema.parse(document))
+          item: sceneDocumentRowToDocument(
+            sceneDocumentRowSchema.parse(document)
+          )
         })
       )
     } catch (error) {
@@ -130,7 +132,9 @@ export const DELETE: RequestHandler = async (event) =>
 
       return json(
         sceneDocumentResponseSchema.parse({
-          item: sceneDocumentRowToDocument(sceneDocumentRowSchema.parse(document))
+          item: sceneDocumentRowToDocument(
+            sceneDocumentRowSchema.parse(document)
+          )
         })
       )
     } catch (error) {

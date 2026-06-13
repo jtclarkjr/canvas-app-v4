@@ -12,7 +12,9 @@
     { id: 'scenes' as WorkspaceMode, icon: LayoutGrid, label: 'Scenes' }
   ]
 
-  const thumbStyle = $derived(`transform: translateX(${mode === 'scenes' ? '100%' : '0%'})`)
+  const thumbStyle = $derived(
+    `transform: translateX(${mode === 'scenes' ? '100%' : '0%'})`
+  )
 </script>
 
 <!-- Bottom-left: top-center belongs to the drawing/text formatting

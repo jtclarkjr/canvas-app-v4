@@ -37,7 +37,9 @@
   let prompt = $state('')
   let textareaEl = $state<HTMLTextAreaElement | null>(null)
 
-  const canSend = $derived(!disabled && !isStreaming && prompt.trim().length > 0)
+  const canSend = $derived(
+    !disabled && !isStreaming && prompt.trim().length > 0
+  )
 
   function autogrow() {
     if (!textareaEl) return
@@ -63,7 +65,9 @@
 </script>
 
 <div class={floating ? 'w-full' : 'border-t border-border/50 px-5 py-3'}>
-  <div class="document-composer-shell surface-card flex flex-col gap-2 rounded-2xl p-3">
+  <div
+    class="document-composer-shell surface-card flex flex-col gap-2 rounded-2xl p-3"
+  >
     <textarea
       bind:this={textareaEl}
       bind:value={prompt}

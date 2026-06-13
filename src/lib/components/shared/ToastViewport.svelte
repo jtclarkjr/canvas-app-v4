@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
-  import { toast } from '$lib/stores/toast.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
 </script>
 
 {#if toast.items.length > 0}
@@ -20,7 +20,9 @@
         <div class="min-w-0 flex-1">
           <p class="text-sm font-semibold">{item.title}</p>
           {#if item.description}
-            <p class="truncate text-xs text-muted-foreground">{item.description}</p>
+            <p class="truncate text-xs text-muted-foreground">
+              {item.description}
+            </p>
           {/if}
         </div>
         {#if item.action}

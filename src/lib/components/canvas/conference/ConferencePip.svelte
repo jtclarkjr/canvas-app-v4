@@ -12,9 +12,13 @@
     VideoOff,
     Volume2
   } from 'lucide-svelte'
-  import { anchorFor, clampToViewport, nearestCorner } from '$lib/conference/helpers'
+  import {
+    anchorFor,
+    clampToViewport,
+    nearestCorner
+  } from '$lib/conference/helpers'
   import type { Point, Size } from '$lib/conference/types'
-  import { useCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
+  import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
   import ConferenceParticipantStrip from '$lib/components/canvas/conference/ConferenceParticipantStrip.svelte'
   import { attachTrack } from '$lib/components/canvas/conference/media-actions'
 
@@ -27,7 +31,8 @@
   const BAR_SIZE: Size = { width: 360, height: 56 }
 
   const reducedMotion =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const boxSize = $derived(store.viewMode === 'bar' ? BAR_SIZE : PIP_SIZE)
 
@@ -38,7 +43,9 @@
   })
   // svelte-ignore state_referenced_locally -- intentionally the initial
   // value: the re-anchor effect below keeps pos in sync from here on.
-  let pos = $state<Point>(anchorFor(store.corner, boxSize, viewport, store.chatOpen))
+  let pos = $state<Point>(
+    anchorFor(store.corner, boxSize, viewport, store.chatOpen)
+  )
   let dragging = $state(false)
 
   let dragPointerId: number | null = null
@@ -103,7 +110,9 @@
     if (!dragging || event.pointerId !== dragPointerId) {
       return
     }
-    if (Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4) {
+    if (
+      Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4
+    ) {
       movedBeyondClick = true
     }
     pos = clampToViewport(
@@ -132,7 +141,9 @@
     moveTo(anchorFor(corner, boxSize, viewport, store.chatOpen))
   }
 
-  const stripPlacement = $derived(store.corner.startsWith('top') ? 'below' : 'above')
+  const stripPlacement = $derived(
+    store.corner.startsWith('top') ? 'below' : 'above'
+  )
   const featured = $derived(store.featured)
   const showFeaturedVideo = $derived(
     featured !== null && featured.videoTrack !== null && featured.camEnabled
@@ -243,7 +254,9 @@
           ></video>
         {/key}
       {:else}
-        <div class="flex h-full w-full items-center justify-center bg-secondary/60">
+        <div
+          class="flex h-full w-full items-center justify-center bg-secondary/60"
+        >
           {#if featured}
             <span
               class="flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold shadow-inner"
@@ -333,7 +346,9 @@
             : store.micEnabled
               ? 'Mute microphone'
               : 'Unmute microphone'}
-          aria-label={store.micEnabled ? 'Mute microphone' : 'Unmute microphone'}
+          aria-label={store.micEnabled
+            ? 'Mute microphone'
+            : 'Unmute microphone'}
           aria-pressed={store.micEnabled}
         >
           {#if store.micEnabled}

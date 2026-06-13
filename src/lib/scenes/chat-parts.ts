@@ -18,7 +18,9 @@ export type MessageAuthorInfo = {
 
 // Author/model attribution rides on message metadata (stamped server-side
 // at persist time; local messages have none and belong to the viewer).
-export function messageAuthor(message: DisplayMessage): MessageAuthorInfo | null {
+export function messageAuthor(
+  message: DisplayMessage
+): MessageAuthorInfo | null {
   const metadata = message.metadata
   if (typeof metadata !== 'object' || metadata === null) {
     return null

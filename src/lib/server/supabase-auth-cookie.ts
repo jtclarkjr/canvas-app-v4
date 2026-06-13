@@ -68,9 +68,7 @@ if (import.meta.vitest) {
           cookieHeader,
           'sb-my-project-ref-auth-token'
         )
-      ).toBe(
-        'access-token'
-      )
+      ).toBe('access-token')
     })
 
     it('falls back to a raw cookie token when the value is not a JSON tuple', () => {
@@ -81,9 +79,7 @@ if (import.meta.vitest) {
           cookieHeader,
           'sb-my-project-ref-auth-token'
         )
-      ).toBe(
-        'raw-access-token'
-      )
+      ).toBe('raw-access-token')
     })
 
     it('ignores unrelated supabase cookies', () => {

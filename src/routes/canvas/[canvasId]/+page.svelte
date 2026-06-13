@@ -6,7 +6,7 @@
   import type { CanvasRole } from '$lib/canvas/roles'
   import type { Canvas } from '$lib/canvas/schema'
   import type { CanvasElement } from '$lib/workspace/schema'
-  import { provideSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
+  import { provideSceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
   import type { Scene, SceneDocumentListItem } from '$lib/scenes/schema'
   import { sleep } from '$lib/utils'
 
@@ -42,7 +42,10 @@
   })
 
   $effect(() => {
-    sceneDocumentsStore.setCanvas(data.canvasId, data.sceneDocumentListsBySceneId ?? {})
+    sceneDocumentsStore.setCanvas(
+      data.canvasId,
+      data.sceneDocumentListsBySceneId ?? {}
+    )
   })
 
   onMount(() => {
@@ -64,7 +67,9 @@
 {#if data.access?.state === 'no-access'}
   <RequestAccessScreen canvasId={data.canvasId} />
 {:else if data.access?.state === 'not-found'}
-  <div class="flex h-screen w-screen flex-col items-center justify-center gap-3 bg-background">
+  <div
+    class="flex h-screen w-screen flex-col items-center justify-center gap-3 bg-background"
+  >
     <h1 class="text-2xl font-bold text-foreground">Canvas not found</h1>
     <p class="text-sm text-muted-foreground">
       This canvas does not exist or may have been deleted.

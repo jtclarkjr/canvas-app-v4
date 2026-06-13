@@ -1,8 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import {
-  createSceneInputSchema,
-  sceneResponseSchema
-} from '$lib/scenes/schema'
+import { createSceneInputSchema, sceneResponseSchema } from '$lib/scenes/schema'
 import { getSceneType } from '$lib/scenes/registry'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {
@@ -84,10 +81,9 @@ export const POST: RequestHandler = async (event) =>
         throw error ?? new Error('Failed to create scene')
       }
 
-      return json(
-        sceneResponseSchema.parse({ item: toCanvasScene(data) }),
-        { status: 201 }
-      )
+      return json(sceneResponseSchema.parse({ item: toCanvasScene(data) }), {
+        status: 201
+      })
     } catch (error) {
       return handleApiError(error, event.request)
     }

@@ -36,7 +36,11 @@
 
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownEl && event.target instanceof Node && !dropdownEl.contains(event.target)) {
+      if (
+        dropdownEl &&
+        event.target instanceof Node &&
+        !dropdownEl.contains(event.target)
+      ) {
         showCanvasSelector = false
       }
     }
@@ -107,7 +111,9 @@
         {currentTitle || 'Select Canvas'}
       </button>
     {:else}
-      <span class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]">
+      <span
+        class="toolbar-pill px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+      >
         {currentTitle || 'Canvas'}
       </span>
     {/if}
@@ -146,9 +152,13 @@
                 </button>
               {/each}
             {:else if isLoadingCanvases}
-              <div class="px-3 py-2 text-sm text-muted-foreground">Loading canvases...</div>
+              <div class="px-3 py-2 text-sm text-muted-foreground">
+                Loading canvases...
+              </div>
             {:else}
-              <div class="px-3 py-2 text-sm text-muted-foreground">No canvases yet</div>
+              <div class="px-3 py-2 text-sm text-muted-foreground">
+                No canvases yet
+              </div>
             {/if}
           </div>
         </div>

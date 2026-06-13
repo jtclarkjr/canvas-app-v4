@@ -30,7 +30,11 @@ describe('renumberLines', () => {
   })
 
   it('restarts numbering after a plain line', () => {
-    expect(renumberLines(['1. a', 'plain', '7. b'])).toEqual(['1. a', 'plain', '1. b'])
+    expect(renumberLines(['1. a', 'plain', '7. b'])).toEqual([
+      '1. a',
+      'plain',
+      '1. b'
+    ])
   })
 })
 

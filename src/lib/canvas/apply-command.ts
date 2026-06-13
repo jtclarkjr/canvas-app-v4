@@ -2,7 +2,8 @@ import type { Path, TextElement } from '$lib/canvas/types'
 import type { ApplyCommandOptions, Command } from '$lib/canvas/commands'
 import { textElementToData } from '$lib/canvas/drawing-utils'
 
-const isPath = (element: Path | TextElement): element is Path => 'points' in element
+const isPath = (element: Path | TextElement): element is Path =>
+  'points' in element
 const isTextElement = (element: Path | TextElement): element is TextElement =>
   'text' in element
 
@@ -139,9 +140,7 @@ export function createApplyCommand({
       case 'UPDATE_TEXT': {
         const text = command.after
         setTextElements((prev) =>
-          prev.map((entry) =>
-            entry.id === command.elementId ? text : entry
-          )
+          prev.map((entry) => (entry.id === command.elementId ? text : entry))
         )
         upsertElement.mutate({
           id: text.id,
@@ -195,7 +194,9 @@ export function createApplyCommand({
                 : entry
             )
           )
-          const text = textElements.find((entry) => entry.id === command.elementId)
+          const text = textElements.find(
+            (entry) => entry.id === command.elementId
+          )
           if (text) {
             upsertElement.mutate({
               id: text.id,

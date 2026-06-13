@@ -4,7 +4,7 @@ import type {
   DeviceKind,
   DevicePrefs
 } from '$lib/conference/types'
-import { toast } from '$lib/stores/toast.svelte'
+import { toast } from '$lib/stores/shared/toast.svelte'
 
 type ConferenceDevicesInput = {
   // Applies a chosen device to the live room, when one exists.

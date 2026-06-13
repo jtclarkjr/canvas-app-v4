@@ -122,5 +122,9 @@ export type ListMembersResponse = z.infer<typeof listMembersResponseSchema>
 export type AddMemberInput = z.infer<typeof addMemberInputSchema>
 export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleInputSchema>
 export type MemberResponse = z.infer<typeof memberResponseSchema>
-export type ListAccessRequestsResponse = z.infer<typeof listAccessRequestsResponseSchema>
-export type ResolveAccessRequestInput = z.infer<typeof resolveAccessRequestInputSchema>
+export type ListAccessRequestsResponse = z.infer<
+  typeof listAccessRequestsResponseSchema
+>
+export type ResolveAccessRequestInput = z.infer<
+  typeof resolveAccessRequestInputSchema
+>

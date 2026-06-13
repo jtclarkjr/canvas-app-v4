@@ -5,6 +5,7 @@
   "printWidth": 100,
   "trailingComma": "none",
   "proseWrap": "always",
+  "svelte": true,
   "sortPackageJson": false,
   "ignorePatterns": ["*.md", "storybook-static/**"]
 }

@@ -47,7 +47,9 @@ export async function listCanvasElementsForCanvas(
 if (import.meta.vitest) {
   const { describe, expect, it } = import.meta.vitest
 
-  const row = (overrides: Partial<CanvasElementRow> = {}): CanvasElementRow => ({
+  const row = (
+    overrides: Partial<CanvasElementRow> = {}
+  ): CanvasElementRow => ({
     id: 'element-1',
     canvas_id: 'canvas-1',
     type: 'text',
@@ -116,11 +118,7 @@ if (import.meta.vitest) {
       expect(response.items).toHaveLength(1)
       expect(calls).toContainEqual(['from', 'canvas_elements'])
       expect(calls).toContainEqual(['eq', 'canvas_id', 'canvas-1'])
-      expect(calls).toContainEqual([
-        'order',
-        'updated_at',
-        { ascending: true }
-      ])
+      expect(calls).toContainEqual(['order', 'updated_at', { ascending: true }])
     })
   })
 }

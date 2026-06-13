@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { useCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
-  import { useCanvasConferenceStoreOptional } from '$lib/stores/canvas/conference/index.svelte'
+  import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
+  import { useCanvasConferenceStoreOptional } from '$lib/stores/conference/index.svelte'
   import CanvasChatLauncher from '$lib/components/canvas/chat/CanvasChatLauncher.svelte'
   import CanvasChatWindow from '$lib/components/canvas/chat/CanvasChatWindow.svelte'
 

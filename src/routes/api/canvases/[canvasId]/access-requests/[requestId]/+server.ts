@@ -28,7 +28,9 @@ export const PATCH: RequestHandler = async (event) =>
 
       const { data: request, error: requestError } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, requester_id, status, requested_role, created_at')
+        .select(
+          'id, canvas_id, requester_id, status, requested_role, created_at'
+        )
         .eq('id', requestId)
         .eq('canvas_id', canvasId)
         .maybeSingle()

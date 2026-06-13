@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte'
   import { BookMarked, Download, MessageSquare, Save } from 'lucide-svelte'
-  import { markdownDocumentContentSchema, type SceneDocument } from '$lib/scenes/schema'
+  import {
+    markdownDocumentContentSchema,
+    type SceneDocument
+  } from '$lib/scenes/schema'
   import { downloadMarkdown } from '$lib/scenes/download'
 
   const AUTO_SAVE_DEBOUNCE_MS = 1200
@@ -45,7 +48,10 @@
     const documentMarkdown = parseMarkdown(sceneDocument)
 
     untrack(() => {
-      if (documentTitle === seededTitle && documentMarkdown === seededMarkdown) {
+      if (
+        documentTitle === seededTitle &&
+        documentMarkdown === seededMarkdown
+      ) {
         return
       }
       // Our own save round-tripped: adopt it as the new baseline.
@@ -74,7 +80,11 @@
     if (!canModify) {
       return
     }
-    if (untrack(() => nextTitle === seededTitle && nextMarkdown === seededMarkdown)) {
+    if (
+      untrack(
+        () => nextTitle === seededTitle && nextMarkdown === seededMarkdown
+      )
+    ) {
       return
     }
 

@@ -81,7 +81,8 @@
         class="absolute inset-0 cursor-pointer opacity-0"
         type="color"
         value={color}
-        oninput={(event) => onColorChange((event.currentTarget as HTMLInputElement).value)}
+        oninput={(event) =>
+          onColorChange((event.currentTarget as HTMLInputElement).value)}
       />
     </div>
 
@@ -126,7 +127,9 @@
       <Highlighter class="size-4" />
     </button>
     {#if isHighlighter}
-      <div class="flex items-center gap-2 rounded-lg bg-secondary/70 px-3 py-1.5">
+      <div
+        class="flex items-center gap-2 rounded-lg bg-secondary/70 px-3 py-1.5"
+      >
         <input
           class="h-1 w-16 cursor-pointer accent-primary"
           min="10"

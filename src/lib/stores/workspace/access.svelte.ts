@@ -3,7 +3,7 @@ import { listAccessRequests } from '$lib/workspace/api'
 import type { AccessRequest } from '$lib/canvas/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
 import { ensureSessionInitialized, supabase } from '$lib/auth/session-store'
-import { toast } from '$lib/stores/toast.svelte'
+import { toast } from '$lib/stores/shared/toast.svelte'
 
 type WorkspaceAccessInput = {
   getActiveCanvasId: () => string
@@ -86,7 +86,9 @@ export function createWorkspaceAccessStore({
         (payload) => {
           const next = payload.new as { id?: string; status?: string }
           if (next.id && next.status !== 'pending') {
-            pendingRequests = pendingRequests.filter((entry) => entry.id !== next.id)
+            pendingRequests = pendingRequests.filter(
+              (entry) => entry.id !== next.id
+            )
           }
         }
       )
@@ -161,8 +163,10 @@ export function createWorkspaceAccessStore({
             user_id?: string
             canvas_id?: string
           }
-          const matchesRowId = membershipRowId !== null && previous.id === membershipRowId
-          const matchesColumns = previous.user_id === userId && previous.canvas_id === id
+          const matchesRowId =
+            membershipRowId !== null && previous.id === membershipRowId
+          const matchesColumns =
+            previous.user_id === userId && previous.canvas_id === id
           if (matchesRowId || matchesColumns) {
             kickOut('Your access to this canvas was removed.')
           }

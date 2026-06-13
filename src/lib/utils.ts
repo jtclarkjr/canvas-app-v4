@@ -50,7 +50,9 @@ if (import.meta.vitest) {
 
     it('avoids sending authenticated users back to login', () => {
       expect(sanitizeRedirectTarget('/login')).toBe('/')
-      expect(sanitizeRedirectTarget('/login?redirect=%2Fcanvas%2F123')).toBe('/')
+      expect(sanitizeRedirectTarget('/login?redirect=%2Fcanvas%2F123')).toBe(
+        '/'
+      )
     })
   })
 }

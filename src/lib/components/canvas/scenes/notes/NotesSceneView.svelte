@@ -1,11 +1,14 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte'
-  import { markdownDocumentContentSchema, type SceneDocument } from '$lib/scenes/schema'
+  import {
+    markdownDocumentContentSchema,
+    type SceneDocument
+  } from '$lib/scenes/schema'
   import type { SceneActivityKind } from '$lib/scenes/types'
   import { getWorkspaceCursorStyle } from '$lib/workspace/cursor-style'
   import { renderMarkdown } from '$lib/scenes/markdown'
   import { exportAnnotatedNotesPdf } from '$lib/scenes/notes-pdf'
-  import { createNotesSceneStore } from '$lib/stores/canvas/scenes/notes.svelte'
+  import { createNotesSceneStore } from '$lib/stores/scenes/notes.svelte'
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
   import TextEditor from '$lib/components/shared/TextEditor.svelte'
   import NotesToolbar from '$lib/components/canvas/scenes/notes/NotesToolbar.svelte'
@@ -43,7 +46,9 @@
   })
 
   const renderedHtml = $derived.by(() => {
-    const parsed = markdownDocumentContentSchema.safeParse(sceneDocument.content)
+    const parsed = markdownDocumentContentSchema.safeParse(
+      sceneDocument.content
+    )
     return renderMarkdown(parsed.success ? parsed.data.markdown : '')
   })
 
@@ -70,7 +75,10 @@
     window.document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
-      window.document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.document.removeEventListener(
+        'visibilitychange',
+        handleVisibilityChange
+      )
       notes.flush()
     }
   })
@@ -117,7 +125,9 @@
   />
 
   {#if notes.error || exportError}
-    <div class="mx-4 mt-2 rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
+    <div
+      class="mx-4 mt-2 rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
+    >
       {notes.error ?? exportError}
     </div>
   {/if}
@@ -128,7 +138,9 @@
        tool cursor applies to this section only, not the whole dialog. -->
   <div
     class="min-h-0 flex-1 overflow-y-auto bg-background text-foreground"
-    style={canModify ? `cursor:${getWorkspaceCursorStyle(false, notes.selectedTool)}` : undefined}
+    style={canModify
+      ? `cursor:${getWorkspaceCursorStyle(false, notes.selectedTool)}`
+      : undefined}
   >
     <div bind:this={contentEl} class="notes-surface relative min-h-full">
       <div class="notes-prose">

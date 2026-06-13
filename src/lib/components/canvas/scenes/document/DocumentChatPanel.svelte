@@ -77,7 +77,9 @@
     }
   })
 
-  const isStreaming = $derived(chat.status === 'submitted' || chat.status === 'streaming')
+  const isStreaming = $derived(
+    chat.status === 'submitted' || chat.status === 'streaming'
+  )
 
   // Merge this client's chat with messages other collaborators produced
   // (delivered over realtime, deduped by message id).
@@ -100,7 +102,9 @@
   // for the model) instead of trailing below newer turns.
   function absorbRemoteMessages() {
     const ownIds = new Set(chat.messages.map((message) => message.id))
-    const remote = liveMessages.filter((message: SceneMessage) => !ownIds.has(message.id))
+    const remote = liveMessages.filter(
+      (message: SceneMessage) => !ownIds.has(message.id)
+    )
     if (remote.length > 0) {
       chat.messages = [
         ...chat.messages,
@@ -200,7 +204,11 @@
       class="mx-5 mb-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
     >
       <span>{chat.error.message || 'Something went wrong.'}</span>
-      <button type="button" class="font-medium underline" onclick={() => chat.clearError()}>
+      <button
+        type="button"
+        class="font-medium underline"
+        onclick={() => chat.clearError()}
+      >
         Dismiss
       </button>
     </div>

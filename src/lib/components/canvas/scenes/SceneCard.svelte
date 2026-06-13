@@ -41,7 +41,9 @@
     generating: 'Generating…',
     drawing: 'Drawing…'
   }
-  const activityLabel = $derived(activity ? (activityLabels[activity.kind] ?? null) : null)
+  const activityLabel = $derived(
+    activity ? (activityLabels[activity.kind] ?? null) : null
+  )
 </script>
 
 <div
@@ -92,7 +94,9 @@
     {/if}
   </div>
 
-  <div class="mt-2 flex-1 overflow-hidden text-xs leading-relaxed text-muted-foreground">
+  <div
+    class="mt-2 flex-1 overflow-hidden text-xs leading-relaxed text-muted-foreground"
+  >
     {#if typeof scene.settings.preview === 'string' && scene.settings.preview}
       {scene.settings.preview}
     {:else}

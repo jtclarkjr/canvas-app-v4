@@ -14,7 +14,9 @@ const cameraFallback: Camera = { x: 0, y: 0, scale: 1 }
 // Overlays (scene dialogs etc.) opt out of camera gestures: events that
 // originate inside them must scroll/drag the overlay, not pan the canvas.
 function isCameraExempt(target: EventTarget | null) {
-  return target instanceof Element && target.closest('[data-camera-exempt]') !== null
+  return (
+    target instanceof Element && target.closest('[data-camera-exempt]') !== null
+  )
 }
 
 export function createWorkspaceCameraStore({
@@ -40,12 +42,19 @@ export function createWorkspaceCameraStore({
       return { x: 0, y: 0 }
     }
 
-    return screenToCanvas(clientX, clientY, svgEl.getBoundingClientRect(), camera)
+    return screenToCanvas(
+      clientX,
+      clientY,
+      svgEl.getBoundingClientRect(),
+      camera
+    )
   }
 
   function loadCameraState(id: string) {
     const stored =
-      typeof localStorage !== 'undefined' ? localStorage.getItem(`canvas-camera-${id}`) : null
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem(`canvas-camera-${id}`)
+        : null
 
     if (!stored) {
       camera = resetCamera()
@@ -69,7 +78,8 @@ export function createWorkspaceCameraStore({
     if (getSelectedTool() !== 'hand') return
     if (event.pointerType === 'mouse' && event.button !== 0) return
     if (isCameraExempt(event.target)) return
-    if ((event.target as Element).closest('button, a, input, [role="button"]')) return
+    if ((event.target as Element).closest('button, a, input, [role="button"]'))
+      return
 
     if (event.pointerType !== 'mouse') {
       event.preventDefault()
@@ -98,8 +108,12 @@ export function createWorkspaceCameraStore({
 
   function handleViewportPointerUp(event: PointerEvent) {
     isViewportDragging = false
-    if ((event.currentTarget as HTMLDivElement).hasPointerCapture(event.pointerId)) {
-      ;(event.currentTarget as HTMLDivElement).releasePointerCapture(event.pointerId)
+    if (
+      (event.currentTarget as HTMLDivElement).hasPointerCapture(event.pointerId)
+    ) {
+      ;(event.currentTarget as HTMLDivElement).releasePointerCapture(
+        event.pointerId
+      )
     }
   }
 
@@ -129,7 +143,10 @@ export function createWorkspaceCameraStore({
         { x: touch1.clientX, y: touch1.clientY },
         { x: touch2.clientX, y: touch2.clientY }
       ]
-      const distance = Math.hypot(touches[1].x - touches[0].x, touches[1].y - touches[0].y)
+      const distance = Math.hypot(
+        touches[1].x - touches[0].x,
+        touches[1].y - touches[0].y
+      )
 
       touchStart = { touches, distance }
       initialCamera = { ...camera }
@@ -197,8 +214,12 @@ export function createWorkspaceCameraStore({
       const pinchCenterX = currentMidpoint.x - rect.left
       const pinchCenterY = currentMidpoint.y - rect.top
       const scaleRatio = newScale / initialCamera.scale
-      const newX = pinchCenterX - (pinchCenterX - initialCamera.x - panDelta.x) * scaleRatio
-      const newY = pinchCenterY - (pinchCenterY - initialCamera.y - panDelta.y) * scaleRatio
+      const newX =
+        pinchCenterX -
+        (pinchCenterX - initialCamera.x - panDelta.x) * scaleRatio
+      const newY =
+        pinchCenterY -
+        (pinchCenterY - initialCamera.y - panDelta.y) * scaleRatio
 
       camera = {
         x: newX,
@@ -228,7 +249,10 @@ export function createWorkspaceCameraStore({
   $effect(() => {
     const activeCanvasId = getActiveCanvasId()
     if (typeof localStorage !== 'undefined' && activeCanvasId) {
-      localStorage.setItem(`canvas-camera-${activeCanvasId}`, JSON.stringify(camera))
+      localStorage.setItem(
+        `canvas-camera-${activeCanvasId}`,
+        JSON.stringify(camera)
+      )
     }
   })
 

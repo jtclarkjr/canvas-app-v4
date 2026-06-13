@@ -28,7 +28,9 @@ const jsonHeaders = {
   'content-type': 'application/json'
 }
 
-export async function listScenes(canvasId: string): Promise<ListScenesResponse> {
+export async function listScenes(
+  canvasId: string
+): Promise<ListScenesResponse> {
   const response = await fetch(`/api/canvases/${canvasId}/scenes`, {
     headers: await getApiHeaders({ accept: 'application/json' })
   })
@@ -230,7 +232,9 @@ export async function listSceneMessages(
   sceneId: string,
   documentId?: string
 ): Promise<ListSceneMessagesResponse> {
-  const query = documentId ? `?documentId=${encodeURIComponent(documentId)}` : ''
+  const query = documentId
+    ? `?documentId=${encodeURIComponent(documentId)}`
+    : ''
   const response = await fetch(
     `/api/canvases/${canvasId}/scenes/${sceneId}/messages${query}`,
     {

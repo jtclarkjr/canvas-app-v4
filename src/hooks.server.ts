@@ -14,7 +14,12 @@ export const handle: Handle = async ({ event, resolve }) => {
       event.cookies.set(
         cookieName,
         encodeURIComponent(JSON.stringify([accessToken, refreshToken])),
-        { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax', httpOnly: false }
+        {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 365,
+          sameSite: 'lax',
+          httpOnly: false
+        }
       )
     }
   }

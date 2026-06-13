@@ -130,8 +130,12 @@ export function createWorkspaceRealtimeElementsStore({
         (payload) => {
           const deleted = deletedRowSchema.parse(payload.old)
           if (!deleted) return
-          setPaths((previous) => previous.filter((entry) => entry.id !== deleted.id))
-          setTextElements((previous) => previous.filter((entry) => entry.id !== deleted.id))
+          setPaths((previous) =>
+            previous.filter((entry) => entry.id !== deleted.id)
+          )
+          setTextElements((previous) =>
+            previous.filter((entry) => entry.id !== deleted.id)
+          )
         }
       )
       .subscribe()

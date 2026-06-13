@@ -1,8 +1,5 @@
 import { supabase } from '$lib/auth/session-store'
-import {
-  sceneMessageRowToMessage,
-  sceneRowToScene
-} from '$lib/scenes/mapping'
+import { sceneMessageRowToMessage, sceneRowToScene } from '$lib/scenes/mapping'
 import {
   sceneMessageRowSchema,
   sceneRowSchema,

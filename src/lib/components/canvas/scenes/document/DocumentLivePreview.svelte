@@ -18,7 +18,9 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-col">
-  <div class="flex items-center justify-between gap-2 border-b border-border/50 px-5 py-2.5">
+  <div
+    class="flex items-center justify-between gap-2 border-b border-border/50 px-5 py-2.5"
+  >
     <span class="truncate text-sm font-semibold text-foreground">
       {title || 'Untitled draft'}
     </span>

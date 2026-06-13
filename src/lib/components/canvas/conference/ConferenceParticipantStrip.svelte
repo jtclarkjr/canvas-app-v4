@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MicOff } from 'lucide-svelte'
-  import { useCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
+  import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
   import { attachTrack } from '$lib/components/canvas/conference/media-actions'
 
   let { placement } = $props<{ placement: 'above' | 'below' }>()

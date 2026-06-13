@@ -8,8 +8,8 @@ import type {
   ConferenceStatus,
   DeviceKind
 } from '$lib/conference/types'
-import { toast } from '$lib/stores/toast.svelte'
-import type { ConferenceDevicesStore } from '$lib/stores/canvas/conference/devices.svelte'
+import { toast } from '$lib/stores/shared/toast.svelte'
+import type { ConferenceDevicesStore } from '$lib/stores/conference/devices.svelte'
 
 type ConferenceRoomInput = {
   getCanvasId: () => string
@@ -48,7 +48,10 @@ function participantColor(metadata: string | undefined, identity: string) {
   return colorFromId(identity)
 }
 
-function mediaFailureDescription(kind: 'camera' | 'microphone', error: unknown) {
+function mediaFailureDescription(
+  kind: 'camera' | 'microphone',
+  error: unknown
+) {
   const name =
     error instanceof DOMException || error instanceof Error ? error.name : ''
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
@@ -179,9 +182,12 @@ export function createConferenceRoomStore({
       for (const event of resyncEvents) {
         r.on(event, syncFromRoom)
       }
-      r.on(livekit.RoomEvent.DataReceived, (payload, participant, _kind, topic) => {
-        onDataReceived?.(payload, participant?.identity, topic)
-      })
+      r.on(
+        livekit.RoomEvent.DataReceived,
+        (payload, participant, _kind, topic) => {
+          onDataReceived?.(payload, participant?.identity, topic)
+        }
+      )
       r.on(livekit.RoomEvent.ParticipantConnected, onRosterChanged)
       r.on(livekit.RoomEvent.ParticipantDisconnected, onRosterChanged)
       r.on(livekit.RoomEvent.ActiveSpeakersChanged, (speakers) => {

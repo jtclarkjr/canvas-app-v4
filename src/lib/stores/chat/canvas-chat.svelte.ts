@@ -95,9 +95,7 @@ export function createCanvasChatStore({
         // The fetched window is authoritative; keep local entries it does
         // not know about (pending/failed sends, fresh realtime arrivals).
         const known = new Set(response.items.map((item) => item.id))
-        const extras = entries.filter(
-          (entry) => !known.has(entry.message.id)
-        )
+        const extras = entries.filter((entry) => !known.has(entry.message.id))
         entries = [
           ...response.items.map(
             (message): ChatEntry => ({ message, status: 'sent' })

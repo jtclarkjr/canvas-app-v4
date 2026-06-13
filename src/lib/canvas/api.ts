@@ -14,7 +14,7 @@ import {
   type GetCanvasResponse,
   type ListCanvasesResponse,
   type MemberRole,
-  type MyAccessRequestResponse,
+  type MyAccessRequestResponse
 } from '$lib/canvas/schema'
 export { ApiClientError }
 
@@ -51,9 +51,7 @@ export async function createCanvas(
   )
 }
 
-export async function deleteCanvas(
-  id: string
-): Promise<DeleteCanvasResponse> {
+export async function deleteCanvas(id: string): Promise<DeleteCanvasResponse> {
   const response = await fetch(`/api/canvases/${id}`, {
     method: 'DELETE',
     headers: await getApiHeaders({ accept: 'application/json' })

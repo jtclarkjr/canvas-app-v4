@@ -16,9 +16,12 @@
     Volume2,
     X
   } from 'lucide-svelte'
-  import { CAPTION_LANGUAGES, type CaptionLanguageCode } from '$lib/conference/captions'
-  import { useCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
-  import { useCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
+  import {
+    CAPTION_LANGUAGES,
+    type CaptionLanguageCode
+  } from '$lib/conference/captions'
+  import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
+  import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
   import CanvasChatRoomPanel from '$lib/components/canvas/chat/CanvasChatRoomPanel.svelte'
   import { attachTrack } from '$lib/components/canvas/conference/media-actions'
 
@@ -43,7 +46,9 @@
   const visibleCaptions = $derived(
     store.captionSegments
       .filter(
-        (segment) => segment.translated !== null && now - segment.receivedAt < CAPTION_VISIBLE_MS
+        (segment) =>
+          segment.translated !== null &&
+          now - segment.receivedAt < CAPTION_VISIBLE_MS
       )
       .slice(-2)
   )
@@ -54,7 +59,9 @@
     error: 'Captions unavailable',
     off: 'Waiting for audio…'
   } as const
-  const captionsStatusLabel = $derived(CAPTIONS_STATUS_LABELS[store.captionsState])
+  const captionsStatusLabel = $derived(
+    CAPTIONS_STATUS_LABELS[store.captionsState]
+  )
 
   // Escape exits full screen back to the PiP — unless the settings modal is
   // open, in which case Escape belongs to the modal.
@@ -122,15 +129,18 @@
     <!-- Tile grid -->
     <div class="min-h-0 flex-1 overflow-y-auto p-4">
       <div
-        class="mx-auto grid h-full w-full max-w-6xl content-center gap-3"
-        style:grid-template-columns="repeat(auto-fit, minmax(min(100%, 280px), 1fr))"
+        class="participant-tile-grid mx-auto grid h-full w-full max-w-6xl content-center gap-3"
       >
         {#each store.participants as participant (participant.identity)}
           {@const pinned = store.pinnedIdentity === participant.identity}
           <button
             type="button"
             class={`relative aspect-video w-full overflow-hidden rounded-2xl bg-secondary/60 text-left transition ${
-              pinned ? 'ring-2 ring-primary' : participant.isSpeaking ? 'ring-2 ring-success' : ''
+              pinned
+                ? 'ring-2 ring-primary'
+                : participant.isSpeaking
+                  ? 'ring-2 ring-success'
+                  : ''
             }`}
             onclick={() => store.pin(participant.identity)}
             title={pinned ? 'Unpin' : 'Pin to the floating video'}
@@ -181,9 +191,13 @@
     {#if store.fullscreenPanel !== 'none'}
       <aside
         class="flex w-80 shrink-0 flex-col border-l border-border/60 bg-card"
-        aria-label={store.fullscreenPanel === 'chat' ? 'Canvas chat' : 'People in call'}
+        aria-label={store.fullscreenPanel === 'chat'
+          ? 'Canvas chat'
+          : 'People in call'}
       >
-        <header class="flex items-center justify-between gap-3 border-b border-border/50 px-4 py-3">
+        <header
+          class="flex items-center justify-between gap-3 border-b border-border/50 px-4 py-3"
+        >
           <h2 class="text-sm font-bold text-foreground">
             {store.fullscreenPanel === 'chat'
               ? 'Canvas chat'
@@ -193,7 +207,9 @@
             type="button"
             class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
             onclick={() =>
-              store.toggleFullscreenPanel(store.fullscreenPanel === 'chat' ? 'chat' : 'people')}
+              store.toggleFullscreenPanel(
+                store.fullscreenPanel === 'chat' ? 'chat' : 'people'
+              )}
             title="Close panel"
             aria-label="Close panel"
           >
@@ -230,12 +246,18 @@
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                   onclick={() => store.pin(participant.identity)}
-                  title={store.pinnedIdentity === participant.identity ? 'Unpin' : 'Pin'}
+                  title={store.pinnedIdentity === participant.identity
+                    ? 'Unpin'
+                    : 'Pin'}
                   aria-label={`Pin ${participant.isLocal ? 'yourself' : participant.name}`}
                 >
                   <Pin class="size-3.5" />
                 </button>
-                <span class={participant.micEnabled ? 'text-muted-foreground' : 'text-destructive'}>
+                <span
+                  class={participant.micEnabled
+                    ? 'text-muted-foreground'
+                    : 'text-destructive'}
+                >
                   {#if participant.micEnabled}
                     <Mic class="size-4" />
                   {:else}
@@ -251,8 +273,12 @@
   </div>
 
   <!-- Bottom control bar -->
-  <div class="flex items-center justify-between gap-4 border-t border-border/60 px-4 py-3">
-    <div class="flex w-40 items-center gap-2 text-sm font-semibold text-muted-foreground">
+  <div
+    class="flex items-center justify-between gap-4 border-t border-border/60 px-4 py-3"
+  >
+    <div
+      class="flex w-40 items-center gap-2 text-sm font-semibold text-muted-foreground"
+    >
       {#if store.status === 'reconnecting'}
         <LoaderCircle class="size-4 animate-spin" />
         Reconnecting…
@@ -330,7 +356,9 @@
         }`}
         onclick={() => store.toggleCaptions()}
         title={store.captionsEnabled ? 'Turn off captions' : 'Turn on captions'}
-        aria-label={store.captionsEnabled ? 'Turn off captions' : 'Turn on captions'}
+        aria-label={store.captionsEnabled
+          ? 'Turn off captions'
+          : 'Turn on captions'}
         aria-pressed={store.captionsEnabled}
       >
         {#if store.captionsState === 'connecting'}
@@ -345,7 +373,9 @@
           class="h-11 rounded-full border border-border bg-secondary px-3 text-sm text-foreground outline-none"
           value={store.captionsLanguage}
           onchange={(event) =>
-            store.setCaptionsLanguage(event.currentTarget.value as CaptionLanguageCode)}
+            store.setCaptionsLanguage(
+              event.currentTarget.value as CaptionLanguageCode
+            )}
           aria-label="Caption language"
           title="Caption language"
         >
@@ -416,3 +446,9 @@
     </div>
   </div>
 </div>
+
+<style>
+  .participant-tile-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  }
+</style>

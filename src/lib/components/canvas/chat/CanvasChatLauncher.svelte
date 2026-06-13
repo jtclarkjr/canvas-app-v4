@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MessageCircle } from 'lucide-svelte'
-  import { useCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
+  import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
 
   let { buttonEl = $bindable(null) } = $props<{
     buttonEl?: HTMLButtonElement | null

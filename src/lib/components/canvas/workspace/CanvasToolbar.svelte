@@ -23,7 +23,9 @@
     { id: 'text' as Tool, icon: Type, label: 'Text' }
   ]
 
-  const tools = $derived(readOnly ? allTools.filter((tool) => tool.id === 'hand') : allTools)
+  const tools = $derived(
+    readOnly ? allTools.filter((tool) => tool.id === 'hand') : allTools
+  )
 
   function currentTool() {
     return tools.find((tool) => tool.id === selectedTool) ?? tools[0]

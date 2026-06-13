@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { BookOpen, FileCheckCorner, Globe, LoaderCircle, Sparkles } from 'lucide-svelte'
+  import {
+    BookOpen,
+    FileCheckCorner,
+    Globe,
+    LoaderCircle,
+    Sparkles
+  } from 'lucide-svelte'
   import { colorFromId } from '$lib/canvas/helpers/color-from-id'
   import { getModelOption } from '$lib/scenes/models'
   import {
@@ -58,10 +64,15 @@
   })
 </script>
 
-<div bind:this={scrollEl} class="flex h-full flex-col gap-3 overflow-y-auto px-5 py-4">
+<div
+  bind:this={scrollEl}
+  class="flex h-full flex-col gap-3 overflow-y-auto px-5 py-4"
+>
   {#each messages as message (message.id)}
     {#if message.role !== 'system'}
-      <div class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
+      <div
+        class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+      >
         {#if message.role === 'user'}
           {@const label = userLabel(message)}
           <span
@@ -72,7 +83,9 @@
           </span>
         {:else}
           {@const label = assistantLabel(message)}
-          <span class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground">
+          <span
+            class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground"
+          >
             AI{label.model ? ` · ${label.model}` : ''}{label.requester
               ? ` · for ${label.requester}`
               : ''}
@@ -101,12 +114,18 @@
                 {#if draft.state === 'output-available'}
                   <FileCheckCorner class="size-3.5 shrink-0 text-emerald-600" />
                   <span>
-                    Wrote draft <strong class="text-foreground">{draft.title || 'Untitled'}</strong>
+                    Wrote draft <strong class="text-foreground"
+                      >{draft.title || 'Untitled'}</strong
+                    >
                     <span class="opacity-70">· in the editor</span>
                   </span>
                 {:else}
-                  <LoaderCircle class="size-3.5 shrink-0 animate-spin text-primary" />
-                  <span>Writing {draft.title ? `“${draft.title}”` : 'draft'}…</span>
+                  <LoaderCircle
+                    class="size-3.5 shrink-0 animate-spin text-primary"
+                  />
+                  <span
+                    >Writing {draft.title ? `“${draft.title}”` : 'draft'}…</span
+                  >
                 {/if}
               </div>
             {:else if context}
@@ -157,7 +176,9 @@
   {/if}
 
   {#if messages.length === 0 && !isRemoteGenerating}
-    <div class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+    <div
+      class="flex flex-1 items-center justify-center text-sm text-muted-foreground"
+    >
       Start the conversation to draft your document.
     </div>
   {/if}

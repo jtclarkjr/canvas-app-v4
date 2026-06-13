@@ -20,20 +20,20 @@ import type {
 import type { CanvasWorkspaceStoreInput } from '$lib/workspace/types'
 import type { SceneMessage } from '$lib/scenes/schema'
 import type { WorkspaceMode } from '$lib/scenes/types'
-import { createWorkspaceModeStore } from '$lib/stores/canvas/scenes/mode.svelte'
-import { createWorkspaceRealtimeScenesStore } from '$lib/stores/canvas/scenes/realtime-scenes.svelte'
-import { createWorkspaceSceneActivityStore } from '$lib/stores/canvas/scenes/scene-activity.svelte'
-import { createWorkspaceScenesStore } from '$lib/stores/canvas/scenes/scenes.svelte'
-import { createWorkspaceAccessStore } from '$lib/stores/canvas/workspace/access.svelte'
-import { createWorkspaceCameraStore } from '$lib/stores/canvas/workspace/camera.svelte'
-import { createWorkspaceCanvasesStore } from '$lib/stores/canvas/workspace/canvases.svelte'
-import { createWorkspaceFormattingStore } from '$lib/stores/canvas/workspace/formatting.svelte'
-import { createWorkspaceHistoryStore } from '$lib/stores/canvas/workspace/history.svelte'
-import { createWorkspaceKeyboardStore } from '$lib/stores/canvas/workspace/keyboard.svelte'
-import { createWorkspacePresenceStore } from '$lib/stores/canvas/workspace/presence.svelte'
-import { createWorkspaceRealtimeElementsStore } from '$lib/stores/canvas/workspace/realtime-elements.svelte'
-import { createWorkspaceSceneInteractionsStore } from '$lib/stores/canvas/workspace/scene-interactions.svelte'
-import { createWorkspaceTextEditorStore } from '$lib/stores/canvas/workspace/text-editor.svelte'
+import { createWorkspaceModeStore } from '$lib/stores/scenes/mode.svelte'
+import { createWorkspaceRealtimeScenesStore } from '$lib/stores/scenes/realtime-scenes.svelte'
+import { createWorkspaceSceneActivityStore } from '$lib/stores/scenes/scene-activity.svelte'
+import { createWorkspaceScenesStore } from '$lib/stores/scenes/scenes.svelte'
+import { createWorkspaceAccessStore } from '$lib/stores/workspace/access.svelte'
+import { createWorkspaceCameraStore } from '$lib/stores/workspace/camera.svelte'
+import { createWorkspaceCanvasesStore } from '$lib/stores/workspace/canvases.svelte'
+import { createWorkspaceFormattingStore } from '$lib/stores/workspace/formatting.svelte'
+import { createWorkspaceHistoryStore } from '$lib/stores/workspace/history.svelte'
+import { createWorkspaceKeyboardStore } from '$lib/stores/workspace/keyboard.svelte'
+import { createWorkspacePresenceStore } from '$lib/stores/workspace/presence.svelte'
+import { createWorkspaceRealtimeElementsStore } from '$lib/stores/workspace/realtime-elements.svelte'
+import { createWorkspaceSceneInteractionsStore } from '$lib/stores/workspace/scene-interactions.svelte'
+import { createWorkspaceTextEditorStore } from '$lib/stores/workspace/text-editor.svelte'
 
 type WorkspaceElements = {
   rootEl: HTMLDivElement | null
@@ -42,7 +42,9 @@ type WorkspaceElements = {
 }
 
 export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
-  const initialDrawingState = canvasElementsToDrawingState(input.initialElements ?? [])
+  const initialDrawingState = canvasElementsToDrawingState(
+    input.initialElements ?? []
+  )
 
   let canvasId = $state(input.canvasId)
   let userId = $state(input.userId)
@@ -201,7 +203,9 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     paths = typeof next === 'function' ? next(paths) : next
   }
 
-  function setTextElements(next: TextElement[] | ((previous: TextElement[]) => TextElement[])) {
+  function setTextElements(
+    next: TextElement[] | ((previous: TextElement[]) => TextElement[])
+  ) {
     textElements = typeof next === 'function' ? next(textElements) : next
   }
 
@@ -210,7 +214,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   }
 
   const upsertElement = {
-    mutate(variables: UpsertElementInput, options?: { onError?: (error: unknown) => void }) {
+    mutate(
+      variables: UpsertElementInput,
+      options?: { onError?: (error: unknown) => void }
+    ) {
       void upsertElementApi(variables).catch((error) => {
         options?.onError?.(error)
       })
@@ -218,7 +225,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   }
 
   const deleteElement = {
-    mutate(variables: { id: string }, options?: { onError?: (error: unknown) => void }) {
+    mutate(
+      variables: { id: string },
+      options?: { onError?: (error: unknown) => void }
+    ) {
       if (!activeCanvasId) {
         return
       }
@@ -344,7 +354,9 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
         return
       }
       canvasesStore.setError(
-        error instanceof Error ? error.message : 'Failed to load canvas elements.'
+        error instanceof Error
+          ? error.message
+          : 'Failed to load canvas elements.'
       )
     }
   }

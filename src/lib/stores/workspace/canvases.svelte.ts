@@ -50,7 +50,10 @@ export function createWorkspaceCanvasesStore({
       canvases = response.items
       hasLoadedCanvases = true
     } catch (loadError) {
-      error = loadError instanceof Error ? loadError.message : 'Failed to load canvases.'
+      error =
+        loadError instanceof Error
+          ? loadError.message
+          : 'Failed to load canvases.'
     } finally {
       isLoading = false
     }
@@ -66,10 +69,15 @@ export function createWorkspaceCanvasesStore({
       const response = await updateCanvas(canvas.id, {
         title: title.trim()
       })
-      canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
+      canvases = canvases.map((entry) =>
+        entry.id === canvas.id ? response.item : entry
+      )
       void invalidate(CANVASES_DEPENDENCY)
     } catch (saveError) {
-      error = saveError instanceof Error ? saveError.message : 'Failed to update title.'
+      error =
+        saveError instanceof Error
+          ? saveError.message
+          : 'Failed to update title.'
     }
   }
 
@@ -80,7 +88,9 @@ export function createWorkspaceCanvasesStore({
     }
 
     const response = await updateCanvas(canvas.id, { visibility })
-    canvases = canvases.map((entry) => (entry.id === canvas.id ? response.item : entry))
+    canvases = canvases.map((entry) =>
+      entry.id === canvas.id ? response.item : entry
+    )
     void invalidate(CANVASES_DEPENDENCY)
   }
 

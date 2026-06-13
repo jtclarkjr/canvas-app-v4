@@ -68,7 +68,9 @@ export const GET: RequestHandler = async (event) =>
 
       const { data: requests, error } = await supabase
         .from('canvas_access_requests')
-        .select('id, canvas_id, requester_id, status, requested_role, created_at')
+        .select(
+          'id, canvas_id, requester_id, status, requested_role, created_at'
+        )
         .eq('canvas_id', canvasId)
         .eq('status', status)
         .order('created_at', { ascending: true })

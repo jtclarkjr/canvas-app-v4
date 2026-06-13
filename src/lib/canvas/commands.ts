@@ -159,7 +159,9 @@ export const createMoveElementCommand = (
   userId,
   elementId,
   elementType,
-  before: before.points ? { ...before, points: [...before.points] } : { ...before },
+  before: before.points
+    ? { ...before, points: [...before.points] }
+    : { ...before },
   after: after.points ? { ...after, points: [...after.points] } : { ...after }
 })
 
@@ -221,7 +223,8 @@ export const createDeleteMultipleCommand = (
   }))
 })
 
-const isPath = (element: Path | TextElement): element is Path => 'points' in element
+const isPath = (element: Path | TextElement): element is Path =>
+  'points' in element
 
 export function getInverseCommand(command: Command): Command {
   switch (command.type) {

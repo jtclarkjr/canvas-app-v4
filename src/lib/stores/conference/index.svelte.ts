@@ -6,11 +6,11 @@ import type {
   Corner,
   DeviceKind
 } from '$lib/conference/types'
-import { createConferenceCaptionsStore } from '$lib/stores/canvas/conference/captions.svelte'
-import { createConferenceDevicesStore } from '$lib/stores/canvas/conference/devices.svelte'
-import { createConferenceRoomStore } from '$lib/stores/canvas/conference/room.svelte'
-import { createConferenceStatusStore } from '$lib/stores/canvas/conference/status.svelte'
-import { createConferenceViewStore } from '$lib/stores/canvas/conference/view.svelte'
+import { createConferenceCaptionsStore } from '$lib/stores/conference/captions.svelte'
+import { createConferenceDevicesStore } from '$lib/stores/conference/devices.svelte'
+import { createConferenceRoomStore } from '$lib/stores/conference/room.svelte'
+import { createConferenceStatusStore } from '$lib/stores/conference/status.svelte'
+import { createConferenceViewStore } from '$lib/stores/conference/view.svelte'
 
 const CANVAS_CONFERENCE_CONTEXT = Symbol('canvas-conference-store')
 
@@ -181,7 +181,9 @@ export type CanvasConferenceStore = ReturnType<
   typeof createCanvasConferenceStore
 >
 
-export function provideCanvasConferenceStore(input: CanvasConferenceStoreInput) {
+export function provideCanvasConferenceStore(
+  input: CanvasConferenceStoreInput
+) {
   const store = createCanvasConferenceStore(input)
   setContext(CANVAS_CONFERENCE_CONTEXT, store)
   return store

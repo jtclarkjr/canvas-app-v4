@@ -1,10 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import { userSearchResponseSchema } from '$lib/workspace/schema'
-import {
-  badRequest,
-  handleApiError,
-  withAuth
-} from '$lib/server/api-error'
+import { badRequest, handleApiError, withAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 

@@ -90,7 +90,10 @@ export const POST: RequestHandler = async (event) =>
           )
         }
 
-        contextDocuments = valid.map((row) => ({ id: row.id, title: row.title }))
+        contextDocuments = valid.map((row) => ({
+          id: row.id,
+          title: row.title
+        }))
       }
 
       let resolved
@@ -150,7 +153,11 @@ export const POST: RequestHandler = async (event) =>
         // up as a duplicate block.
         generateMessageId: () => crypto.randomUUID(),
         sendSources: true,
-        onFinish: async ({ messages: updatedMessages, responseMessage, isAborted }) => {
+        onFinish: async ({
+          messages: updatedMessages,
+          responseMessage,
+          isAborted
+        }) => {
           if (isAborted) {
             return
           }

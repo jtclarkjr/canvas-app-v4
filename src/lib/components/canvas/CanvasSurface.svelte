@@ -59,7 +59,9 @@
   }>()
 
   const pointerEvents = $derived(
-    canEdit && ['select', 'pencil', 'eraser', 'text'].includes(selectedTool) ? 'auto' : 'none'
+    canEdit && ['select', 'pencil', 'eraser', 'text'].includes(selectedTool)
+      ? 'auto'
+      : 'none'
   )
 </script>
 
@@ -99,7 +101,9 @@
         stroke={resolveCanvasDisplayColor(drawFormatting.color)}
         stroke-linecap="round"
         stroke-linejoin="round"
-        stroke-opacity={drawFormatting.isHighlighter ? drawFormatting.highlighterOpacity : 1}
+        stroke-opacity={drawFormatting.isHighlighter
+          ? drawFormatting.highlighterOpacity
+          : 1}
         stroke-width={drawFormatting.width}
       />
     {/if}

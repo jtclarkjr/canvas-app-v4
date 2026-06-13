@@ -20,7 +20,14 @@
   const selected = $derived(getModelOption(modelId))
 </script>
 
-<Popover bind:open id="scene-model-picker" label="Choose model" role="menu" align="start" {side}>
+<Popover
+  bind:open
+  id="scene-model-picker"
+  label="Choose model"
+  role="menu"
+  align="start"
+  {side}
+>
   {#snippet trigger()}
     <button
       type="button"
@@ -38,7 +45,9 @@
       <button
         type="button"
         class={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition ${
-          option.id === modelId ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
+          option.id === modelId
+            ? 'bg-primary/10 text-primary'
+            : 'hover:bg-muted'
         }`}
         onclick={() => {
           onModelChange(option.id)
@@ -46,7 +55,9 @@
         }}
       >
         <span>{option.label}</span>
-        <span class="text-xs uppercase text-muted-foreground">{option.provider}</span>
+        <span class="text-xs uppercase text-muted-foreground"
+          >{option.provider}</span
+        >
       </button>
     {/each}
   </div>

@@ -71,7 +71,7 @@ WebRTC conferencing.
   `api.ts` client.
 - `src/lib/server/livekit.ts` — env config + `RoomServiceClient` factory
   (REST host is the `https://` form of the wss URL).
-- `src/lib/stores/canvas/conference/` — split on the workspace-store
+- `src/lib/stores/conference/` — split on the workspace-store
   pattern, composed by `index.svelte.ts` (also the context
   provider/consumer): `room.svelte.ts` owns the LiveKit `Room` lifecycle
   (the Room lives in a plain closure, never `$state`; UI reads `$state.raw`

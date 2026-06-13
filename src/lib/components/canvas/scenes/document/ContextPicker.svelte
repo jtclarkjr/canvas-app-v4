@@ -21,7 +21,14 @@
 </script>
 
 {#if savedDocuments.length > 0}
-  <Popover bind:open id="scene-context-picker" label="Add context" role="menu" align="start" {side}>
+  <Popover
+    bind:open
+    id="scene-context-picker"
+    label="Add context"
+    role="menu"
+    align="start"
+    {side}
+  >
     {#snippet trigger()}
       <button
         type="button"
@@ -34,7 +41,9 @@
         {disabled}
       >
         <BookOpen class="size-3.5" />
-        {selectedIds.length > 0 ? `Context (${selectedIds.length})` : 'Add context'}
+        {selectedIds.length > 0
+          ? `Context (${selectedIds.length})`
+          : 'Add context'}
       </button>
     {/snippet}
 

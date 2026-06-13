@@ -2,19 +2,30 @@
   import { BookMarked, FilePen, Plus, Trash2 } from 'lucide-svelte'
   import type { SceneDocumentListItem } from '$lib/scenes/schema'
 
-  let { documents, activeDocumentId, canModify, onSelect, onNewDraft, onPromote, onDelete } =
-    $props<{
-      documents: SceneDocumentListItem[]
-      activeDocumentId: string | null
-      canModify: boolean
-      onSelect: (documentId: string) => void
-      onNewDraft: () => void
-      onPromote: (documentId: string) => void
-      onDelete: (documentId: string) => void
-    }>()
+  let {
+    documents,
+    activeDocumentId,
+    canModify,
+    onSelect,
+    onNewDraft,
+    onPromote,
+    onDelete
+  } = $props<{
+    documents: SceneDocumentListItem[]
+    activeDocumentId: string | null
+    canModify: boolean
+    onSelect: (documentId: string) => void
+    onNewDraft: () => void
+    onPromote: (documentId: string) => void
+    onDelete: (documentId: string) => void
+  }>()
 
-  const drafts = $derived(documents.filter((doc: SceneDocumentListItem) => doc.status === 'draft'))
-  const saved = $derived(documents.filter((doc: SceneDocumentListItem) => doc.status === 'saved'))
+  const drafts = $derived(
+    documents.filter((doc: SceneDocumentListItem) => doc.status === 'draft')
+  )
+  const saved = $derived(
+    documents.filter((doc: SceneDocumentListItem) => doc.status === 'saved')
+  )
 </script>
 
 {#snippet documentRow(document: SceneDocumentListItem)}
@@ -25,7 +36,11 @@
         : 'border-transparent hover:border-border/60'
     }`}
   >
-    <button type="button" class="min-w-0 flex-1 text-left" onclick={() => onSelect(document.id)}>
+    <button
+      type="button"
+      class="min-w-0 flex-1 text-left"
+      onclick={() => onSelect(document.id)}
+    >
       <span class="block truncate text-sm text-foreground">
         {document.title || 'Untitled'}
       </span>

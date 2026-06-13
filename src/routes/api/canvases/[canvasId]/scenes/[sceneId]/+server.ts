@@ -1,8 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import {
-  sceneResponseSchema,
-  updateSceneInputSchema
-} from '$lib/scenes/schema'
+import { sceneResponseSchema, updateSceneInputSchema } from '$lib/scenes/schema'
 import { getSceneType } from '$lib/scenes/registry'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import { assertSceneModify, requireScene } from '$lib/server/scene-access'
@@ -26,7 +23,10 @@ export const PATCH: RequestHandler = async (event) =>
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {
-        return json({ message: 'Canvas and scene ids are required.' }, { status: 400 })
+        return json(
+          { message: 'Canvas and scene ids are required.' },
+          { status: 400 }
+        )
       }
 
       const { role } = await requireCanvasRole(
@@ -70,9 +70,7 @@ export const PATCH: RequestHandler = async (event) =>
         throw error ?? new Error('Failed to update scene')
       }
 
-      return json(
-        sceneResponseSchema.parse({ item: toCanvasScene(data) })
-      )
+      return json(sceneResponseSchema.parse({ item: toCanvasScene(data) }))
     } catch (error) {
       return handleApiError(error, event.request)
     }
@@ -86,7 +84,10 @@ export const DELETE: RequestHandler = async (event) =>
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {
-        return json({ message: 'Canvas and scene ids are required.' }, { status: 400 })
+        return json(
+          { message: 'Canvas and scene ids are required.' },
+          { status: 400 }
+        )
       }
 
       const { role } = await requireCanvasRole(
@@ -107,9 +108,7 @@ export const DELETE: RequestHandler = async (event) =>
         throw error
       }
 
-      return json(
-        sceneResponseSchema.parse({ item: toCanvasScene(scene) })
-      )
+      return json(sceneResponseSchema.parse({ item: toCanvasScene(scene) }))
     } catch (error) {
       return handleApiError(error, event.request)
     }

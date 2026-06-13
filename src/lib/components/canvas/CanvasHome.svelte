@@ -9,7 +9,7 @@
   import Modal from '$lib/components/shared/Modal.svelte'
   import RoleBadge from '$lib/components/shared/RoleBadge.svelte'
   import type { Canvas } from '$lib/canvas/schema'
-  import { session } from '$lib/stores/session.svelte'
+  import { session } from '$lib/stores/shared/session.svelte'
 
   let {
     initialCanvases = [],
@@ -65,7 +65,10 @@
       const response = await listCanvases()
       canvases = response.items
     } catch (nextError) {
-      localError = nextError instanceof Error ? nextError.message : 'Failed to load canvases.'
+      localError =
+        nextError instanceof Error
+          ? nextError.message
+          : 'Failed to load canvases.'
     } finally {
       isLoading = false
     }
@@ -78,7 +81,9 @@
 
     await tick()
     if (typeof requestAnimationFrame !== 'undefined') {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      )
     }
 
     try {
@@ -116,7 +121,10 @@
     try {
       await openCanvas(canvas)
     } catch (nextError) {
-      localError = nextError instanceof Error ? nextError.message : 'Failed to open canvas.'
+      localError =
+        nextError instanceof Error
+          ? nextError.message
+          : 'Failed to open canvas.'
     }
   }
 
@@ -135,7 +143,10 @@
       await invalidate(CANVASES_DEPENDENCY)
       await openCanvas(response.item)
     } catch (nextError) {
-      localError = nextError instanceof Error ? nextError.message : 'Failed to create canvas.'
+      localError =
+        nextError instanceof Error
+          ? nextError.message
+          : 'Failed to create canvas.'
     } finally {
       isCreating = false
     }
@@ -163,7 +174,10 @@
       isDeleteDialogOpen = false
       void invalidate(CANVASES_DEPENDENCY)
     } catch (nextError) {
-      localError = nextError instanceof Error ? nextError.message : 'Failed to delete canvas.'
+      localError =
+        nextError instanceof Error
+          ? nextError.message
+          : 'Failed to delete canvas.'
     } finally {
       isDeletingId = null
     }
@@ -193,10 +207,16 @@
   })
 </script>
 
-<section class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+<section
+  class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
+>
   <div class="grid gap-3">
-    <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">Canvas</p>
-    <h1 class="m-0 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+    <p class="m-0 text-sm font-bold uppercase tracking-[0.2em] text-primary">
+      Canvas
+    </p>
+    <h1
+      class="m-0 text-4xl font-semibold tracking-tight text-foreground sm:text-5xl"
+    >
       Recent canvases
     </h1>
     <p class="m-0 max-w-3xl text-lg leading-8 text-muted-foreground">
@@ -205,12 +225,16 @@
   </div>
 
   {#if error}
-    <div class="surface-card border-destructive/30 p-4 text-sm text-destructive">
+    <div
+      class="surface-card border-destructive/30 p-4 text-sm text-destructive"
+    >
       {error}
     </div>
   {/if}
 
-  <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+  <div
+    class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+  >
     <button
       type="button"
       class="group relative aspect-[3/4] overflow-hidden rounded-lg border-2 border-dashed border-border bg-card shadow-sm transition hover:border-primary hover:bg-accent/40 hover:shadow-md disabled:opacity-50"
@@ -221,7 +245,9 @@
         <div
           class="flex size-12 items-center justify-center rounded-full bg-muted transition group-hover:bg-primary/10"
         >
-          <Plus class="size-6 text-muted-foreground transition group-hover:text-primary" />
+          <Plus
+            class="size-6 text-muted-foreground transition group-hover:text-primary"
+          />
         </div>
         <p
           class="m-0 text-sm font-medium text-muted-foreground transition group-hover:text-primary"
@@ -233,7 +259,9 @@
 
     {#if isLoading}
       {#each Array.from({ length: 4 }) as _, index (index)}
-        <div class="aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div
+          class="aspect-[3/4] overflow-hidden rounded-lg border border-border bg-card shadow-sm"
+        >
           <div
             class="flex h-3/4 items-center justify-center border-b border-border bg-gradient-to-br from-muted to-card p-4"
           >
@@ -308,8 +336,12 @@
 
   {#if !isLoading && sharedCanvases.length > 0}
     <div class="grid gap-4">
-      <h2 class="m-0 text-2xl font-semibold tracking-tight text-foreground">Shared with me</h2>
-      <div class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <h2 class="m-0 text-2xl font-semibold tracking-tight text-foreground">
+        Shared with me
+      </h2>
+      <div
+        class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      >
         {#each sharedCanvases as canvas (canvas.id)}
           <a
             href={`/canvas/${canvas.id}`}
@@ -370,7 +402,10 @@
 </section>
 
 {#if openingCanvasId}
-  <div in:fade={{ duration: 120 }} class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
+  <div
+    in:fade={{ duration: 120 }}
+    class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+  >
     <div
       in:scale={{ duration: 140, start: 0.96 }}
       class="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm font-medium text-foreground shadow-xl backdrop-blur"
@@ -390,8 +425,9 @@
   <div class="grid gap-6">
     <p class="m-0 text-sm leading-6 text-muted-foreground">
       Delete
-      <span class="font-semibold text-foreground">{deleteTarget?.title ?? 'this canvas'}</span>?
-      This action cannot be undone.
+      <span class="font-semibold text-foreground"
+        >{deleteTarget?.title ?? 'this canvas'}</span
+      >? This action cannot be undone.
     </p>
 
     <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

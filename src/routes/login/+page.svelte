@@ -2,7 +2,7 @@
   import { page } from '$app/state'
   import AuthForm from '$lib/components/auth/AuthForm.svelte'
   import type { AuthConfig } from '$lib/server/auth-config'
-  import { session } from '$lib/stores/session.svelte'
+  import { session } from '$lib/stores/shared/session.svelte'
   import { sanitizeRedirectTarget } from '$lib/utils'
 
   let { data } = $props<{
@@ -11,7 +11,9 @@
     }
   }>()
 
-  const redirectTo = $derived(sanitizeRedirectTarget(page.url.searchParams.get('redirect')))
+  const redirectTo = $derived(
+    sanitizeRedirectTarget(page.url.searchParams.get('redirect'))
+  )
   let hasRedirected = $state(false)
 
   $effect(() => {

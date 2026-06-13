@@ -1,4 +1,9 @@
-import { ToolLoopAgent, convertToModelMessages, stepCountIs, type ToolSet } from 'ai'
+import {
+  ToolLoopAgent,
+  convertToModelMessages,
+  stepCountIs,
+  type ToolSet
+} from 'ai'
 import { buildDocumentSystemPrompt } from '../prompts/document-presets'
 import { createReadContextDocumentTool } from '../tools/read-context-document'
 import { writeDocumentTool } from '../tools/write-document'

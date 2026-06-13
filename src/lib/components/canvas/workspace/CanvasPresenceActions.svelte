@@ -12,7 +12,9 @@
   }>()
 </script>
 
-<div class="pointer-events-auto fixed right-6 top-6 z-30 flex items-center gap-3">
+<div
+  class="pointer-events-auto fixed right-6 top-6 z-30 flex items-center gap-3"
+>
   <div class="flex -space-x-2">
     {#each members.slice(0, 5) as member (member.id)}
       <span

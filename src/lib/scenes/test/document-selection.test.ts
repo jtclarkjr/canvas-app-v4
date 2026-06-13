@@ -27,6 +27,8 @@ describe('document selection reconciliation', () => {
   })
 
   it('clears a deleted active document without choosing another', () => {
-    expect(reconcileActiveDocumentId('doc-1', [documentItem('doc-2')])).toBeNull()
+    expect(
+      reconcileActiveDocumentId('doc-1', [documentItem('doc-2')])
+    ).toBeNull()
   })
 })

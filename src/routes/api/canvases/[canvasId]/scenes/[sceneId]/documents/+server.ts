@@ -28,7 +28,10 @@ export const GET: RequestHandler = async (event) =>
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {
-        return json({ message: 'Canvas and scene ids are required.' }, { status: 400 })
+        return json(
+          { message: 'Canvas and scene ids are required.' },
+          { status: 400 }
+        )
       }
 
       await requireCanvasRole(supabase, canvasId, user.id, 'reader')
@@ -86,7 +89,10 @@ export const POST: RequestHandler = async (event) =>
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {
-        return json({ message: 'Canvas and scene ids are required.' }, { status: 400 })
+        return json(
+          { message: 'Canvas and scene ids are required.' },
+          { status: 400 }
+        )
       }
 
       const { role } = await requireCanvasRole(

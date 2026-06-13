@@ -1,6 +1,9 @@
 <script lang="ts">
   import { colorFromId } from '$lib/canvas/helpers/color-from-id'
-  import { useCanvasChatStore, type ChatEntry } from '$lib/stores/canvas/chat/canvas-chat.svelte'
+  import {
+    useCanvasChatStore,
+    type ChatEntry
+  } from '$lib/stores/chat/canvas-chat.svelte'
   import CanvasChatComposer from '$lib/components/canvas/chat/CanvasChatComposer.svelte'
 
   // alwaysVisible: hosts outside the chat window (the call's fullscreen
@@ -13,7 +16,9 @@
 
   const store = useCanvasChatStore()
 
-  const visible = $derived(alwaysVisible || (store.open && store.activeTab === 'chat'))
+  const visible = $derived(
+    alwaysVisible || (store.open && store.activeTab === 'chat')
+  )
 
   let scrollEl = $state<HTMLDivElement | null>(null)
   let atBottom = true
@@ -26,7 +31,8 @@
 
   function handleScroll() {
     if (!scrollEl) return
-    atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
+    atBottom =
+      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
   }
 
   // Open at the bottom whenever the panel becomes visible (rAF: the panel
@@ -60,7 +66,9 @@
     const author = entry.message.author
     return {
       name: author?.name ?? 'Someone',
-      color: entry.message.createdBy ? colorFromId(entry.message.createdBy) : null
+      color: entry.message.createdBy
+        ? colorFromId(entry.message.createdBy)
+        : null
     }
   }
 
@@ -75,11 +83,18 @@
 
 <div class="flex h-full min-h-0 flex-col">
   {#if store.isLoadingChat}
-    <div class="flex flex-1 flex-col justify-end gap-3 px-4 py-4" aria-hidden="true">
+    <div
+      class="flex flex-1 flex-col justify-end gap-3 px-4 py-4"
+      aria-hidden="true"
+    >
       <div class="h-9 w-3/5 animate-pulse rounded-2xl bg-muted/80"></div>
-      <div class="ml-auto h-9 w-2/5 animate-pulse rounded-2xl bg-muted/60"></div>
+      <div
+        class="ml-auto h-9 w-2/5 animate-pulse rounded-2xl bg-muted/60"
+      ></div>
       <div class="h-9 w-4/5 animate-pulse rounded-2xl bg-muted/80"></div>
-      <div class="ml-auto h-9 w-3/5 animate-pulse rounded-2xl bg-muted/60"></div>
+      <div
+        class="ml-auto h-9 w-3/5 animate-pulse rounded-2xl bg-muted/60"
+      ></div>
     </div>
   {:else}
     <div
@@ -126,7 +141,9 @@
           {#if entry.status === 'failed'}
             <!-- Send failures stay local: the message never reached other
                  members, so the error is only shown to this user. -->
-            <div class="mt-0.5 flex items-center gap-2 px-1 text-[11px] text-destructive">
+            <div
+              class="mt-0.5 flex items-center gap-2 px-1 text-[11px] text-destructive"
+            >
               <span>{entry.errorMessage ?? 'Failed to send.'}</span>
               <button
                 type="button"
@@ -148,7 +165,9 @@
       {/each}
 
       {#if store.entries.length === 0 && !store.chatLoadError}
-        <div class="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+        <div
+          class="flex flex-1 items-center justify-center text-sm text-muted-foreground"
+        >
           No messages yet. Say hi to your collaborators.
         </div>
       {/if}

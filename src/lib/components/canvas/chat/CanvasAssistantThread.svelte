@@ -13,7 +13,7 @@
     type DisplayMessage
   } from '$lib/scenes/chat-parts'
   import { renderMarkdown } from '$lib/scenes/markdown'
-  import { useCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
+  import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import CanvasChatComposer from '$lib/components/canvas/chat/CanvasChatComposer.svelte'
 
   let { canvasId, initialMessages } = $props<{
@@ -38,11 +38,15 @@
       })
     }),
     onFinish: () => {
-      store.snapshotAssistantMessages($state.snapshot(chat.messages) as UIMessage[])
+      store.snapshotAssistantMessages(
+        $state.snapshot(chat.messages) as UIMessage[]
+      )
     }
   })
 
-  const isStreaming = $derived(chat.status === 'submitted' || chat.status === 'streaming')
+  const isStreaming = $derived(
+    chat.status === 'submitted' || chat.status === 'streaming'
+  )
 
   const visible = $derived(store.open && store.activeTab === 'assistant')
 
@@ -57,7 +61,8 @@
 
   function handleScroll() {
     if (!scrollEl) return
-    atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
+    atBottom =
+      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
   }
 
   $effect(() => {
@@ -90,8 +95,12 @@
   >
     {#each displayMessages as message (message.id)}
       {#if message.role !== 'system'}
-        <div class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
-          <span class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground">
+        <div
+          class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+        >
+          <span
+            class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground"
+          >
             {message.role === 'user' ? 'You' : 'Assistant'}
           </span>
           <div
@@ -156,7 +165,8 @@
       <div
         class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
       >
-        Ask the assistant anything — it can search the web and read this canvas's saved documents.
+        Ask the assistant anything — it can search the web and read this
+        canvas's saved documents.
       </div>
     {/if}
   </div>
@@ -166,7 +176,11 @@
       class="mx-3 mb-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
     >
       <span>{chat.error.message || 'Something went wrong.'}</span>
-      <button type="button" class="font-medium underline" onclick={() => chat.clearError()}>
+      <button
+        type="button"
+        class="font-medium underline"
+        onclick={() => chat.clearError()}
+      >
         Dismiss
       </button>
     </div>

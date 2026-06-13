@@ -53,7 +53,9 @@
 
 <div class="flex h-full flex-col items-center justify-center gap-6 p-8">
   <div class="text-center">
-    <h2 class="text-lg font-semibold text-foreground">What do you want to make?</h2>
+    <h2 class="text-lg font-semibold text-foreground">
+      What do you want to make?
+    </h2>
     <p class="mt-1 text-sm text-muted-foreground">
       Describe the document you want to draft — or start from a preset.
     </p>
@@ -103,7 +105,11 @@
             }}
             disabled={readOnly}
           />
-          <ModelPicker {modelId} onModelChange={(next) => (modelId = next)} disabled={readOnly} />
+          <ModelPicker
+            {modelId}
+            onModelChange={(next) => (modelId = next)}
+            disabled={readOnly}
+          />
         </div>
 
         <button
@@ -120,6 +126,8 @@
   </div>
 
   {#if readOnly}
-    <p class="text-xs text-muted-foreground">You have view-only access to this canvas.</p>
+    <p class="text-xs text-muted-foreground">
+      You have view-only access to this canvas.
+    </p>
   {/if}
 </div>

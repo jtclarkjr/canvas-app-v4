@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Link, Share2, UserPlus } from 'lucide-svelte'
   import Popover from '$lib/components/shared/Popover.svelte'
-  import { toast } from '$lib/stores/toast.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
   import { roleAtLeast, type CanvasRole } from '$lib/canvas/roles'
 
   let {
@@ -32,7 +32,13 @@
   }
 </script>
 
-<Popover id="canvas-options-popover" label="Canvas options" role="menu" align="end" bind:open>
+<Popover
+  id="canvas-options-popover"
+  label="Canvas options"
+  role="menu"
+  align="end"
+  bind:open
+>
   {#snippet trigger({ id, expanded })}
     <button
       type="button"

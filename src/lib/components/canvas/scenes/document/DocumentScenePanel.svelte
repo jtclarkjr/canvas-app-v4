@@ -26,8 +26,8 @@
   import { defaultModelId, isKnownModelId } from '$lib/scenes/models'
   import type { SceneActivity, SceneActivityKind } from '$lib/scenes/types'
   import type { DraftToolPart } from '$lib/scenes/chat-parts'
-  import { toast } from '$lib/stores/toast.svelte'
-  import { useSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
+  import { useSceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
   import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte'
   import DocumentChatPanel from '$lib/components/canvas/scenes/document/DocumentChatPanel.svelte'
   import DocumentComposer from '$lib/components/canvas/scenes/document/DocumentComposer.svelte'
@@ -81,7 +81,8 @@
   let chatCollapsed = $state(false)
   // svelte-ignore state_referenced_locally -- seeds picker state once on mount
   let modelId = $state(
-    typeof scene.settings.modelId === 'string' && isKnownModelId(scene.settings.modelId)
+    typeof scene.settings.modelId === 'string' &&
+      isKnownModelId(scene.settings.modelId)
       ? scene.settings.modelId
       : defaultModelId
   )
@@ -103,7 +104,9 @@
   let conversationStarted = $state(false)
 
   const documents = $derived(
-    sceneDocuments.getItems(scene.id).filter((document) => document.kind === 'markdown')
+    sceneDocuments
+      .getItems(scene.id)
+      .filter((document) => document.kind === 'markdown')
   )
   const activeDocument = $derived(
     activeDocumentId ? sceneDocuments.getFullDocument(activeDocumentId) : null
@@ -111,10 +114,14 @@
   const activeDocumentItem = $derived(
     documents.find((document) => document.id === activeDocumentId) ?? null
   )
-  const savedDocuments = $derived(documents.filter((document) => document.status === 'saved'))
+  const savedDocuments = $derived(
+    documents.filter((document) => document.status === 'saved')
+  )
   // Realtime chat messages for the active document's thread only.
   const liveMessagesForActiveDocument = $derived(
-    liveMessages.filter((message: SceneMessage) => message.documentId === activeDocumentId)
+    liveMessages.filter(
+      (message: SceneMessage) => message.documentId === activeDocumentId
+    )
   )
 
   function reportError(cause: unknown, fallback: string) {
@@ -125,7 +132,10 @@
     await sceneDocuments.refreshScene(scene.id)
   }
 
-  async function loadDocument(documentId: string, options: { force?: boolean } = {}) {
+  async function loadDocument(
+    documentId: string,
+    options: { force?: boolean } = {}
+  ) {
     loadingDocumentId = documentId
     try {
       await sceneDocuments.loadFullDocument(scene.id, documentId, options)
@@ -168,17 +178,24 @@
   // chat against.
   $effect(() => {
     if (initialPrompt && !activeDocumentId && canModify) {
-      void createBlankDraft().catch((cause) => reportError(cause, 'Failed to create a draft.'))
+      void createBlankDraft().catch((cause) =>
+        reportError(cause, 'Failed to create a draft.')
+      )
     }
   })
 
   function handleBlankSend(text: string) {
     localPendingPrompt = text
-    void createBlankDraft().catch((cause) => reportError(cause, 'Failed to create a draft.'))
+    void createBlankDraft().catch((cause) =>
+      reportError(cause, 'Failed to create a draft.')
+    )
   }
 
   $effect(() => {
-    const nextActiveDocumentId = reconcileActiveDocumentId(activeDocumentId, documents)
+    const nextActiveDocumentId = reconcileActiveDocumentId(
+      activeDocumentId,
+      documents
+    )
     if (nextActiveDocumentId !== activeDocumentId) {
       activeDocumentId = nextActiveDocumentId
       if (!nextActiveDocumentId) {
@@ -188,7 +205,9 @@
     }
 
     const nextContextDocumentIds = contextDocumentIds.filter((id) =>
-      documents.some((document) => document.id === id && document.status === 'saved')
+      documents.some(
+        (document) => document.id === id && document.status === 'saved'
+      )
     )
     if (nextContextDocumentIds.length !== contextDocumentIds.length) {
       contextDocumentIds = nextContextDocumentIds
@@ -281,7 +300,10 @@
       documentId: activeDocumentId,
       contextDocumentIds,
       modelId,
-      category: typeof scene.settings.category === 'string' ? scene.settings.category : 'doc-md',
+      category:
+        typeof scene.settings.category === 'string'
+          ? scene.settings.category
+          : 'doc-md',
       webSearch
     }
   }
@@ -310,9 +332,14 @@
   async function handlePromote(documentId: string) {
     const title = documents.find((doc) => doc.id === documentId)?.title
     try {
-      const response = await updateSceneDocument(canvasId, scene.id, documentId, {
-        status: 'saved'
-      })
+      const response = await updateSceneDocument(
+        canvasId,
+        scene.id,
+        documentId,
+        {
+          status: 'saved'
+        }
+      )
       sceneDocuments.upsertFromFullDocument(response.item)
       sceneDocuments.scheduleRevalidation()
       void refreshDocumentItems().catch((cause) =>
@@ -328,7 +355,8 @@
   }
 
   function requestDeleteDocument(documentId: string) {
-    documentPendingDelete = documents.find((doc) => doc.id === documentId) ?? null
+    documentPendingDelete =
+      documents.find((doc) => doc.id === documentId) ?? null
     confirmDeleteDocumentOpen = documentPendingDelete !== null
   }
 
@@ -361,7 +389,11 @@
   // Saves target an explicit document id: the editor's unmount flush can
   // fire after the active selection has already changed, and must never
   // write the old draft's text into the newly selected document.
-  async function handleSaveDocument(documentId: string, title: string, markdown: string) {
+  async function handleSaveDocument(
+    documentId: string,
+    title: string,
+    markdown: string
+  ) {
     const target = sceneDocuments.getFullDocument(documentId)
     if (!target) {
       return
@@ -370,17 +402,22 @@
     isSavingDocument = true
     try {
       const parsed = markdownDocumentContentSchema.safeParse(target.content)
-      const response = await updateSceneDocument(canvasId, scene.id, documentId, {
-        title,
-        content: {
-          docType: parsed.success ? parsed.data.docType : undefined,
-          markdown,
-          // Manual saves replace the markdown but keep the notes layer.
-          ...(parsed.success && parsed.data.annotations
-            ? { annotations: parsed.data.annotations }
-            : null)
+      const response = await updateSceneDocument(
+        canvasId,
+        scene.id,
+        documentId,
+        {
+          title,
+          content: {
+            docType: parsed.success ? parsed.data.docType : undefined,
+            markdown,
+            // Manual saves replace the markdown but keep the notes layer.
+            ...(parsed.success && parsed.data.annotations
+              ? { annotations: parsed.data.annotations }
+              : null)
+          }
         }
-      })
+      )
       sceneDocuments.upsertFromFullDocument(response.item)
       sceneDocuments.scheduleRevalidation()
       void refreshDocumentItems().catch((cause) =>
@@ -395,7 +432,9 @@
 
   function handleTurnFinished() {
     conversationStarted = true
-    void refreshDocumentItems().catch((cause) => reportError(cause, 'Failed to refresh documents.'))
+    void refreshDocumentItems().catch((cause) =>
+      reportError(cause, 'Failed to refresh documents.')
+    )
     if (activeDocumentId) {
       void loadDocument(activeDocumentId, { force: true }).catch((cause) =>
         reportError(cause, 'Failed to refresh the document.')
@@ -448,7 +487,9 @@
       <button
         type="button"
         class={`flex size-7 items-center justify-center rounded-full transition ${
-          showLibrary ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+          showLibrary
+            ? 'bg-muted text-foreground'
+            : 'text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => (showLibrary = !showLibrary)}
         title="Toggle document library"
@@ -517,7 +558,9 @@
 
       {#if activeDocumentItem}
         <span class="ml-auto truncate text-xs text-muted-foreground">
-          Working on: {activeDocument?.title || activeDocumentItem.title || 'Untitled draft'}
+          Working on: {activeDocument?.title ||
+            activeDocumentItem.title ||
+            'Untitled draft'}
         </span>
       {/if}
     </div>
@@ -527,7 +570,11 @@
         class="mx-5 mt-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
       >
         <span>{error}</span>
-        <button type="button" class="font-medium underline" onclick={() => (error = null)}>
+        <button
+          type="button"
+          class="font-medium underline"
+          onclick={() => (error = null)}
+        >
           Dismiss
         </button>
       </div>
@@ -579,9 +626,13 @@
           <!-- Blank state, centered like the scene entry screen, shown
                immediately on open: no draft exists yet — it's created on
                first send. -->
-          <div class="flex flex-1 flex-col items-center justify-center gap-6 p-8">
+          <div
+            class="flex flex-1 flex-col items-center justify-center gap-6 p-8"
+          >
             <div class="text-center">
-              <h3 class="text-lg font-semibold text-foreground">What do you want to draft?</h3>
+              <h3 class="text-lg font-semibold text-foreground">
+                What do you want to draft?
+              </h3>
               <p class="mt-1 text-sm text-muted-foreground">
                 Describe the document, or pick one from the library.
               </p>
@@ -606,9 +657,13 @@
           <!-- Skeleton while a thread loads for the first time (cached
                threads mount instantly and never reach this branch). -->
           <div class="flex h-full flex-col gap-3 px-5 py-4" aria-hidden="true">
-            <div class="ml-auto h-9 w-3/5 animate-pulse rounded-2xl bg-muted/80"></div>
+            <div
+              class="ml-auto h-9 w-3/5 animate-pulse rounded-2xl bg-muted/80"
+            ></div>
             <div class="h-16 w-4/5 animate-pulse rounded-2xl bg-muted/60"></div>
-            <div class="ml-auto h-9 w-2/5 animate-pulse rounded-2xl bg-muted/80"></div>
+            <div
+              class="ml-auto h-9 w-2/5 animate-pulse rounded-2xl bg-muted/80"
+            ></div>
             <div class="h-12 w-3/4 animate-pulse rounded-2xl bg-muted/60"></div>
           </div>
         {/if}
@@ -635,7 +690,10 @@
               />
             {/key}
           {:else if liveDraft}
-            <DocumentLivePreview title={liveDraft.title} content={liveDraft.content} />
+            <DocumentLivePreview
+              title={liveDraft.title}
+              content={liveDraft.content}
+            />
           {:else if activeDocument}
             <!-- Keyed by id only: remote updates sync in place inside the
                  editor, preserving the caret during auto-saves. -->
@@ -652,9 +710,14 @@
               />
             {/key}
           {:else if activeDocumentItem}
-            <div class="flex h-full flex-col gap-3 px-5 py-4" aria-hidden="true">
+            <div
+              class="flex h-full flex-col gap-3 px-5 py-4"
+              aria-hidden="true"
+            >
               <div class="h-8 w-3/5 animate-pulse rounded-xl bg-muted/80"></div>
-              <div class="h-full min-h-0 animate-pulse rounded-xl bg-muted/50"></div>
+              <div
+                class="h-full min-h-0 animate-pulse rounded-xl bg-muted/50"
+              ></div>
             </div>
           {/if}
         </div>

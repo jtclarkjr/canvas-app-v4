@@ -59,7 +59,11 @@ export function anchorFor(
   }
 }
 
-export function clampToViewport(point: Point, pip: Size, viewport: Size): Point {
+export function clampToViewport(
+  point: Point,
+  pip: Size,
+  viewport: Size
+): Point {
   return {
     x: Math.min(Math.max(point.x, 0), Math.max(viewport.width - pip.width, 0)),
     y: Math.min(Math.max(point.y, 0), Math.max(viewport.height - pip.height, 0))

@@ -110,11 +110,7 @@ if (import.meta.vitest) {
       expect(response.items).toHaveLength(1)
       expect(calls).toContainEqual(['from', 'canvas_scenes'])
       expect(calls).toContainEqual(['eq', 'canvas_id', 'canvas-1'])
-      expect(calls).toContainEqual([
-        'order',
-        'created_at',
-        { ascending: true }
-      ])
+      expect(calls).toContainEqual(['order', 'created_at', { ascending: true }])
     })
   })
 }

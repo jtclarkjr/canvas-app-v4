@@ -39,7 +39,10 @@
 </script>
 
 {#if open}
-  <div use:portal class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div
+    use:portal
+    class="fixed inset-0 z-50 flex items-center justify-center p-4"
+  >
     <button
       type="button"
       class="absolute inset-0 bg-black/45 backdrop-blur-sm"
@@ -55,7 +58,11 @@
       <div class="mb-5 flex items-start justify-between gap-4">
         <div class="grid gap-1">
           {#if eyebrow}
-            <p class="text-xs font-black uppercase tracking-[0.24em] text-primary">{eyebrow}</p>
+            <p
+              class="text-xs font-black uppercase tracking-[0.24em] text-primary"
+            >
+              {eyebrow}
+            </p>
           {/if}
           <h2 class="text-2xl font-bold text-foreground">{title}</h2>
         </div>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Modal from '$lib/components/shared/Modal.svelte'
-  import { useCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
+  import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
 
   const store = useCanvasConferenceStore()
 
@@ -16,13 +16,18 @@
 >
   <div class="grid gap-4">
     <label class="grid gap-1.5">
-      <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <span
+        class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Camera
       </span>
       <select
         class={selectClass}
-        value={store.activeDeviceIds.videoinput ?? store.devices.cameras[0]?.deviceId ?? ''}
-        onchange={(event) => void store.switchDevice('videoinput', event.currentTarget.value)}
+        value={store.activeDeviceIds.videoinput ??
+          store.devices.cameras[0]?.deviceId ??
+          ''}
+        onchange={(event) =>
+          void store.switchDevice('videoinput', event.currentTarget.value)}
         disabled={store.devices.cameras.length === 0}
       >
         {#if store.devices.cameras.length === 0}
@@ -36,13 +41,18 @@
     </label>
 
     <label class="grid gap-1.5">
-      <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <span
+        class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Microphone
       </span>
       <select
         class={selectClass}
-        value={store.activeDeviceIds.audioinput ?? store.devices.mics[0]?.deviceId ?? ''}
-        onchange={(event) => void store.switchDevice('audioinput', event.currentTarget.value)}
+        value={store.activeDeviceIds.audioinput ??
+          store.devices.mics[0]?.deviceId ??
+          ''}
+        onchange={(event) =>
+          void store.switchDevice('audioinput', event.currentTarget.value)}
         disabled={store.devices.mics.length === 0}
       >
         {#if store.devices.mics.length === 0}
@@ -61,13 +71,18 @@
          enumerates zero outputs there, so the row hides itself. -->
     {#if store.devices.speakers.length > 0}
       <label class="grid gap-1.5">
-        <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        <span
+          class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           Speaker
         </span>
         <select
           class={selectClass}
-          value={store.activeDeviceIds.audiooutput ?? store.devices.speakers[0]?.deviceId ?? ''}
-          onchange={(event) => void store.switchDevice('audiooutput', event.currentTarget.value)}
+          value={store.activeDeviceIds.audiooutput ??
+            store.devices.speakers[0]?.deviceId ??
+            ''}
+          onchange={(event) =>
+            void store.switchDevice('audiooutput', event.currentTarget.value)}
         >
           {#each store.devices.speakers as device (device.deviceId)}
             <option value={device.deviceId}>{device.label || 'Speaker'}</option>

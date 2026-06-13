@@ -3,13 +3,17 @@
   import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
   import { signOut } from '$lib/auth/session-service'
   import Popover from '$lib/components/shared/Popover.svelte'
-  import { session } from '$lib/stores/session.svelte'
-  import { theme, type Theme } from '$lib/stores/theme.svelte'
+  import { session } from '$lib/stores/shared/session.svelte'
+  import { theme, type Theme } from '$lib/stores/shared/theme.svelte'
   import { CircleUserRound, LogOut, Monitor, Moon, Sun } from 'lucide-svelte'
 
   const themeOptions: Theme[] = ['light', 'dark', 'system']
-  const activeThemeIndex = $derived(Math.max(themeOptions.indexOf(theme.current), 0))
-  const themeThumbStyle = $derived(`transform: translateX(${activeThemeIndex * 2.5}rem);`)
+  const activeThemeIndex = $derived(
+    Math.max(themeOptions.indexOf(theme.current), 0)
+  )
+  const themeThumbStyle = $derived(
+    `transform: translateX(${activeThemeIndex * 2.5}rem);`
+  )
 
   const loginHref = $derived(
     `/login?redirect=${encodeURIComponent(`${page.url.pathname}${page.url.search}`)}`
@@ -41,7 +45,12 @@
 </script>
 
 {#if user}
-  <Popover bind:open={popoverOpen} id="account-popover" label="Account menu" align="end">
+  <Popover
+    bind:open={popoverOpen}
+    id="account-popover"
+    label="Account menu"
+    align="end"
+  >
     {#snippet trigger(popover)}
       <button
         type="button"
@@ -91,13 +100,19 @@
             {/if}
           </div>
           <div class="min-w-0">
-            <p class="m-0 truncate text-sm font-medium text-foreground">{userDisplayName}</p>
-            <p class="m-0 truncate text-xs text-muted-foreground">{userEmail}</p>
+            <p class="m-0 truncate text-sm font-medium text-foreground">
+              {userDisplayName}
+            </p>
+            <p class="m-0 truncate text-xs text-muted-foreground">
+              {userEmail}
+            </p>
           </div>
         </div>
 
         <div class="grid gap-2">
-          <p class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p
+            class="m-0 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+          >
             Theme
           </p>
           <div

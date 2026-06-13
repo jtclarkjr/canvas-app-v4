@@ -5,7 +5,10 @@ type WorkspaceHistoryInput = {
   applyCommand: (command: Command) => void
 }
 
-export function createWorkspaceHistoryStore({ getUserId, applyCommand }: WorkspaceHistoryInput) {
+export function createWorkspaceHistoryStore({
+  getUserId,
+  applyCommand
+}: WorkspaceHistoryInput) {
   let undoStack = $state<Command[]>([])
   let redoStack = $state<Command[]>([])
 

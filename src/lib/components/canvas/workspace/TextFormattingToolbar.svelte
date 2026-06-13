@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { Bold, Italic, List, ListOrdered, Minus, Palette, Plus, Underline } from 'lucide-svelte'
+  import {
+    Bold,
+    Italic,
+    List,
+    ListOrdered,
+    Minus,
+    Palette,
+    Plus,
+    Underline
+  } from 'lucide-svelte'
   import type { ListStyle } from '$lib/canvas/types'
 
   let {
@@ -159,7 +168,8 @@
         class="absolute inset-0 cursor-pointer opacity-0"
         type="color"
         value={color}
-        oninput={(event) => onColorChange((event.currentTarget as HTMLInputElement).value)}
+        oninput={(event) =>
+          onColorChange((event.currentTarget as HTMLInputElement).value)}
       />
     </div>
   </div>

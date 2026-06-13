@@ -68,11 +68,11 @@ vp build        # Production build
 vp preview      # Preview production build
 ```
 
-For Svelte-specific checks and formatting:
+For Svelte diagnostics and formatting:
 
 ```sh
 vp dlx sv check
-vp run fmt:sv
+vp fmt . --write
 ```
 
 ## Technical Docs

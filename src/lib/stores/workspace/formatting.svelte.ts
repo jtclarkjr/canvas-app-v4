@@ -29,7 +29,9 @@ export function createWorkspaceFormattingStore() {
     textFormatting = typeof next === 'function' ? next(textFormatting) : next
   }
 
-  function setDrawFormatting(next: DrawFormatting | ((previous: DrawFormatting) => DrawFormatting)) {
+  function setDrawFormatting(
+    next: DrawFormatting | ((previous: DrawFormatting) => DrawFormatting)
+  ) {
     drawFormatting = typeof next === 'function' ? next(drawFormatting) : next
   }
 
@@ -57,11 +59,17 @@ export function createWorkspaceFormattingStore() {
   }
 
   function toggleTextItalic() {
-    setTextFormatting((previous) => ({ ...previous, isItalic: !previous.isItalic }))
+    setTextFormatting((previous) => ({
+      ...previous,
+      isItalic: !previous.isItalic
+    }))
   }
 
   function toggleTextUnderline() {
-    setTextFormatting((previous) => ({ ...previous, isUnderline: !previous.isUnderline }))
+    setTextFormatting((previous) => ({
+      ...previous,
+      isUnderline: !previous.isUnderline
+    }))
   }
 
   function setTextColor(color: string) {

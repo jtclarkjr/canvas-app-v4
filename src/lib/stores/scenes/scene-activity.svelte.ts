@@ -81,7 +81,12 @@ export function createWorkspaceSceneActivityStore({
       pendingDelta = ''
     }
 
-    sendActivity({ sceneId, userId: getUserId(), userName: getUserName(), kind })
+    sendActivity({
+      sceneId,
+      userId: getUserId(),
+      userName: getUserName(),
+      kind
+    })
   }
 
   function applyRemoteActivity(entry: ActivityEntry) {
@@ -104,7 +109,9 @@ export function createWorkspaceSceneActivityStore({
 
     if (entry.kind === 'generating') {
       const base =
-        previous?.kind === 'generating' ? (streamingText[entry.sceneId] ?? '') : ''
+        previous?.kind === 'generating'
+          ? (streamingText[entry.sceneId] ?? '')
+          : ''
       if (entry.textDelta) {
         streamingText = {
           ...streamingText,

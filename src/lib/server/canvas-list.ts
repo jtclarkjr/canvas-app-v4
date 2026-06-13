@@ -61,7 +61,10 @@ export async function listCanvasesForUser(
 ): Promise<ListCanvasesResponse> {
   const [owned, memberships] = await Promise.all([
     supabase.from('canvases').select('*').eq('created_by', userId),
-    supabase.from('canvas_members').select('canvas_id, role').eq('user_id', userId)
+    supabase
+      .from('canvas_members')
+      .select('canvas_id, role')
+      .eq('user_id', userId)
   ])
 
   if (owned.error) {
@@ -72,7 +75,9 @@ export async function listCanvasesForUser(
     throw memberships.error
   }
 
-  const sharedIds = (memberships.data ?? []).map((membership) => membership.canvas_id)
+  const sharedIds = (memberships.data ?? []).map(
+    (membership) => membership.canvas_id
+  )
   const shared = sharedIds.length
     ? await supabase.from('canvases').select('*').in('id', sharedIds)
     : { data: [], error: null }
@@ -115,7 +120,10 @@ if (import.meta.vitest) {
         ]
       })
 
-      expect(response.items.map((canvas) => canvas.id)).toEqual(['shared', 'owned'])
+      expect(response.items.map((canvas) => canvas.id)).toEqual([
+        'shared',
+        'owned'
+      ])
       expect(response.items[0].role).toBe('editor')
       expect(response.items[1].role).toBe('owner')
     })

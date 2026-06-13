@@ -44,7 +44,10 @@
 
       request = response.item
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : 'Failed to load access request.'
+      errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to load access request.'
     } finally {
       isLoading = false
     }
@@ -57,7 +60,8 @@
       const response = await requestAccess(canvasId)
       request = response.item
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : 'Failed to request access.'
+      errorMessage =
+        error instanceof Error ? error.message : 'Failed to request access.'
     } finally {
       isSubmitting = false
     }
@@ -160,7 +164,9 @@
   })
 </script>
 
-<div class="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6">
+<div
+  class="flex h-screen w-screen flex-col items-center justify-center gap-4 bg-background px-6"
+>
   <div
     class="flex size-14 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
   >
@@ -172,8 +178,8 @@
   {:else if status === 'pending'}
     <h1 class="text-2xl font-bold text-foreground">Request sent</h1>
     <p class="max-w-sm text-center text-sm text-muted-foreground">
-      The owner has been notified. You'll get in automatically as soon as your request is approved —
-      keep this page open.
+      The owner has been notified. You'll get in automatically as soon as your
+      request is approved — keep this page open.
     </p>
     <span
       class="flex items-center gap-2 rounded-full bg-secondary px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-secondary-foreground"
@@ -184,7 +190,8 @@
   {:else if status === 'denied'}
     <h1 class="text-2xl font-bold text-foreground">Request denied</h1>
     <p class="max-w-sm text-center text-sm text-muted-foreground">
-      Your previous request was denied. You can send a new request if you think this was a mistake.
+      Your previous request was denied. You can send a new request if you think
+      this was a mistake.
     </p>
     <button
       type="button"
@@ -197,7 +204,8 @@
   {:else}
     <h1 class="text-2xl font-bold text-foreground">You need access</h1>
     <p class="max-w-sm text-center text-sm text-muted-foreground">
-      This canvas is private. Request access and the owner will be notified right away.
+      This canvas is private. Request access and the owner will be notified
+      right away.
     </p>
     <button
       type="button"

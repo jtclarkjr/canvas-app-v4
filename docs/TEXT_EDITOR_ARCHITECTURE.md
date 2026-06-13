@@ -82,14 +82,14 @@ and presence.
 | `src/lib/components/shared/TextEditor.svelte` | Floating `textarea` overlay used while a canvas text element is being edited. |
 | `src/lib/components/canvas/workspace/TextFormattingToolbar.svelte` | Toolbar for font size, bold, italic, underline, list style, and color. |
 | `src/lib/components/canvas/CanvasSurface.svelte` | SVG drawing layer that renders committed text elements as `<text>` and `<tspan>` nodes. |
-| `src/lib/stores/canvas/workspace/text-editor.svelte.ts` | Owns text edit lifecycle, list handling, commit/cancel behavior, history creation, and persistence. |
-| `src/lib/stores/canvas/workspace/formatting.svelte.ts` | Owns current text and drawing formatting state. |
-| `src/lib/stores/canvas/workspace/scene-interactions.svelte.ts` | Turns pointer events into canvas actions, including starting text edits. |
+| `src/lib/stores/workspace/text-editor.svelte.ts` | Owns text edit lifecycle, list handling, commit/cancel behavior, history creation, and persistence. |
+| `src/lib/stores/workspace/formatting.svelte.ts` | Owns current text and drawing formatting state. |
+| `src/lib/stores/workspace/scene-interactions.svelte.ts` | Turns pointer events into canvas actions, including starting text edits. |
 | `src/lib/canvas/text-lists.ts` | Pure functions for plain-text bullet and numbered list behavior. |
 | `src/lib/canvas/commands.ts` | Defines undoable canvas commands, including `CREATE_TEXT` and `UPDATE_TEXT`. |
 | `src/lib/canvas/apply-command.ts` | Applies commands and inverse commands back into local state and persistence. |
 | `src/lib/workspace/element-mapping.ts` | Converts workspace server rows and realtime rows into local drawing state. |
-| `src/lib/stores/canvas/scenes/notes.svelte.ts` | Reuses the same editor stores for document annotation text. |
+| `src/lib/stores/scenes/notes.svelte.ts` | Reuses the same editor stores for document annotation text. |
 | `src/lib/components/canvas/scenes/document/DocumentEditorView.svelte` | Separate Markdown document editor surface. |
 
 ## Data Model

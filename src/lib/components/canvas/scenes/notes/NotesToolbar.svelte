@@ -57,13 +57,24 @@
     { id: 'text' as Tool, icon: Type, label: 'Text' }
   ]
 
-  const colors = ['#0f172a', '#dc2626', '#2563eb', '#16a34a', '#d97706', '#9333ea']
+  const colors = [
+    '#0f172a',
+    '#dc2626',
+    '#2563eb',
+    '#16a34a',
+    '#d97706',
+    '#9333ea'
+  ]
   const widths = [2, 4, 8]
 </script>
 
-<div class="flex flex-wrap items-center gap-2 border-b border-border/50 px-4 py-2">
+<div
+  class="flex flex-wrap items-center gap-2 border-b border-border/50 px-4 py-2"
+>
   {#if !readOnly}
-    <div class="flex items-center gap-0.5 rounded-full border border-border/60 p-0.5">
+    <div
+      class="flex items-center gap-0.5 rounded-full border border-border/60 p-0.5"
+    >
       {#each tools as tool (tool.id)}
         <button
           type="button"
@@ -85,7 +96,9 @@
         <button
           type="button"
           class={`size-5 rounded-full border-2 transition ${
-            drawColor === color ? 'scale-110 border-primary' : 'border-transparent'
+            drawColor === color
+              ? 'scale-110 border-primary'
+              : 'border-transparent'
           }`}
           style={`background:${color}`}
           onclick={() => onColorChange(color)}
@@ -107,7 +120,9 @@
           onclick={() => onWidthChange(width)}
           title={`Stroke width ${width}`}
         >
-          <span class="rounded-full bg-current" style={`width:${width + 4}px;height:${width + 4}px`}
+          <span
+            class="rounded-full bg-current"
+            style={`width:${width + 4}px;height:${width + 4}px`}
           ></span>
         </button>
       {/each}
@@ -116,7 +131,9 @@
     <button
       type="button"
       class={`flex size-8 items-center justify-center rounded-full transition ${
-        isHighlighter ? 'bg-warning/20 text-warning' : 'text-muted-foreground hover:bg-muted'
+        isHighlighter
+          ? 'bg-warning/20 text-warning'
+          : 'text-muted-foreground hover:bg-muted'
       }`}
       onclick={onHighlighterToggle}
       title="Highlighter"

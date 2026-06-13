@@ -1,4 +1,9 @@
-import { ToolLoopAgent, convertToModelMessages, stepCountIs, type ToolSet } from 'ai'
+import {
+  ToolLoopAgent,
+  convertToModelMessages,
+  stepCountIs,
+  type ToolSet
+} from 'ai'
 import { buildCanvasAssistantPrompt } from '../prompts/canvas-assistant'
 import { createReadContextDocumentTool } from '../tools/read-context-document'
 import type { CanvasAssistantInput } from '../types'

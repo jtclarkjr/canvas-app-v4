@@ -6,7 +6,7 @@
   import { getMyAccessRequest, requestAccess } from '$lib/canvas/api'
   import type { AccessRequest } from '$lib/canvas/schema'
   import { roleAtLeast, type CanvasRole } from '$lib/canvas/roles'
-  import { toast } from '$lib/stores/toast.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
 
   let { canvasId, isPublicViewer = false } = $props<{
     canvasId: string
@@ -46,7 +46,10 @@
       const response = await requestAccess(canvasId, 'editor')
       request = response.item
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : 'Failed to request edit access.'
+      errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to request edit access.'
     } finally {
       isSubmitting = false
     }
@@ -99,7 +102,8 @@
             } else if (roleAtLeast(requested, 'editor')) {
               toast.show({
                 title: 'View access granted',
-                description: "Your edit request wasn't approved, but you have view access."
+                description:
+                  "Your edit request wasn't approved, but you have view access."
               })
             } else {
               toast.show({

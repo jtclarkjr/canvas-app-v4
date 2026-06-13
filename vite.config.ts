@@ -14,6 +14,7 @@ export default defineConfig({
     printWidth: 80,
     trailingComma: 'none',
     proseWrap: 'always',
+    svelte: true,
     sortPackageJson: false,
     ignorePatterns: ['*.md']
   },

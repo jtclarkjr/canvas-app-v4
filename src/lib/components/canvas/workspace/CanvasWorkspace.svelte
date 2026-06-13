@@ -4,10 +4,10 @@
   import type { Canvas } from '$lib/canvas/schema'
   import type { CanvasElement } from '$lib/workspace/schema'
   import type { Scene } from '$lib/scenes/schema'
-  import { createCanvasWorkspaceStore } from '$lib/stores/canvas/workspace/index.svelte'
-  import { provideCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
-  import { provideCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
-  import { useSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
+  import { createCanvasWorkspaceStore } from '$lib/stores/workspace/index.svelte'
+  import { provideCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
+  import { provideCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
+  import { useSceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
   import CanvasActionToolbar from '$lib/components/canvas/workspace/CanvasActionToolbar.svelte'
   import CanvasPresenceActions from '$lib/components/canvas/workspace/CanvasPresenceActions.svelte'
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
@@ -130,7 +130,10 @@
   />
 
   {#if workspace.canEdit}
-    <SceneModeSwitcher mode={workspace.mode} onModeChange={workspace.handleModeChange} />
+    <SceneModeSwitcher
+      mode={workspace.mode}
+      onModeChange={workspace.handleModeChange}
+    />
   {/if}
 
   <CanvasPresenceActions

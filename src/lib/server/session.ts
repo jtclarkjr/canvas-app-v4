@@ -2,9 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { env as privateEnv } from '$env/dynamic/private'
 import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
 import { getSupabaseAuthCookieName } from '$lib/auth/supabase-cookie'
-import {
-  getSupabaseTokensFromCookieHeader
-} from '$lib/server/supabase-auth-cookie'
+import { getSupabaseTokensFromCookieHeader } from '$lib/server/supabase-auth-cookie'
 
 export type RequestUser = {
   id: string
@@ -40,15 +38,22 @@ export async function getRequestSession(
   const authorizationHeader = request.headers.get('authorization') ?? ''
   const cookieHeader = request.headers.get('cookie') ?? ''
   const authCookieName = getSupabaseAuthCookieName(supabaseUrl)
-  const cookieTokens = getSupabaseTokensFromCookieHeader(cookieHeader, authCookieName)
-  const accessToken = getBearerToken(authorizationHeader) ?? cookieTokens?.accessToken ?? null
+  const cookieTokens = getSupabaseTokensFromCookieHeader(
+    cookieHeader,
+    authCookieName
+  )
+  const accessToken =
+    getBearerToken(authorizationHeader) ?? cookieTokens?.accessToken ?? null
 
   if (!accessToken) {
     return null
   }
 
   const supabase = createClient(supabaseUrl, supabaseSecretKey)
-  const { data: { user }, error } = await supabase.auth.getUser(accessToken)
+  const {
+    data: { user },
+    error
+  } = await supabase.auth.getUser(accessToken)
 
   if (!error && user) {
     return {
@@ -67,7 +72,8 @@ export async function getRequestSession(
     return null
   }
 
-  const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession({ refresh_token: refreshToken })
+  const { data: refreshData, error: refreshError } =
+    await supabase.auth.refreshSession({ refresh_token: refreshToken })
 
   if (refreshError || !refreshData.session || !refreshData.user) {
     return null

@@ -9,7 +9,9 @@
   }>()
 </script>
 
-<div class="pointer-events-auto fixed bottom-6 right-6 z-30 flex flex-col gap-2">
+<div
+  class="pointer-events-auto fixed bottom-6 right-6 z-30 flex flex-col gap-2"
+>
   <button
     type="button"
     class="toolbar-pill flex h-10 w-10 items-center justify-center"

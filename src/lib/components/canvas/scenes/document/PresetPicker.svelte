@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { documentCategories, getDocumentCategory } from '$lib/scenes/document-categories'
+  import {
+    documentCategories,
+    getDocumentCategory
+  } from '$lib/scenes/document-categories'
 
   let {
     categoryId,

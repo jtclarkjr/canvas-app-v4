@@ -1,6 +1,9 @@
 import type { Tool } from '$lib/canvas/types'
 
-export function getWorkspaceCursorStyle(isViewportDragging: boolean, selectedTool: Tool) {
+export function getWorkspaceCursorStyle(
+  isViewportDragging: boolean,
+  selectedTool: Tool
+) {
   if (isViewportDragging) return 'grabbing'
 
   switch (selectedTool) {

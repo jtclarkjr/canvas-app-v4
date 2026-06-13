@@ -12,17 +12,29 @@ import {
   textElementToData
 } from '$lib/canvas/drawing-utils'
 import type { UpsertElementInput } from '$lib/workspace/schema'
-import type { EditingText, Path, Point, TextElement, Tool } from '$lib/canvas/types'
-import type { createWorkspaceFormattingStore } from '$lib/stores/canvas/workspace/formatting.svelte'
+import type {
+  EditingText,
+  Path,
+  Point,
+  TextElement,
+  Tool
+} from '$lib/canvas/types'
+import type { createWorkspaceFormattingStore } from '$lib/stores/workspace/formatting.svelte'
 
 type ElementSetter<T> = (next: T[] | ((previous: T[]) => T[])) => void
 
 type UpsertElementMutation = {
-  mutate(variables: UpsertElementInput, options?: { onError?: (error: unknown) => void }): void
+  mutate(
+    variables: UpsertElementInput,
+    options?: { onError?: (error: unknown) => void }
+  ): void
 }
 
 type DeleteElementMutation = {
-  mutate(variables: { id: string }, options?: { onError?: (error: unknown) => void }): void
+  mutate(
+    variables: { id: string },
+    options?: { onError?: (error: unknown) => void }
+  ): void
 }
 
 type WorkspaceSceneInteractionsInput = {
@@ -58,7 +70,12 @@ type WorkspaceSceneInteractionsInput = {
   upsertElement: UpsertElementMutation
   deleteElement: DeleteElementMutation
   commitText: (text: EditingText | null) => void
-  startTextEditingAtPosition: (x: number, y: number, value: string, id?: string) => void
+  startTextEditingAtPosition: (
+    x: number,
+    y: number,
+    value: string,
+    id?: string
+  ) => void
 }
 
 export function createWorkspaceSceneInteractionsStore({
@@ -110,7 +127,9 @@ export function createWorkspaceSceneInteractionsStore({
     const now = Date.now()
     const timeSinceLastClick = now - lastClickTime
     const isSamePosition =
-      lastClickPos !== null && Math.abs(point.x - lastClickPos.x) < 5 && Math.abs(point.y - lastClickPos.y) < 5
+      lastClickPos !== null &&
+      Math.abs(point.x - lastClickPos.x) < 5 &&
+      Math.abs(point.y - lastClickPos.y) < 5
 
     return timeSinceLastClick < 300 && isSamePosition
   }
@@ -121,7 +140,9 @@ export function createWorkspaceSceneInteractionsStore({
   }
 
   function deleteSelectedElements() {
-    const selectedElementIds = new Set([...getSelectedElementIds()].filter((id) => canModifyElement(id)))
+    const selectedElementIds = new Set(
+      [...getSelectedElementIds()].filter((id) => canModifyElement(id))
+    )
     setSelectedElementIds(selectedElementIds)
     if (selectedElementIds.size === 0) return
 
@@ -142,7 +163,9 @@ export function createWorkspaceSceneInteractionsStore({
     })
 
     if (elementsToDelete.length > 0) {
-      addHistoryCommand(createDeleteMultipleCommand(elementsToDelete, getUserId()))
+      addHistoryCommand(
+        createDeleteMultipleCommand(elementsToDelete, getUserId())
+      )
     }
 
     selectedElementIds.forEach((id) => {
@@ -343,7 +366,9 @@ export function createWorkspaceSceneInteractionsStore({
       }
     }
 
-    setSelectedElementIds(new Set([...nextSelected].filter((id) => canModifyElement(id))))
+    setSelectedElementIds(
+      new Set([...nextSelected].filter((id) => canModifyElement(id)))
+    )
     setIsSelecting(false)
     setSelectionStart(null)
     setSelectionEnd(null)
@@ -394,7 +419,9 @@ export function createWorkspaceSceneInteractionsStore({
         },
         {
           onError: () => {
-            setPaths((previous) => previous.filter((entry) => entry.id !== pathId))
+            setPaths((previous) =>
+              previous.filter((entry) => entry.id !== pathId)
+            )
           }
         }
       )
@@ -422,10 +449,16 @@ export function createWorkspaceSceneInteractionsStore({
       event.stopPropagation()
       ;(event.currentTarget as SVGSVGElement).setPointerCapture(event.pointerId)
       const point = screenToCanvasPoint(event.clientX, event.clientY)
-      const pathToDelete = getPaths().find((path) => isPointNearPath(point, path, 10))
+      const pathToDelete = getPaths().find((path) =>
+        isPointNearPath(point, path, 10)
+      )
       if (pathToDelete && canModifyElement(pathToDelete.id)) {
-        addHistoryCommand(createDeleteElementCommand(pathToDelete, 'path', getUserId()))
-        setPaths((previous) => previous.filter((entry) => entry.id !== pathToDelete.id))
+        addHistoryCommand(
+          createDeleteElementCommand(pathToDelete, 'path', getUserId())
+        )
+        setPaths((previous) =>
+          previous.filter((entry) => entry.id !== pathToDelete.id)
+        )
         deleteElement.mutate(
           { id: pathToDelete.id },
           {
@@ -452,7 +485,12 @@ export function createWorkspaceSceneInteractionsStore({
 
       if (hitText && canModifyElement(hitText.id)) {
         formattingStore.syncTextFormattingFromElement(hitText)
-        startTextEditingAtPosition(hitText.x, hitText.y, hitText.text, hitText.id)
+        startTextEditingAtPosition(
+          hitText.x,
+          hitText.y,
+          hitText.text,
+          hitText.id
+        )
       } else if (!hitText && !wasEditing) {
         startTextEditingAtPosition(point.x, point.y, '')
       }
@@ -487,7 +525,9 @@ export function createWorkspaceSceneInteractionsStore({
 
     updateClickTracking(point)
 
-    const hitPath = getPaths().find((path) => isPointNearPath(point, path, 10 / getCameraScale()))
+    const hitPath = getPaths().find((path) =>
+      isPointNearPath(point, path, 10 / getCameraScale())
+    )
     const hitId = hitText?.id || hitPath?.id
     const hitElementId = hitId && canModifyElement(hitId) ? hitId : undefined
     const selectedElementIds = getSelectedElementIds()
@@ -519,7 +559,11 @@ export function createWorkspaceSceneInteractionsStore({
       return
     }
 
-    if (getSelectedTool() === 'pencil' && getIsCurrentlyDrawing() && event.isPrimary) {
+    if (
+      getSelectedTool() === 'pencil' &&
+      getIsCurrentlyDrawing() &&
+      event.isPrimary
+    ) {
       event.preventDefault()
       event.stopPropagation()
       const point = screenToCanvasPoint(event.clientX, event.clientY)
@@ -535,8 +579,12 @@ export function createWorkspaceSceneInteractionsStore({
   function handleSvgPointerUp(event: PointerEvent) {
     pendingDrag = null
 
-    if ((event.currentTarget as SVGSVGElement).hasPointerCapture(event.pointerId)) {
-      ;(event.currentTarget as SVGSVGElement).releasePointerCapture(event.pointerId)
+    if (
+      (event.currentTarget as SVGSVGElement).hasPointerCapture(event.pointerId)
+    ) {
+      ;(event.currentTarget as SVGSVGElement).releasePointerCapture(
+        event.pointerId
+      )
     }
 
     if (finishSelection()) return

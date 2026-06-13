@@ -53,16 +53,22 @@ describe('canvas schema', () => {
   })
 
   it('accepts visibility updates and rejects unknown values', () => {
-    expect(updateCanvasInputSchema.parse({ visibility: 'public' }).visibility).toBe('public')
-    expect(() => updateCanvasInputSchema.parse({ visibility: 'unlisted' })).toThrow()
+    expect(
+      updateCanvasInputSchema.parse({ visibility: 'public' }).visibility
+    ).toBe('public')
+    expect(() =>
+      updateCanvasInputSchema.parse({ visibility: 'unlisted' })
+    ).toThrow()
   })
 
   it('accepts access requests with and without a requested role', () => {
     expect(requestAccessInputSchema.parse({}).requestedRole).toBeUndefined()
-    expect(requestAccessInputSchema.parse({ requestedRole: 'editor' }).requestedRole).toBe(
-      'editor'
-    )
-    expect(() => requestAccessInputSchema.parse({ requestedRole: 'owner' })).toThrow()
+    expect(
+      requestAccessInputSchema.parse({ requestedRole: 'editor' }).requestedRole
+    ).toBe('editor')
+    expect(() =>
+      requestAccessInputSchema.parse({ requestedRole: 'owner' })
+    ).toThrow()
   })
 
   it('tolerates missing or null requestedRole on access request rows', () => {
@@ -78,7 +84,8 @@ describe('canvas schema', () => {
       accessRequestSchema.parse({ ...base, requestedRole: null }).requestedRole
     ).toBeNull()
     expect(
-      accessRequestSchema.parse({ ...base, requestedRole: 'editor' }).requestedRole
+      accessRequestSchema.parse({ ...base, requestedRole: 'editor' })
+        .requestedRole
     ).toBe('editor')
   })
 })

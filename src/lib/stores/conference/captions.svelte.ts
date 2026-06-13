@@ -10,9 +10,9 @@ import {
 } from '$lib/conference/captions'
 import { OPENAI_REALTIME_CALLS_URL } from '$lib/conference/openai-realtime'
 import type { CaptionSegment } from '$lib/conference/types'
-import { toast } from '$lib/stores/toast.svelte'
-import type { ConferenceDevicesStore } from '$lib/stores/canvas/conference/devices.svelte'
-import type { ConferenceRoomStore } from '$lib/stores/canvas/conference/room.svelte'
+import { toast } from '$lib/stores/shared/toast.svelte'
+import type { ConferenceDevicesStore } from '$lib/stores/conference/devices.svelte'
+import type { ConferenceRoomStore } from '$lib/stores/conference/room.svelte'
 
 type ConferenceCaptionsInput = {
   getCanvasId: () => string
@@ -37,7 +37,9 @@ export function createConferenceCaptionsStore({
   devices
 }: ConferenceCaptionsInput) {
   let enabled = $state(false)
-  let language = $state<CaptionLanguageCode>(loadCaptionPrefs().language ?? 'en')
+  let language = $state<CaptionLanguageCode>(
+    loadCaptionPrefs().language ?? 'en'
+  )
   let segments = $state.raw<CaptionSegment[]>([])
   let sttState = $state<SttState>('off')
 
@@ -58,8 +60,7 @@ export function createConferenceCaptionsStore({
   const segmentedItems = new Set<string>()
 
   const someoneWantsCaptions = $derived(
-    enabled ||
-      room.participants.some((p) => !p.isLocal && p.wantsCaptions)
+    enabled || room.participants.some((p) => !p.isLocal && p.wantsCaptions)
   )
   const shouldTranscribe = $derived(
     room.isInCall && someoneWantsCaptions && room.micEnabled && devices.hasMic
@@ -188,7 +189,11 @@ export function createConferenceCaptionsStore({
           return
         }
         const state = connection.connectionState
-        if (state === 'failed' || state === 'closed' || state === 'disconnected') {
+        if (
+          state === 'failed' ||
+          state === 'closed' ||
+          state === 'disconnected'
+        ) {
           stopSession()
           scheduleRetry()
         }

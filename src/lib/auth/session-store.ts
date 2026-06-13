@@ -72,7 +72,7 @@ export function setCurrentSession(session: Session | null, notify = true) {
 }
 
 export function normalizeUser(value: unknown): User | null {
-  if (!value || typeof value !== "object") {
+  if (!value || typeof value !== 'object') {
     return null
   }
 

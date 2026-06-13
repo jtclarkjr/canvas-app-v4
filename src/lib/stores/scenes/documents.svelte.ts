@@ -4,10 +4,7 @@ import { getContext, setContext } from 'svelte'
 import { sceneDocumentsDependency } from '$lib/canvas/dependencies'
 import { getSceneDocument, listSceneDocumentItems } from '$lib/scenes/api'
 import { sceneDocumentToListItem } from '$lib/scenes/mapping'
-import type {
-  SceneDocument,
-  SceneDocumentListItem
-} from '$lib/scenes/schema'
+import type { SceneDocument, SceneDocumentListItem } from '$lib/scenes/schema'
 
 const SCENE_DOCUMENTS_CONTEXT = Symbol('scene-documents-store')
 const REVALIDATE_DEBOUNCE_MS = 250

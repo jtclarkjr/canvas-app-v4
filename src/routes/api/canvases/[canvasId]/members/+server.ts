@@ -175,7 +175,12 @@ export const POST: RequestHandler = async (event) =>
 
       return json(
         memberResponseSchema.parse({
-          item: toMember(member.user_id, member.role, profile, member.created_at)
+          item: toMember(
+            member.user_id,
+            member.role,
+            profile,
+            member.created_at
+          )
         }),
         { status: 201 }
       )

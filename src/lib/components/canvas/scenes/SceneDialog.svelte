@@ -1,11 +1,17 @@
 <script lang="ts">
   import { Minimize2, Trash2 } from 'lucide-svelte'
-  import type { Scene, SceneMessage, UpdateSceneInput } from '$lib/scenes/schema'
+  import type {
+    Scene,
+    SceneMessage,
+    UpdateSceneInput
+  } from '$lib/scenes/schema'
   import type { SceneActivity, SceneActivityKind } from '$lib/scenes/types'
   import { getSceneType } from '$lib/scenes/registry'
-  import { toast } from '$lib/stores/toast.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
   import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte'
-  import SceneEntry, { type SceneEntryStart } from '$lib/components/canvas/scenes/SceneEntry.svelte'
+  import SceneEntry, {
+    type SceneEntryStart
+  } from '$lib/components/canvas/scenes/SceneEntry.svelte'
   import DocumentScenePanel from '$lib/components/canvas/scenes/document/DocumentScenePanel.svelte'
 
   let {
@@ -46,7 +52,8 @@
 
   const sceneType = $derived(getSceneType(scene.type))
   const hasStarted = $derived(
-    typeof scene.settings.category === 'string' && scene.settings.category !== ''
+    typeof scene.settings.category === 'string' &&
+      scene.settings.category !== ''
   )
 
   function flipTransform(from: DOMRect, to: DOMRect) {
@@ -94,7 +101,9 @@
 
     const el = dialogEl
     const cardRect =
-      document.querySelector(`[data-scene-id="${scene.id}"]`)?.getBoundingClientRect() ?? null
+      document
+        .querySelector(`[data-scene-id="${scene.id}"]`)
+        ?.getBoundingClientRect() ?? null
 
     backdropEl?.animate([{ opacity: 1 }, { opacity: 0 }], {
       duration: 220,
@@ -108,7 +117,11 @@
           { transform: 'none', opacity: 1 },
           { transform: flipTransform(cardRect, target), opacity: 0.15 }
         ],
-        { duration: 240, easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)', fill: 'forwards' }
+        {
+          duration: 240,
+          easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)',
+          fill: 'forwards'
+        }
       )
       await animation.finished.catch(() => undefined)
     } else if (el) {
@@ -175,9 +188,13 @@
   aria-label={scene.title || sceneType?.defaultTitle || 'Scene'}
   data-camera-exempt
 >
-  <header class="flex items-center justify-between gap-3 border-b border-border/50 px-5 py-3">
+  <header
+    class="flex items-center justify-between gap-3 border-b border-border/50 px-5 py-3"
+  >
     <div class="flex min-w-0 items-center gap-2">
-      <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+      <span
+        class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+      >
         {sceneType?.label ?? scene.type}
       </span>
       <h2 class="truncate text-sm font-semibold text-foreground">

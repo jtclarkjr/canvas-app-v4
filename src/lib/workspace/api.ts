@@ -183,13 +183,20 @@ export async function updateMemberRole(
   )
 }
 
-export async function removeMember(canvasId: string, userId: string): Promise<void> {
+export async function removeMember(
+  canvasId: string,
+  userId: string
+): Promise<void> {
   const response = await fetch(`/api/canvases/${canvasId}/members/${userId}`, {
     method: 'DELETE',
     headers: await getApiHeaders({ accept: 'application/json' })
   })
 
-  await parseResponse(response, (payload) => payload, 'Failed to remove member.')
+  await parseResponse(
+    response,
+    (payload) => payload,
+    'Failed to remove member.'
+  )
 }
 
 export async function listAccessRequests(

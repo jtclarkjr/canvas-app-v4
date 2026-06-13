@@ -41,8 +41,12 @@ describe('drawing utils', () => {
     const text = makeText({ text: 'first\nsecond\nthird' })
     const secondLineY = 20 + getTextLineHeight(18) + 2
 
-    expect(findTextAtPoint({ x: 15, y: secondLineY }, [text])?.id).toBe('text-1')
-    expect(findTextAtPoint({ x: 15, y: 20 + 3 * getTextLineHeight(18) + 30 }, [text])).toBeNull()
+    expect(findTextAtPoint({ x: 15, y: secondLineY }, [text])?.id).toBe(
+      'text-1'
+    )
+    expect(
+      findTextAtPoint({ x: 15, y: 20 + 3 * getTextLineHeight(18) + 30 }, [text])
+    ).toBeNull()
   })
 
   it('calculates single-line text bounds from the top-left anchor', () => {
@@ -91,12 +95,12 @@ describe('drawing utils', () => {
       opacity: 1
     }
 
-    expect(
-      isElementInSelection(path, { x1: 0, y1: 0, x2: 15, y2: 15 })
-    ).toBe(true)
-    expect(
-      isElementInSelection(path, { x1: 30, y1: 30, x2: 40, y2: 40 })
-    ).toBe(false)
+    expect(isElementInSelection(path, { x1: 0, y1: 0, x2: 15, y2: 15 })).toBe(
+      true
+    )
+    expect(isElementInSelection(path, { x1: 30, y1: 30, x2: 40, y2: 40 })).toBe(
+      false
+    )
   })
 
   it('matches points near a path using the threshold', () => {

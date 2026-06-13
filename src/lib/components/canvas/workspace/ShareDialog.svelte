@@ -10,7 +10,11 @@
     searchUsers,
     updateMemberRole
   } from '$lib/workspace/api'
-  import type { AccessRequest, CanvasVisibility, UserSearchResult } from '$lib/canvas/schema'
+  import type {
+    AccessRequest,
+    CanvasVisibility,
+    UserSearchResult
+  } from '$lib/canvas/schema'
   import type { CanvasMember } from '$lib/workspace/schema'
   import {
     MEMBER_ROLES,
@@ -19,7 +23,7 @@
     type CanvasRole,
     type MemberRole
   } from '$lib/canvas/roles'
-  import { toast } from '$lib/stores/toast.svelte'
+  import { toast } from '$lib/stores/shared/toast.svelte'
 
   let {
     open = $bindable(false),
@@ -45,7 +49,9 @@
 
   const canManage = $derived(roleAtLeast(role, 'admin'))
   const shareUrl = $derived(
-    typeof window !== 'undefined' ? `${window.location.origin}/canvas/${canvasId}` : ''
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/canvas/${canvasId}`
+      : ''
   )
 
   let members = $state<CanvasMember[]>([])
@@ -66,7 +72,8 @@
 
   async function handleVisibilityToggle() {
     if (visibilityBusy || !canManage) return
-    const next: CanvasVisibility = effectiveVisibility === 'public' ? 'private' : 'public'
+    const next: CanvasVisibility =
+      effectiveVisibility === 'public' ? 'private' : 'public'
     visibilityOverride = next
     visibilityBusy = true
     errorMessage = null
@@ -160,7 +167,10 @@
     }
   }
 
-  async function handleResolve(request: AccessRequest, action: 'approve' | 'deny') {
+  async function handleResolve(
+    request: AccessRequest,
+    action: 'approve' | 'deny'
+  ) {
     setBusy(request.id, true)
     errorMessage = null
     try {
@@ -168,7 +178,11 @@
         canvasId,
         request.id,
         action === 'approve'
-          ? { action, role: approveRoles[request.id] ?? request.requestedRole ?? 'reader' }
+          ? {
+              action,
+              role:
+                approveRoles[request.id] ?? request.requestedRole ?? 'reader'
+            }
           : { action }
       )
       onRequestResolved?.(request.id)
@@ -208,7 +222,9 @@
       try {
         const response = await searchUsers(query)
         const memberIds = new Set(members.map((entry) => entry.userId))
-        searchResults = response.items.filter((entry) => !memberIds.has(entry.id))
+        searchResults = response.items.filter(
+          (entry) => !memberIds.has(entry.id)
+        )
       } catch (error) {
         reportError(error, 'Failed to search users.')
       } finally {
@@ -228,7 +244,9 @@
 >
   <div class="grid gap-6">
     <section class="grid gap-2">
-      <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      <h3
+        class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+      >
         Share link
       </h3>
       <div class="flex items-center gap-2">
@@ -236,7 +254,8 @@
           class="min-w-0 flex-1 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground outline-none"
           readonly
           value={shareUrl}
-          onfocus={(event) => (event.currentTarget as HTMLInputElement).select()}
+          onfocus={(event) =>
+            (event.currentTarget as HTMLInputElement).select()}
         />
         <button
           type="button"
@@ -254,14 +273,17 @@
         {#if effectiveVisibility === 'public'}
           Anyone signed in with the link can view this canvas.
         {:else}
-          Anyone with the link must request access before they can view this canvas.
+          Anyone with the link must request access before they can view this
+          canvas.
         {/if}
       </p>
     </section>
 
     {#if canManage}
       <section class="grid gap-2">
-        <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        <h3
+          class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           General access
         </h3>
         <div
@@ -286,7 +308,9 @@
             aria-label="Make canvas public"
             disabled={visibilityBusy}
             class={`relative h-6 w-11 shrink-0 rounded-full transition disabled:opacity-50 ${
-              effectiveVisibility === 'public' ? 'bg-primary' : 'bg-muted-foreground/30'
+              effectiveVisibility === 'public'
+                ? 'bg-primary'
+                : 'bg-muted-foreground/30'
             }`}
             onclick={() => void handleVisibilityToggle()}
           >
@@ -300,7 +324,9 @@
       </section>
 
       <section class="grid gap-2">
-        <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        <h3
+          class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           Add people
         </h3>
         <div class="flex items-center gap-2">
@@ -341,7 +367,11 @@
                 class="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-secondary/40"
               >
                 {#if result.avatarUrl}
-                  <img src={result.avatarUrl} alt="" class="size-8 rounded-full" />
+                  <img
+                    src={result.avatarUrl}
+                    alt=""
+                    class="size-8 rounded-full"
+                  />
                 {:else}
                   <span
                     class="flex size-8 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground"
@@ -350,8 +380,12 @@
                   </span>
                 {/if}
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-foreground">{memberLabel(result)}</p>
-                  <p class="truncate text-xs text-muted-foreground">{result.email}</p>
+                  <p class="truncate text-sm font-medium text-foreground">
+                    {memberLabel(result)}
+                  </p>
+                  <p class="truncate text-xs text-muted-foreground">
+                    {result.email}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -371,7 +405,9 @@
 
       {#if pendingRequests.length > 0}
         <section class="grid gap-2">
-          <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-warning">
+          <h3
+            class="text-xs font-bold uppercase tracking-[0.18em] text-warning"
+          >
             Pending requests
           </h3>
           <ul class="grid gap-1">
@@ -381,25 +417,33 @@
               >
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-sm font-medium text-foreground">
-                    {request.requester ? memberLabel(request.requester) : 'Unknown user'}
+                    {request.requester
+                      ? memberLabel(request.requester)
+                      : 'Unknown user'}
                   </p>
                   {#if request.requester?.email}
-                    <p class="truncate text-xs text-muted-foreground">{request.requester.email}</p>
+                    <p class="truncate text-xs text-muted-foreground">
+                      {request.requester.email}
+                    </p>
                   {/if}
                 </div>
                 <select
                   class="shrink-0 rounded-xl border border-border bg-secondary/40 px-2 py-1.5 text-xs text-foreground outline-none"
-                  value={approveRoles[request.id] ?? request.requestedRole ?? 'reader'}
+                  value={approveRoles[request.id] ??
+                    request.requestedRole ??
+                    'reader'}
                   aria-label="Role to grant"
                   onchange={(event) => {
                     approveRoles = {
                       ...approveRoles,
-                      [request.id]: (event.currentTarget as HTMLSelectElement).value as MemberRole
+                      [request.id]: (event.currentTarget as HTMLSelectElement)
+                        .value as MemberRole
                     }
                   }}
                 >
                   {#each MEMBER_ROLES as memberRole}
-                    <option value={memberRole}>{ROLE_LABELS[memberRole]}</option>
+                    <option value={memberRole}>{ROLE_LABELS[memberRole]}</option
+                    >
                   {/each}
                 </select>
                 <button
@@ -425,20 +469,28 @@
       {/if}
 
       <section class="grid gap-2">
-        <h3 class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+        <h3
+          class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           People with access
         </h3>
         {#if isLoadingMembers}
           <ul class="grid gap-1">
             {#each Array.from({ length: 2 }) as _, index (index)}
               <li class="flex items-center gap-3 rounded-xl px-2 py-1.5">
-                <span class="size-8 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
+                <span
+                  class="size-8 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
                 ></span>
                 <div class="grid min-w-0 flex-1 gap-1.5">
-                  <span class="h-3 w-28 animate-pulse rounded bg-muted-foreground/25"></span>
-                  <span class="h-2.5 w-40 animate-pulse rounded bg-muted-foreground/20"></span>
+                  <span
+                    class="h-3 w-28 animate-pulse rounded bg-muted-foreground/25"
+                  ></span>
+                  <span
+                    class="h-2.5 w-40 animate-pulse rounded bg-muted-foreground/20"
+                  ></span>
                 </div>
-                <span class="h-5 w-16 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
+                <span
+                  class="h-5 w-16 shrink-0 animate-pulse rounded-full bg-muted-foreground/25"
                 ></span>
               </li>
             {/each}
@@ -450,7 +502,11 @@
                 class="flex items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-secondary/40"
               >
                 {#if member.avatarUrl}
-                  <img src={member.avatarUrl} alt="" class="size-8 rounded-full" />
+                  <img
+                    src={member.avatarUrl}
+                    alt=""
+                    class="size-8 rounded-full"
+                  />
                 {:else}
                   <span
                     class="flex size-8 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground"
@@ -465,7 +521,9 @@
                       <span class="text-xs text-muted-foreground">(you)</span>
                     {/if}
                   </p>
-                  <p class="truncate text-xs text-muted-foreground">{member.email}</p>
+                  <p class="truncate text-xs text-muted-foreground">
+                    {member.email}
+                  </p>
                 </div>
                 {#if member.role === 'owner'}
                   <RoleBadge role="owner" />
@@ -478,11 +536,14 @@
                     onchange={(event) =>
                       void handleRoleChange(
                         member,
-                        (event.currentTarget as HTMLSelectElement).value as MemberRole
+                        (event.currentTarget as HTMLSelectElement)
+                          .value as MemberRole
                       )}
                   >
                     {#each MEMBER_ROLES as memberRole}
-                      <option value={memberRole}>{ROLE_LABELS[memberRole]}</option>
+                      <option value={memberRole}
+                        >{ROLE_LABELS[memberRole]}</option
+                      >
                     {/each}
                   </select>
                   <button

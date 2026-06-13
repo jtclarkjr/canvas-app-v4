@@ -1,6 +1,6 @@
 <script lang="ts">
   import { MessageSquare, Minimize2, Sparkles } from 'lucide-svelte'
-  import { useCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
+  import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import CanvasAssistantPanel from '$lib/components/canvas/chat/CanvasAssistantPanel.svelte'
   import CanvasChatRoomPanel from '$lib/components/canvas/chat/CanvasChatRoomPanel.svelte'
 
@@ -74,7 +74,11 @@
           { transform: 'none', opacity: 1 },
           { transform: flipTransform(origin, target), opacity: 0.15 }
         ],
-        { duration: 240, easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)', fill: 'forwards' }
+        {
+          duration: 240,
+          easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)',
+          fill: 'forwards'
+        }
       )
       await activeAnimation.finished.catch(() => undefined)
     } else if (el) {
@@ -94,7 +98,9 @@
 
   const tabClass = (active: boolean) =>
     `flex h-7 items-center gap-1.5 rounded-full px-3 text-xs transition ${
-      active ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
+      active
+        ? 'bg-primary/10 text-primary'
+        : 'text-muted-foreground hover:text-foreground'
     }`
 </script>
 
@@ -106,7 +112,9 @@
   aria-label="Canvas chat"
   data-camera-exempt
 >
-  <header class="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2.5">
+  <header
+    class="flex items-center justify-between gap-3 border-b border-border/50 px-3 py-2.5"
+  >
     <div class="flex items-center gap-1" role="tablist" aria-label="Chat tabs">
       <button
         type="button"

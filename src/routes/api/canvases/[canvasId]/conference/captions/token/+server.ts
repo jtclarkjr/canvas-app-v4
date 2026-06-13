@@ -26,23 +26,20 @@ type ClientSecretPayload = {
 }
 
 async function mintClientSecret(apiKey: string, model: string) {
-  const response = await fetch(
-    OPENAI_REALTIME_CLIENT_SECRETS_URL,
-    {
-      method: 'POST',
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        'content-type': 'application/json'
+  const response = await fetch(OPENAI_REALTIME_CLIENT_SECRETS_URL, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      expires_after: {
+        anchor: 'created_at',
+        seconds: CLIENT_SECRET_TTL_SECONDS
       },
-      body: JSON.stringify({
-        expires_after: {
-          anchor: 'created_at',
-          seconds: CLIENT_SECRET_TTL_SECONDS
-        },
-        session: captionsSessionConfig(model)
-      })
-    }
-  )
+      session: captionsSessionConfig(model)
+    })
+  })
 
   if (!response.ok) {
     const body = await response.text().catch(() => '')

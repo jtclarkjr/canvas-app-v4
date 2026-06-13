@@ -106,7 +106,11 @@ export const POST: RequestHandler = async (event) =>
         originalMessages: messages,
         generateMessageId: () => crypto.randomUUID(),
         sendSources: true,
-        onFinish: async ({ messages: updatedMessages, responseMessage, isAborted }) => {
+        onFinish: async ({
+          messages: updatedMessages,
+          responseMessage,
+          isAborted
+        }) => {
           if (isAborted) {
             return
           }

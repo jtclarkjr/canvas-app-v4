@@ -47,7 +47,9 @@ function getFirstNonEmptyString(
 
 function getIdentityValue(user: DisplayUser, keys: string[]): string | null {
   const userRecord = asRecord(user)
-  const identities = Array.isArray(userRecord?.identities) ? userRecord.identities : []
+  const identities = Array.isArray(userRecord?.identities)
+    ? userRecord.identities
+    : []
 
   for (const identity of identities) {
     const record = asRecord(
@@ -75,7 +77,8 @@ export function getUserDisplayName(user: DisplayUser | null | undefined) {
 
   const metadata = asRecord(userRecord?.user_metadata)
   const name =
-    getFirstNonEmptyString(metadata, nameKeys) ?? getIdentityValue(user, nameKeys)
+    getFirstNonEmptyString(metadata, nameKeys) ??
+    getIdentityValue(user, nameKeys)
   if (name) {
     return name
   }
@@ -129,7 +132,9 @@ if (import.meta.vitest) {
 
     it('falls back to the email address', () => {
       expect(
-        getUserDisplayName(createUser({ user_metadata: {}, email: 'user@example.com' }))
+        getUserDisplayName(
+          createUser({ user_metadata: {}, email: 'user@example.com' })
+        )
       ).toBe('user@example.com')
     })
   })
@@ -139,7 +144,9 @@ if (import.meta.vitest) {
       expect(
         getUserAvatarUrl(
           createUser({
-            user_metadata: { avatar_url: 'https://avatars.example.com/octavia.png' }
+            user_metadata: {
+              avatar_url: 'https://avatars.example.com/octavia.png'
+            }
           })
         )
       ).toBe('https://avatars.example.com/octavia.png')
@@ -149,7 +156,9 @@ if (import.meta.vitest) {
       expect(
         getUserAvatarUrl(
           createUser({
-            user_metadata: { picture: 'https://avatars.example.com/google-user.png' }
+            user_metadata: {
+              picture: 'https://avatars.example.com/google-user.png'
+            }
           })
         )
       ).toBe('https://avatars.example.com/google-user.png')

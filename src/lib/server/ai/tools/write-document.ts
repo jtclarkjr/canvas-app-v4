@@ -9,11 +9,15 @@ export const writeDocumentTool = tool({
   description:
     'Write or replace the working document. Always pass the COMPLETE document content as markdown — never a diff, summary, or fragment.',
   inputSchema: z.object({
-    title: z.string().describe('Concise document title (also used as the filename stem)'),
+    title: z
+      .string()
+      .describe('Concise document title (also used as the filename stem)'),
     docType: z
       .string()
       .describe('Document type id, e.g. "markdown-doc" or "claude-skill"'),
-    content: z.string().describe('The complete markdown content of the document')
+    content: z
+      .string()
+      .describe('The complete markdown content of the document')
   }),
   execute: ({ title }) => ({ saved: true, title })
 })
