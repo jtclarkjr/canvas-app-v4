@@ -12,6 +12,10 @@
     onModeChange: (mode: WorkspaceMode) => void
   }>()
 
+  const MODE_BUTTON_WIDTH_REM = 6.5
+  const MODE_ICON_WIDTH_REM = 2
+  const SWITCHER_PADDING_REM = 0.5
+
   const availableModes = $derived([
     { id: 'editor' as WorkspaceMode, icon: PenLine, label: 'Editor' },
     { id: 'scenes' as WorkspaceMode, icon: LayoutGrid, label: 'Scenes' },
@@ -34,34 +38,130 @@
     )
   )
   const columnCount = $derived(modes.length)
-  const thumbStyle = $derived(`transform: translateX(${activeIndex * 100}%)`)
+  const switcherStyle = $derived(
+    [
+      `--mode-count:${columnCount}`,
+      `--active-index:${activeIndex}`,
+      `--switcher-expanded-width:${columnCount * MODE_BUTTON_WIDTH_REM + SWITCHER_PADDING_REM}rem`,
+      `--switcher-expanded-thumb-offset:${activeIndex * MODE_BUTTON_WIDTH_REM}rem`,
+      `--switcher-collapsed-track-offset:${activeIndex * -MODE_ICON_WIDTH_REM}rem`
+    ].join(';')
+  )
 </script>
 
 <!-- Bottom-left: top-center belongs to the drawing/text formatting
      toolbars, which would overlap the switcher there. -->
 <div class="fixed bottom-6 left-6 z-30">
   <div
-    class={`toolbar-pill relative grid p-1 ${columnCount === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}
+    class="mode-switcher toolbar-pill relative overflow-hidden p-1"
+    style={switcherStyle}
   >
     <span
-      class="pointer-events-none absolute top-1 bottom-1 left-1 rounded-full bg-primary shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none"
-      style={`width:calc((100% - 0.5rem) / ${columnCount});${thumbStyle}`}
+      class="mode-switcher__thumb pointer-events-none absolute top-1 bottom-1 left-1 rounded-full bg-primary shadow-sm"
       aria-hidden="true"
     ></span>
-    {#each modes as entry (entry.id)}
-      <button
-        type="button"
-        class={`relative z-10 flex h-8 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
-          mode === entry.id
-            ? 'text-primary-foreground'
-            : 'text-muted-foreground hover:text-foreground'
-        }`}
-        aria-pressed={mode === entry.id}
-        onclick={() => onModeChange(entry.id)}
-      >
-        <entry.icon class="size-4" />
-        {entry.label}
-      </button>
-    {/each}
+    <div class="mode-switcher__track relative z-10 flex items-center">
+      {#each modes as entry (entry.id)}
+        <button
+          type="button"
+          class={`mode-switcher__button flex h-8 shrink-0 items-center justify-center gap-1.5 overflow-hidden rounded-full px-3 text-xs font-medium whitespace-nowrap ${
+            mode === entry.id
+              ? 'text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          aria-label={`Switch to ${entry.label} mode`}
+          aria-pressed={mode === entry.id}
+          title={entry.label}
+          onclick={() => onModeChange(entry.id)}
+        >
+          <entry.icon class="size-4 shrink-0" aria-hidden="true" />
+          <span class="mode-switcher__label">{entry.label}</span>
+        </button>
+      {/each}
+    </div>
   </div>
 </div>
+
+<style>
+  .mode-switcher {
+    --switcher-button-width: 6.5rem;
+    --switcher-icon-width: 2rem;
+    --switcher-collapsed-width: 2.5rem;
+
+    width: var(--switcher-expanded-width);
+    transition:
+      width 220ms ease-out,
+      border-color 200ms ease-out,
+      background-color 200ms ease-out,
+      color 200ms ease-out;
+  }
+
+  .mode-switcher__track {
+    transform: translateX(0);
+    transition: transform 220ms ease-out;
+  }
+
+  .mode-switcher__thumb {
+    width: var(--switcher-button-width);
+    transform: translateX(var(--switcher-expanded-thumb-offset));
+    transition:
+      width 220ms ease-out,
+      transform 220ms ease-out;
+  }
+
+  .mode-switcher__button {
+    width: var(--switcher-button-width);
+    transition:
+      width 220ms ease-out,
+      gap 180ms ease-out,
+      padding 180ms ease-out,
+      color 200ms ease-out;
+  }
+
+  .mode-switcher__label {
+    display: inline-block;
+    max-width: 4.75rem;
+    overflow: hidden;
+    opacity: 1;
+    transition:
+      max-width 180ms ease-out,
+      opacity 140ms ease-out;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .mode-switcher:not(:hover):not(:focus-within) {
+      width: var(--switcher-collapsed-width);
+    }
+
+    .mode-switcher:not(:hover):not(:focus-within) .mode-switcher__track {
+      transform: translateX(var(--switcher-collapsed-track-offset));
+    }
+
+    .mode-switcher:not(:hover):not(:focus-within) .mode-switcher__thumb {
+      width: var(--switcher-icon-width);
+      transform: translateX(0);
+    }
+
+    .mode-switcher:not(:hover):not(:focus-within) .mode-switcher__button {
+      width: var(--switcher-icon-width);
+      gap: 0;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .mode-switcher:not(:hover):not(:focus-within) .mode-switcher__label {
+      max-width: 0;
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mode-switcher,
+    .mode-switcher__track,
+    .mode-switcher__thumb,
+    .mode-switcher__button,
+    .mode-switcher__label {
+      transition: none;
+    }
+  }
+</style>
