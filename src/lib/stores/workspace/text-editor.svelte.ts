@@ -100,6 +100,7 @@ export function createWorkspaceTextEditorStore({
       text: shape.text ?? '',
       x: shape.x,
       y: shape.y,
+      rotation: shape.rotation,
       color: shape.textColor ?? '#000000',
       fontSize: shape.textFontSize ?? 16,
       isBold: shape.textIsBold ?? false,
@@ -168,11 +169,13 @@ export function createWorkspaceTextEditorStore({
       text: value,
       x: existingText?.x ?? text.x,
       y: existingText?.y ?? text.y,
+      rotation: existingText?.rotation ?? text.rotation ?? 0,
       color: formattingStore.textFormatting.color,
       fontSize: formattingStore.textFormatting.fontSize,
       isBold: formattingStore.textFormatting.isBold,
       isItalic: formattingStore.textFormatting.isItalic,
-      isUnderline: formattingStore.textFormatting.isUnderline
+      isUnderline: formattingStore.textFormatting.isUnderline,
+      z: existingText?.z ?? previousTextValue?.z ?? Date.now()
     }
 
     if (existingText) {
@@ -208,7 +211,7 @@ export function createWorkspaceTextEditorStore({
         data: textElementToData(textElement),
         x: textElement.x,
         y: textElement.y,
-        z: Date.now()
+        z: textElement.z ?? Date.now()
       },
       {
         onError: () => {
@@ -301,9 +304,11 @@ export function createWorkspaceTextEditorStore({
   ) {
     const textId = id ?? crypto.randomUUID()
     let initialValue = value
+    const existing = id
+      ? getTextElements().find((entry) => entry.id === id)
+      : null
 
     if (id) {
-      const existing = getTextElements().find((entry) => entry.id === id)
       originalTextValue = existing ? { ...existing } : null
       originalShapeValue = null
     } else {
@@ -318,16 +323,25 @@ export function createWorkspaceTextEditorStore({
         text: initialValue,
         x,
         y,
+        rotation: 0,
         color: formattingStore.textFormatting.color,
         fontSize: formattingStore.textFormatting.fontSize,
         isBold: formattingStore.textFormatting.isBold,
         isItalic: formattingStore.textFormatting.isItalic,
-        isUnderline: formattingStore.textFormatting.isUnderline
+        isUnderline: formattingStore.textFormatting.isUnderline,
+        z: Date.now()
       }
       setTextElements((previous) => [...previous, placeholder])
     }
 
-    setEditingText({ id: textId, target: 'text', x, y, value: initialValue })
+    setEditingText({
+      id: textId,
+      target: 'text',
+      x,
+      y,
+      value: initialValue,
+      rotation: existing?.rotation ?? 0
+    })
 
     queueMicrotask(() => {
       const textInputEl = getTextInputEl()

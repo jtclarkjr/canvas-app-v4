@@ -11,10 +11,14 @@
     Tool
   } from '$lib/canvas/types'
   import {
-    calculateTextBounds,
+    getTextCenter,
     getTextLines,
     getTextLineBaseline,
     getTextLineHeight,
+    getTextOutlinePoints,
+    getTextResizeHandles,
+    getTextRotateAnchor,
+    getTextRotateHandle,
     pathToSvgPath,
     selectionRectFromPoints
   } from '$lib/canvas/drawing-utils'
@@ -104,6 +108,12 @@
   const sortedTextElements = $derived([...elements.textElements].sort(compareZ))
   const sortedShapes = $derived([...shapes].sort(compareZ))
   const sortedConnectors = $derived([...connectors].sort(compareZ))
+  const selectedTexts = $derived(
+    sortedTextElements.filter(
+      (text: TextElement) =>
+        selection.selectedIds.has(text.id) && !isEditingStandaloneText(text)
+    )
+  )
   const handleSize = $derived(8 / camera.scale)
   const anchorSize = $derived(5 / camera.scale)
 
@@ -117,6 +127,11 @@
   function shapeTransform(shape: DiagramShape) {
     const center = getShapeCenter(shape)
     return `rotate(${shape.rotation} ${center.x} ${center.y})`
+  }
+
+  function textTransform(text: TextElement) {
+    const center = getTextCenter(text)
+    return `rotate(${text.rotation ?? 0} ${center.x} ${center.y})`
   }
 
   function arrowPoints(
@@ -149,6 +164,10 @@
 
   function isEditingShapeText(shape: DiagramShape) {
     return editingText?.target === 'shape' && editingText.id === shape.id
+  }
+
+  function isEditingStandaloneText(text: TextElement) {
+    return editingText?.target === 'text' && editingText.id === text.id
   }
 </script>
 
@@ -395,21 +414,8 @@
     {/if}
 
     {#each sortedTextElements as text (text.id)}
-      {#if editingText?.id !== text.id}
-        {@const bounds = calculateTextBounds(text)}
-        <g>
-          {#if selection.selectedIds.has(text.id)}
-            <rect
-              fill="var(--canvas-selection-fill)"
-              x={bounds.x}
-              y={bounds.y}
-              width={bounds.width}
-              height={bounds.height}
-              rx={2 / camera.scale}
-              stroke="var(--canvas-selection-stroke)"
-              stroke-width={1 / camera.scale}
-            />
-          {/if}
+      {#if !isEditingStandaloneText(text)}
+        <g transform={textTransform(text)}>
           <text
             class="select-none"
             fill={resolveCanvasDisplayColor(text.color)}
@@ -429,6 +435,47 @@
           </text>
         </g>
       {/if}
+    {/each}
+
+    {#each selectedTexts as text (text.id)}
+      {@const outline = getTextOutlinePoints(text)}
+      {@const rotateAnchor = getTextRotateAnchor(text)}
+      {@const rotateHandle = getTextRotateHandle(text)}
+      <polygon
+        fill="var(--canvas-selection-fill)"
+        points={pointsToSvg(outline)}
+        stroke="var(--canvas-selection-stroke)"
+        stroke-dasharray={`${4 / camera.scale} ${2 / camera.scale}`}
+        stroke-width={1 / camera.scale}
+      />
+      <line
+        stroke="var(--canvas-selection-stroke)"
+        stroke-width={1 / camera.scale}
+        x1={rotateAnchor.x}
+        y1={rotateAnchor.y}
+        x2={rotateHandle.x}
+        y2={rotateHandle.y}
+      />
+      {#each getTextResizeHandles(text) as handle (handle.handle)}
+        <rect
+          fill="var(--background)"
+          height={handleSize}
+          rx={1.5 / camera.scale}
+          stroke="var(--canvas-selection-stroke)"
+          stroke-width={1 / camera.scale}
+          width={handleSize}
+          x={handle.point.x - handleSize / 2}
+          y={handle.point.y - handleSize / 2}
+        />
+      {/each}
+      <circle
+        cx={rotateHandle.x}
+        cy={rotateHandle.y}
+        fill="var(--background)"
+        r={handleSize / 2}
+        stroke="var(--canvas-selection-stroke)"
+        stroke-width={1 / camera.scale}
+      />
     {/each}
 
     {#each selectedShapes as shape (shape.id)}

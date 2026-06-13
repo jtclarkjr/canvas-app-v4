@@ -1,9 +1,23 @@
 import type { Camera, Path, Point, TextElement } from '$lib/canvas/types'
+import {
+  getShapeResizeCursor,
+  rotatePoint,
+  unrotatePoint
+} from '$lib/canvas/diagram-utils'
 
 export const TEXT_LINE_HEIGHT = 1.25
 export const TEXT_BOUNDS_PADDING = 4
 export const TEXT_EDITOR_MIN_WIDTH = 120
 export const TEXT_EDITOR_WIDTH_PADDING = 16
+const TEXT_ROTATE_HANDLE_LENGTH = 32
+const MIN_TEXT_FONT_SIZE = 6
+const MAX_TEXT_FONT_SIZE = 256
+
+export type TextResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
+
+export type TextHandleHit =
+  | { type: 'resize'; handle: TextResizeHandle; text: TextElement }
+  | { type: 'rotate'; text: TextElement }
 
 export function getTextLineHeight(fontSize: number): number {
   return fontSize * TEXT_LINE_HEIGHT
@@ -47,6 +61,7 @@ export function textElementToData(text: TextElement): {
   text: string
   color: string
   fontSize: number
+  rotation: number
   isBold: boolean
   isItalic: boolean
   isUnderline: boolean
@@ -55,10 +70,15 @@ export function textElementToData(text: TextElement): {
     text: text.text,
     color: text.color,
     fontSize: text.fontSize,
+    rotation: text.rotation ?? 0,
     isBold: text.isBold,
     isItalic: text.isItalic,
     isUnderline: text.isUnderline
   }
+}
+
+function distance(pointA: Point, pointB: Point): number {
+  return Math.hypot(pointA.x - pointB.x, pointA.y - pointB.y)
 }
 
 function distanceToSegment(point: Point, start: Point, end: Point): number {
@@ -108,22 +128,117 @@ export function isElementInSelection(
   element: Path | TextElement,
   selectionRect: { x1: number; y1: number; x2: number; y2: number }
 ): boolean {
+  const isPointInSelection = (point: Point) =>
+    point.x >= selectionRect.x1 &&
+    point.x <= selectionRect.x2 &&
+    point.y >= selectionRect.y1 &&
+    point.y <= selectionRect.y2
+
   if ('text' in element) {
-    return (
-      element.x >= selectionRect.x1 &&
-      element.x <= selectionRect.x2 &&
-      element.y >= selectionRect.y1 &&
-      element.y <= selectionRect.y2
+    return [...getTextOutlinePoints(element), getTextCenter(element)].some(
+      isPointInSelection
     )
   }
 
-  return element.points.some(
-    (point) =>
-      point.x >= selectionRect.x1 &&
-      point.x <= selectionRect.x2 &&
-      point.y >= selectionRect.y1 &&
-      point.y <= selectionRect.y2
+  return element.points.some(isPointInSelection)
+}
+
+export function getTextCenter(text: TextElement): Point {
+  const bounds = calculateTextBounds(text)
+  return {
+    x: bounds.x + bounds.width / 2,
+    y: bounds.y + bounds.height / 2
+  }
+}
+
+export function getTextOutlinePoints(text: TextElement): Point[] {
+  const bounds = calculateTextBounds(text)
+  const center = getTextCenter(text)
+  return [
+    { x: bounds.x, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y },
+    { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+    { x: bounds.x, y: bounds.y + bounds.height }
+  ].map((point) => rotatePoint(point, center, text.rotation ?? 0))
+}
+
+export function getTextResizeHandles(
+  text: TextElement
+): Array<{ handle: TextResizeHandle; point: Point }> {
+  const [nw, ne, se, sw] = getTextOutlinePoints(text)
+  const bounds = calculateTextBounds(text)
+  return [
+    { handle: 'nw', point: nw ?? { x: bounds.x, y: bounds.y } },
+    { handle: 'ne', point: ne ?? { x: bounds.x + bounds.width, y: bounds.y } },
+    {
+      handle: 'se',
+      point: se ?? { x: bounds.x + bounds.width, y: bounds.y + bounds.height }
+    },
+    { handle: 'sw', point: sw ?? { x: bounds.x, y: bounds.y + bounds.height } }
+  ]
+}
+
+export function getTextRotateAnchor(text: TextElement): Point {
+  const [nw, ne] = getTextOutlinePoints(text)
+  if (nw && ne) {
+    return {
+      x: nw.x + (ne.x - nw.x) / 2,
+      y: nw.y + (ne.y - nw.y) / 2
+    }
+  }
+  return getTextCenter(text)
+}
+
+export function getTextRotateHandle(text: TextElement): Point {
+  const top = getTextRotateAnchor(text)
+  const center = getTextCenter(text)
+  const dx = top.x - center.x
+  const dy = top.y - center.y
+  const magnitude = Math.max(Math.hypot(dx, dy), 1)
+  return {
+    x: top.x + (dx / magnitude) * TEXT_ROTATE_HANDLE_LENGTH,
+    y: top.y + (dy / magnitude) * TEXT_ROTATE_HANDLE_LENGTH
+  }
+}
+
+export function getTextResizeCursor(
+  handle: TextResizeHandle,
+  rotation: number
+): string {
+  return getShapeResizeCursor(handle, rotation)
+}
+
+export function isPointInText(point: Point, text: TextElement): boolean {
+  const bounds = calculateTextBounds(text)
+  const center = getTextCenter(text)
+  const localPoint = unrotatePoint(point, center, text.rotation ?? 0)
+  return (
+    localPoint.x >= bounds.x &&
+    localPoint.x <= bounds.x + bounds.width &&
+    localPoint.y >= bounds.y &&
+    localPoint.y <= bounds.y + bounds.height
   )
+}
+
+export function findTextHandleAtPoint(
+  point: Point,
+  textElements: TextElement[],
+  selectedIds: Set<string>,
+  threshold: number
+): TextHandleHit | null {
+  for (let i = textElements.length - 1; i >= 0; i -= 1) {
+    const text = textElements[i]
+    if (!text || !text.text || !selectedIds.has(text.id)) continue
+    if (distance(point, getTextRotateHandle(text)) <= threshold) {
+      return { type: 'rotate', text }
+    }
+    for (const handle of getTextResizeHandles(text)) {
+      if (distance(point, handle.point) <= threshold) {
+        return { type: 'resize', handle: handle.handle, text }
+      }
+    }
+  }
+  return null
 }
 
 export function findTextAtPoint(
@@ -133,14 +248,119 @@ export function findTextAtPoint(
   for (let i = textElements.length - 1; i >= 0; i -= 1) {
     const text = textElements[i]
     if (!text || !text.text) continue
-    const bounds = calculateTextBounds(text)
-    const withinX = point.x >= bounds.x && point.x <= bounds.x + bounds.width
-    const withinY = point.y >= bounds.y && point.y <= bounds.y + bounds.height
-    if (withinX && withinY) {
+    if (isPointInText(point, text)) {
       return text
     }
   }
   return null
+}
+
+export function resizeTextFromHandle(
+  text: TextElement,
+  handle: TextResizeHandle,
+  point: Point
+): TextElement {
+  const bounds = calculateTextBounds(text)
+  const center = getTextCenter(text)
+  const localPoint = unrotatePoint(point, center, text.rotation ?? 0)
+  let opposite: Point
+
+  switch (handle) {
+    case 'nw':
+      opposite = { x: bounds.x + bounds.width, y: bounds.y + bounds.height }
+      break
+    case 'ne':
+      opposite = { x: bounds.x, y: bounds.y + bounds.height }
+      break
+    case 'se':
+      opposite = { x: bounds.x, y: bounds.y }
+      break
+    case 'sw':
+      opposite = { x: bounds.x + bounds.width, y: bounds.y }
+      break
+  }
+
+  const widthRatio =
+    Math.max(Math.abs(localPoint.x - opposite.x), 1) / Math.max(bounds.width, 1)
+  const heightRatio =
+    Math.max(Math.abs(localPoint.y - opposite.y), 1) /
+    Math.max(bounds.height, 1)
+  const nextFontSize = Math.min(
+    MAX_TEXT_FONT_SIZE,
+    Math.max(
+      MIN_TEXT_FONT_SIZE,
+      text.fontSize * Math.max(widthRatio, heightRatio)
+    )
+  )
+  const lines = getTextLines(text.text)
+  const nextWidth =
+    getTextContentWidth(lines, nextFontSize) + TEXT_BOUNDS_PADDING * 2
+  const nextHeight =
+    (lines.length - 1) * getTextLineHeight(nextFontSize) +
+    nextFontSize +
+    TEXT_BOUNDS_PADDING * 2
+  let nextBounds: { x: number; y: number; width: number; height: number }
+
+  switch (handle) {
+    case 'nw':
+      nextBounds = {
+        x: opposite.x - nextWidth,
+        y: opposite.y - nextHeight,
+        width: nextWidth,
+        height: nextHeight
+      }
+      break
+    case 'ne':
+      nextBounds = {
+        x: opposite.x,
+        y: opposite.y - nextHeight,
+        width: nextWidth,
+        height: nextHeight
+      }
+      break
+    case 'se':
+      nextBounds = {
+        x: opposite.x,
+        y: opposite.y,
+        width: nextWidth,
+        height: nextHeight
+      }
+      break
+    case 'sw':
+      nextBounds = {
+        x: opposite.x - nextWidth,
+        y: opposite.y,
+        width: nextWidth,
+        height: nextHeight
+      }
+      break
+  }
+
+  const nextLocalCenter = {
+    x: nextBounds.x + nextBounds.width / 2,
+    y: nextBounds.y + nextBounds.height / 2
+  }
+  const nextCenter = rotatePoint(nextLocalCenter, center, text.rotation ?? 0)
+
+  return {
+    ...text,
+    x: nextCenter.x - nextBounds.width / 2 + TEXT_BOUNDS_PADDING,
+    y: nextCenter.y - nextBounds.height / 2 + TEXT_BOUNDS_PADDING,
+    fontSize: nextFontSize
+  }
+}
+
+export function rotateTextTowardPoint(
+  text: TextElement,
+  point: Point
+): TextElement {
+  const center = getTextCenter(text)
+  const degrees =
+    (Math.atan2(point.y - center.y, point.x - center.x) * 180) / Math.PI
+  return {
+    ...text,
+    rotation: degrees + 90
+  }
 }
 
 export function screenToCanvas(

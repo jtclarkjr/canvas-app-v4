@@ -9,9 +9,14 @@ import {
   type Command
 } from '$lib/canvas/commands'
 import {
+  findTextHandleAtPoint,
   findTextAtPoint,
+  getTextResizeCursor,
   isElementInSelection,
   isPointNearPath,
+  resizeTextFromHandle,
+  rotateTextTowardPoint,
+  type TextResizeHandle,
   textElementToData
 } from '$lib/canvas/drawing-utils'
 import {
@@ -150,6 +155,17 @@ type ActiveInteraction =
       original: DiagramShape
     }
   | {
+      type: 'text-resize'
+      textId: string
+      handle: TextResizeHandle
+      original: TextElement
+    }
+  | {
+      type: 'text-rotate'
+      textId: string
+      original: TextElement
+    }
+  | {
       type: 'connector-end'
       connectorId: string
       end: 'start' | 'end'
@@ -241,6 +257,13 @@ export function createWorkspaceSceneInteractionsStore({
           interaction.handle,
           interaction.original.rotation
         )
+      case 'text-resize':
+        return getTextResizeCursor(
+          interaction.handle,
+          interaction.original.rotation ?? 0
+        )
+      case 'text-rotate':
+        return 'grabbing'
       case 'shape-rotate':
       case 'connector-end':
         return 'grabbing'
@@ -264,6 +287,25 @@ export function createWorkspaceSceneInteractionsStore({
   function selectCursorForPoint(point: Point): string | null {
     const selectedIds = getSelectedElementIds()
     const threshold = 10 / getCameraScale()
+    const textHandle = findTextHandleAtPoint(
+      point,
+      getTextElements(),
+      selectedIds,
+      threshold
+    )
+
+    if (textHandle && canModifyElement(textHandle.text.id)) {
+      switch (textHandle.type) {
+        case 'resize':
+          return getTextResizeCursor(
+            textHandle.handle,
+            textHandle.text.rotation ?? 0
+          )
+        case 'rotate':
+          return 'grab'
+      }
+    }
+
     const shapeHandle = findShapeHandleAtPoint(
       point,
       getShapesSafe(),
@@ -953,6 +995,33 @@ export function createWorkspaceSceneInteractionsStore({
       return true
     }
 
+    if (
+      interaction.type === 'text-resize' ||
+      interaction.type === 'text-rotate'
+    ) {
+      const after = getTextElements().find(
+        (text) => text.id === interaction.textId
+      )
+      if (after) {
+        addHistoryCommand(
+          createUpdateMultipleCommand(
+            [
+              {
+                id: after.id,
+                type: 'text',
+                before: interaction.original,
+                after
+              }
+            ],
+            getUserId()
+          )
+        )
+        persistElement('text', after)
+      }
+      setCursorStyle(cursorForPoint(point))
+      return true
+    }
+
     const after = getConnectorsSafe().find(
       (connector) => connector.id === interaction.connectorId
     )
@@ -1038,6 +1107,34 @@ export function createWorkspaceSceneInteractionsStore({
           shape.id === interaction.shapeId
             ? rotateShapeTowardPoint(interaction.original, point)
             : shape
+        )
+      )
+      return true
+    }
+
+    if (interaction.type === 'text-resize') {
+      setCursorStyle(cursorForInteraction(interaction))
+      setTextElements((previous) =>
+        previous.map((text) =>
+          text.id === interaction.textId
+            ? resizeTextFromHandle(
+                interaction.original,
+                interaction.handle,
+                point
+              )
+            : text
+        )
+      )
+      return true
+    }
+
+    if (interaction.type === 'text-rotate') {
+      setCursorStyle(cursorForInteraction(interaction))
+      setTextElements((previous) =>
+        previous.map((text) =>
+          text.id === interaction.textId
+            ? rotateTextTowardPoint(interaction.original, point)
+            : text
         )
       )
       return true
@@ -1152,12 +1249,10 @@ export function createWorkspaceSceneInteractionsStore({
 
       if (hitText && canModifyElement(hitText.id)) {
         formattingStore.syncTextFormattingFromElement(hitText)
-        startTextEditingAtPosition(
-          hitText.x,
-          hitText.y,
-          hitText.text,
-          hitText.id
-        )
+        setSelectedTool('select')
+        setSelectedElementIds(new Set([hitText.id]))
+        updateClickTracking(point)
+        setCursorStyle('move')
         return
       }
 
@@ -1196,6 +1291,35 @@ export function createWorkspaceSceneInteractionsStore({
     const point = screenToCanvasPoint(event.clientX, event.clientY)
     const selectedIds = getSelectedElementIds()
     const handleThreshold = 10 / getCameraScale()
+    const textHandle = findTextHandleAtPoint(
+      point,
+      getTextElements(),
+      selectedIds,
+      handleThreshold
+    )
+    if (textHandle && canModifyElement(textHandle.text.id)) {
+      ;(event.currentTarget as SVGSVGElement).setPointerCapture(event.pointerId)
+      switch (textHandle.type) {
+        case 'resize':
+          activeInteraction = {
+            type: 'text-resize',
+            textId: textHandle.text.id,
+            handle: textHandle.handle,
+            original: { ...textHandle.text }
+          }
+          break
+        case 'rotate':
+          activeInteraction = {
+            type: 'text-rotate',
+            textId: textHandle.text.id,
+            original: { ...textHandle.text }
+          }
+          break
+      }
+      setCursorStyle(cursorForInteraction(activeInteraction))
+      return
+    }
+
     const shapeHandle = findShapeHandleAtPoint(
       point,
       getShapesSafe(),

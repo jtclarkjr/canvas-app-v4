@@ -2,14 +2,21 @@ import { describe, expect, it } from 'vite-plus/test'
 import {
   calculateTextBounds,
   canvasToScreen,
+  findTextHandleAtPoint,
   findTextAtPoint,
   getTextEditorWidth,
+  getTextCenter,
   getTextLineBaseline,
   getTextLineHeight,
   getTextLines,
   getTextLineTop,
+  getTextResizeCursor,
+  getTextResizeHandles,
+  getTextRotateHandle,
   isElementInSelection,
   isPointNearPath,
+  resizeTextFromHandle,
+  rotateTextTowardPoint,
   screenToCanvas
 } from '$lib/canvas/drawing-utils'
 import type { Path, TextElement } from '$lib/canvas/types'
@@ -47,6 +54,40 @@ describe('drawing utils', () => {
     expect(
       findTextAtPoint({ x: 15, y: 20 + 3 * getTextLineHeight(18) + 30 }, [text])
     ).toBeNull()
+  })
+
+  it('hit-tests and transforms selected text handles', () => {
+    const text = makeText({ rotation: 15 })
+    const center = getTextCenter(text)
+    const resizeHandle = getTextResizeHandles(text)[2]
+    const rotateHandle = getTextRotateHandle(text)
+
+    expect(findTextAtPoint(center, [text])?.id).toBe('text-1')
+    expect(
+      findTextHandleAtPoint(
+        resizeHandle?.point ?? center,
+        [text],
+        new Set([text.id]),
+        1
+      )?.type
+    ).toBe('resize')
+    expect(
+      findTextHandleAtPoint(rotateHandle, [text], new Set([text.id]), 1)?.type
+    ).toBe('rotate')
+
+    const resized = resizeTextFromHandle(text, 'se', {
+      x: resizeHandle?.point.x ?? center.x,
+      y: (resizeHandle?.point.y ?? center.y) + 40
+    })
+    const rotated = rotateTextTowardPoint(text, {
+      x: center.x,
+      y: center.y - 80
+    })
+
+    expect(resized.fontSize).toBeGreaterThan(text.fontSize)
+    expect(resized.rotation).toBe(text.rotation)
+    expect(Math.round(rotated.rotation ?? 0)).toBe(0)
+    expect(getTextResizeCursor('nw', 45)).toBe('ns-resize')
   })
 
   it('calculates single-line text bounds from the top-left anchor', () => {

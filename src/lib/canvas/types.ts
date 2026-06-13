@@ -25,6 +25,7 @@ export type TextElement = {
   text: string
   x: number
   y: number
+  rotation?: number
   color: string
   fontSize: number
   isBold: boolean
