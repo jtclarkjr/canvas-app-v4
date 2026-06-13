@@ -78,6 +78,7 @@ vp fmt . --write
 ## Technical Docs
 
 - [Canvas workspace architecture](docs/CANVAS_WORKSPACE.md)
+- [Canvas chat architecture](docs/CHAT_ARCHITECTURE.md)
+- [Scenes and document workspace architecture](docs/SCENES_ARCHITECTURE.md)
 - [Text editor and rich text architecture](docs/TEXT_EDITOR_ARCHITECTURE.md)
 - [Role-based access control](docs/RBAC.md)
-
