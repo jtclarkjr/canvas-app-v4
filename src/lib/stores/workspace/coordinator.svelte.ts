@@ -36,7 +36,7 @@ import { createWorkspaceHistoryStore } from '$lib/stores/workspace/history.svelt
 import { createWorkspaceKeyboardStore } from '$lib/stores/workspace/keyboard.svelte'
 import { createWorkspacePresenceStore } from '$lib/stores/workspace/presence.svelte'
 import { createWorkspaceRealtimeElementsStore } from '$lib/stores/workspace/realtime-elements.svelte'
-import { createWorkspaceSceneInteractionsStore } from '$lib/stores/workspace/scene-interactions.svelte'
+import { createWorkspaceSceneInteractionsStore } from '$lib/stores/workspace/scene-interactions/index.svelte'
 import { createWorkspaceTextEditorStore } from '$lib/stores/workspace/text-editor.svelte'
 
 type WorkspaceElements = {

@@ -13,7 +13,7 @@ import { getSceneDocument, updateSceneDocument } from '$lib/scenes/api'
 import { markdownDocumentContentSchema } from '$lib/scenes/schema'
 import { createWorkspaceFormattingStore } from '$lib/stores/workspace/formatting.svelte'
 import { createWorkspaceHistoryStore } from '$lib/stores/workspace/history.svelte'
-import { createWorkspaceSceneInteractionsStore } from '$lib/stores/workspace/scene-interactions.svelte'
+import { createWorkspaceSceneInteractionsStore } from '$lib/stores/workspace/scene-interactions/index.svelte'
 import { createWorkspaceTextEditorStore } from '$lib/stores/workspace/text-editor.svelte'
 
 const SAVE_DEBOUNCE_MS = 800
