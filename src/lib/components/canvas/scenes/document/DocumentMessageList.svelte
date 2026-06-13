@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BookOpen, FileCheck2, Globe, LoaderCircle, Sparkles } from 'lucide-svelte'
+  import { BookOpen, FileCheckCorner, Globe, LoaderCircle, Sparkles } from 'lucide-svelte'
   import { colorFromId } from '$lib/canvas/helpers/color-from-id'
   import { getModelOption } from '$lib/scenes/models'
   import {
@@ -99,7 +99,7 @@
                 class="my-1.5 flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-xs text-muted-foreground"
               >
                 {#if draft.state === 'output-available'}
-                  <FileCheck2 class="size-3.5 shrink-0 text-emerald-600" />
+                  <FileCheckCorner class="size-3.5 shrink-0 text-emerald-600" />
                   <span>
                     Wrote draft <strong class="text-foreground">{draft.title || 'Untitled'}</strong>
                     <span class="opacity-70">· in the editor</span>

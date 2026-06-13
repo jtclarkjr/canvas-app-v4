@@ -1,9 +1,10 @@
 import { REALTIME_SUBSCRIBE_STATES, type RealtimeChannel } from '@supabase/supabase-js'
 import { supabase } from '$lib/auth/session-store'
 import { colorFromId } from '$lib/canvas/helpers/color-from-id'
-import { displayMembers as getDisplayMembers } from '$lib/canvas/helpers/display-members'
-import { createThrottledCursorSender } from '$lib/canvas/helpers/throttled-cursor-sender'
-import type { CursorEventPayload, Point, WorkspaceMember } from '$lib/canvas/types'
+import { displayMembers as getDisplayMembers } from '$lib/workspace/display-members'
+import { createThrottledCursorSender } from '$lib/workspace/throttled-cursor-sender'
+import type { Point } from '$lib/canvas/types'
+import type { CursorEventPayload, WorkspaceMember } from '$lib/workspace/types'
 
 type WorkspacePresenceInput = {
   getActiveCanvasId: () => string

@@ -9,13 +9,9 @@
     resolveAccessRequest,
     searchUsers,
     updateMemberRole
-  } from '$lib/canvas/api'
-  import type {
-    AccessRequest,
-    CanvasMember,
-    CanvasVisibility,
-    UserSearchResult
-  } from '$lib/canvas/schema'
+  } from '$lib/workspace/api'
+  import type { AccessRequest, CanvasVisibility, UserSearchResult } from '$lib/canvas/schema'
+  import type { CanvasMember } from '$lib/workspace/schema'
   import {
     MEMBER_ROLES,
     ROLE_LABELS,

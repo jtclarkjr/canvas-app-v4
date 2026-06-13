@@ -2,9 +2,9 @@ import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   accessRequestResponseSchema,
   accessRequestStatusSchema,
-  listAccessRequestsResponseSchema,
   requestAccessInputSchema
 } from '$lib/canvas/schema'
+import { listAccessRequestsResponseSchema } from '$lib/workspace/schema'
 import {
   requireCanvasRole,
   resolveCanvasAccess

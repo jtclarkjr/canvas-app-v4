@@ -1,5 +1,5 @@
 import { invalidateAll } from '$app/navigation'
-import { listAccessRequests } from '$lib/canvas/api'
+import { listAccessRequests } from '$lib/workspace/api'
 import type { AccessRequest } from '$lib/canvas/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
 import { ensureSessionInitialized, supabase } from '$lib/auth/session-store'

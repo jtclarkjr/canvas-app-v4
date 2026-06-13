@@ -2,7 +2,7 @@
   import { fade } from 'svelte/transition'
   import {
     Captions,
-    Loader2,
+    LoaderCircle,
     MessageSquare,
     Mic,
     MicOff,
@@ -254,7 +254,7 @@
   <div class="flex items-center justify-between gap-4 border-t border-border/60 px-4 py-3">
     <div class="flex w-40 items-center gap-2 text-sm font-semibold text-muted-foreground">
       {#if store.status === 'reconnecting'}
-        <Loader2 class="size-4 animate-spin" />
+        <LoaderCircle class="size-4 animate-spin" />
         Reconnecting…
       {:else}
         Call · {store.participants.length}
@@ -334,7 +334,7 @@
         aria-pressed={store.captionsEnabled}
       >
         {#if store.captionsState === 'connecting'}
-          <Loader2 class="size-5 animate-spin" />
+          <LoaderCircle class="size-5 animate-spin" />
         {:else}
           <Captions class="size-5" />
         {/if}

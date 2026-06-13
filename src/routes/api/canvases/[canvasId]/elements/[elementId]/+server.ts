@@ -1,5 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import { deleteElementResponseSchema } from '$lib/canvas/schema'
+import { deleteElementResponseSchema } from '$lib/workspace/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import { toCanvasElement } from '$lib/server/canvas-elements'
 import { forbidden, handleApiError, notFound, withAuth } from '$lib/server/api-error'

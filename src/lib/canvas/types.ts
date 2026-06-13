@@ -1,21 +1,6 @@
-import type { CanvasRole } from '$lib/canvas/roles'
-import type { Canvas, CanvasElement } from '$lib/canvas/schema'
-import type { Scene } from '$lib/scenes/schema'
-import type { SceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
-
 export type Tool = 'select' | 'hand' | 'pencil' | 'eraser' | 'text'
 
 export type Point = { x: number; y: number }
-
-export type CursorCoordinateSpace = 'canvas' | 'viewport'
-
-export type CursorEventPayload = {
-  position: Point
-  coordinateSpace?: CursorCoordinateSpace
-  user: { id: string; name: string }
-  color: string
-  timestamp: number
-}
 
 export type Path = {
   id: string
@@ -69,37 +54,4 @@ export type Camera = {
   x: number
   y: number
   scale: number
-}
-
-export type WorkspaceMember = {
-  name: string
-  color: string
-}
-
-export type DisplayMember = {
-  id: string
-  name: string
-  color: string
-}
-
-export type CanvasWorkspaceStoreInput = {
-  canvasId: string
-  userId: string
-  userEmail?: string | null
-  role?: CanvasRole
-  isPublicViewer?: boolean
-  canvasTitle?: string
-  initialCanvases?: Canvas[]
-  initialElements?: CanvasElement[]
-  initialScenes?: Scene[]
-  sceneDocumentsStore: SceneDocumentsStore
-}
-
-export type RealtimeCanvasElementRow = {
-  id: string
-  type: string
-  data: unknown
-  x?: number | null
-  y?: number | null
-  created_by?: string | null
 }

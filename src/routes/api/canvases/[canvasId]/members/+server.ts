@@ -3,7 +3,7 @@ import {
   addMemberInputSchema,
   listMembersResponseSchema,
   memberResponseSchema
-} from '$lib/canvas/schema'
+} from '$lib/workspace/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {
   badRequest,

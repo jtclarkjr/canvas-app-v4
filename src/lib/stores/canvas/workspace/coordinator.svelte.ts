@@ -1,23 +1,23 @@
 import { invalidateAll } from '$app/navigation'
+import { ApiClientError } from '$lib/canvas/api'
 import {
-  ApiClientError,
   deleteElement as deleteElementApi,
   listElements,
   upsertElement as upsertElementApi
-} from '$lib/canvas/api'
+} from '$lib/workspace/api'
 import { createApplyCommand } from '$lib/canvas/apply-command'
 import type { Command } from '$lib/canvas/commands'
-import { canvasElementsToDrawingState } from '$lib/canvas/element-mapping'
-import type { CanvasElement, UpsertElementInput } from '$lib/canvas/schema'
+import { canvasElementsToDrawingState } from '$lib/workspace/element-mapping'
+import type { CanvasElement, UpsertElementInput } from '$lib/workspace/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
 import type {
-  CanvasWorkspaceStoreInput,
   EditingText,
   Path,
   Point,
   TextElement,
   Tool
 } from '$lib/canvas/types'
+import type { CanvasWorkspaceStoreInput } from '$lib/workspace/types'
 import type { SceneMessage } from '$lib/scenes/schema'
 import type { WorkspaceMode } from '$lib/scenes/types'
 import { createWorkspaceModeStore } from '$lib/stores/canvas/scenes/mode.svelte'

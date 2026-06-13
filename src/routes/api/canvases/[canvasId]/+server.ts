@@ -2,10 +2,12 @@ import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   canvasRowSchema,
   deleteCanvasResponseSchema,
-  getCanvasResponseSchema,
+  getCanvasResponseSchema
+} from '$lib/canvas/schema'
+import {
   updateCanvasInputSchema,
   updateCanvasResponseSchema
-} from '$lib/canvas/schema'
+} from '$lib/workspace/schema'
 import type { CanvasRow } from '$lib/canvas/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {

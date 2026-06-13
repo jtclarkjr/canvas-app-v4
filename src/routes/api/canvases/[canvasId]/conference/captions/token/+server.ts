@@ -4,6 +4,7 @@ import {
   CAPTIONS_TRANSCRIBE_MODELS,
   captionsSessionConfig
 } from '$lib/conference/captions'
+import { OPENAI_REALTIME_CLIENT_SECRETS_URL } from '$lib/conference/openai-realtime'
 import { captionsTokenResponseSchema } from '$lib/conference/schema'
 import {
   handleApiError,
@@ -26,7 +27,7 @@ type ClientSecretPayload = {
 
 async function mintClientSecret(apiKey: string, model: string) {
   const response = await fetch(
-    'https://api.openai.com/v1/realtime/client_secrets',
+    OPENAI_REALTIME_CLIENT_SECRETS_URL,
     {
       method: 'POST',
       headers: {

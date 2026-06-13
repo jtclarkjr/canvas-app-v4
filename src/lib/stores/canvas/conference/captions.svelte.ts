@@ -8,6 +8,7 @@ import {
   saveCaptionPrefs,
   type CaptionLanguageCode
 } from '$lib/conference/captions'
+import { OPENAI_REALTIME_CALLS_URL } from '$lib/conference/openai-realtime'
 import type { CaptionSegment } from '$lib/conference/types'
 import { toast } from '$lib/stores/toast.svelte'
 import type { ConferenceDevicesStore } from '$lib/stores/canvas/conference/devices.svelte'
@@ -20,7 +21,6 @@ type ConferenceCaptionsInput = {
   devices: ConferenceDevicesStore
 }
 
-const OPENAI_CALLS_URL = 'https://api.openai.com/v1/realtime/calls'
 const MAX_SEGMENTS = 24
 
 type SttState = 'off' | 'connecting' | 'running' | 'error'
@@ -197,7 +197,7 @@ export function createConferenceCaptionsStore({
       const offer = await connection.createOffer()
       await connection.setLocalDescription(offer)
 
-      const response = await fetch(OPENAI_CALLS_URL, {
+      const response = await fetch(OPENAI_REALTIME_CALLS_URL, {
         method: 'POST',
         headers: {
           authorization: `Bearer ${clientSecret}`,

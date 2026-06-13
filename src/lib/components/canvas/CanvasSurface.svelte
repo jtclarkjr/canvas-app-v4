@@ -12,24 +12,24 @@
     calculateTextBounds,
     getTextLines,
     getTextLineBaseline,
-    pathToSvgPath
+    pathToSvgPath,
+    selectionRectFromPoints
   } from '$lib/canvas/drawing-utils'
   import { resolveCanvasDisplayColor } from '$lib/canvas/helpers/display-color'
-  import { selectionRectFromPoints } from '$lib/canvas/element-mapping'
 
-  type CanvasSceneElements = {
+  type CanvasSurfaceElements = {
     paths: Path[]
     currentPath: Point[]
     textElements: TextElement[]
   }
 
-  type CanvasSceneSelection = {
+  type CanvasSurfaceSelection = {
     selectedIds: Set<string>
     start: Point | null
     end: Point | null
   }
 
-  type CanvasSceneHandlers = {
+  type CanvasSurfaceHandlers = {
     pointerDown: (event: PointerEvent) => void
     pointerMove: (event: PointerEvent) => void
     pointerUp: (event: PointerEvent) => void
@@ -53,9 +53,9 @@
     selectedTool: Tool
     drawFormatting: DrawFormatting
     editingText: EditingText | null
-    elements: CanvasSceneElements
-    selection: CanvasSceneSelection
-    handlers: CanvasSceneHandlers
+    elements: CanvasSurfaceElements
+    selection: CanvasSurfaceSelection
+    handlers: CanvasSurfaceHandlers
   }>()
 
   const pointerEvents = $derived(

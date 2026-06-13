@@ -5,7 +5,7 @@ import {
   type CanvasElement,
   type CanvasElementRow,
   type ListElementsResponse
-} from '$lib/canvas/schema'
+} from '$lib/workspace/schema'
 import type { Database } from '$lib/server/database.types'
 
 export function toCanvasElement(row: unknown): CanvasElement {

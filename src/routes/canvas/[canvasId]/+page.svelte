@@ -1,10 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import CanvasWorkspace from '$lib/components/canvas/CanvasWorkspace.svelte'
+  import CanvasWorkspace from '$lib/components/canvas/workspace/CanvasWorkspace.svelte'
   import RequestAccessScreen from '$lib/components/canvas/RequestAccessScreen.svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
-  import type { Canvas, CanvasElement } from '$lib/canvas/schema'
+  import type { Canvas } from '$lib/canvas/schema'
+  import type { CanvasElement } from '$lib/workspace/schema'
   import { provideSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
   import type { Scene, SceneDocumentListItem } from '$lib/scenes/schema'
   import { sleep } from '$lib/utils'

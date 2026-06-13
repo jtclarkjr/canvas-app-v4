@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { CanvasRole } from '$lib/canvas/roles'
-  import CanvasOptionsButton from '$lib/components/canvas/CanvasOptionsButton.svelte'
+  import CanvasOptionsButton from '$lib/components/canvas/workspace/CanvasOptionsButton.svelte'
   import ConferenceCallButton from '$lib/components/canvas/conference/ConferenceCallButton.svelte'
 
   let { canvasId, role, members, pendingCount, onShare } = $props<{

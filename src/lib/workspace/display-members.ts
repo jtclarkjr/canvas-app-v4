@@ -1,4 +1,4 @@
-import type { DisplayMember, WorkspaceMember } from '$lib/canvas/types'
+import type { DisplayMember, WorkspaceMember } from '$lib/workspace/types'
 
 export function displayMembers(
   members: Record<string, WorkspaceMember>,

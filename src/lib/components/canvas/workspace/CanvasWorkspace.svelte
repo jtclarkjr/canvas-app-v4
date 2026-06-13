@@ -1,25 +1,26 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { CanvasRole } from '$lib/canvas/roles'
-  import type { Canvas, CanvasElement } from '$lib/canvas/schema'
+  import type { Canvas } from '$lib/canvas/schema'
+  import type { CanvasElement } from '$lib/workspace/schema'
   import type { Scene } from '$lib/scenes/schema'
   import { createCanvasWorkspaceStore } from '$lib/stores/canvas/workspace/index.svelte'
   import { provideCanvasChatStore } from '$lib/stores/canvas/chat/canvas-chat.svelte'
   import { provideCanvasConferenceStore } from '$lib/stores/canvas/conference/index.svelte'
   import { useSceneDocumentsStore } from '$lib/stores/canvas/scenes/documents.svelte'
-  import CanvasActionToolbar from '$lib/components/canvas/CanvasActionToolbar.svelte'
-  import CanvasPresenceActions from '$lib/components/canvas/CanvasPresenceActions.svelte'
-  import CanvasScene from '$lib/components/canvas/CanvasScene.svelte'
-  import CanvasTextEditor from '$lib/components/canvas/CanvasTextEditor.svelte'
-  import CanvasTitleSwitcher from '$lib/components/canvas/CanvasTitleSwitcher.svelte'
-  import CanvasZoomControls from '$lib/components/canvas/CanvasZoomControls.svelte'
+  import CanvasActionToolbar from '$lib/components/canvas/workspace/CanvasActionToolbar.svelte'
+  import CanvasPresenceActions from '$lib/components/canvas/workspace/CanvasPresenceActions.svelte'
+  import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
+  import TextEditor from '$lib/components/shared/TextEditor.svelte'
+  import CanvasTitleSwitcher from '$lib/components/canvas/workspace/CanvasTitleSwitcher.svelte'
+  import CanvasZoomControls from '$lib/components/canvas/workspace/CanvasZoomControls.svelte'
   import CanvasChat from '$lib/components/canvas/chat/CanvasChat.svelte'
   import CanvasConference from '$lib/components/canvas/conference/CanvasConference.svelte'
-  import DrawingToolbar from '$lib/components/canvas/DrawingToolbar.svelte'
-  import LiveCursors from '$lib/components/canvas/LiveCursors.svelte'
-  import RequestEditAccessBanner from '$lib/components/canvas/RequestEditAccessBanner.svelte'
-  import ShareDialog from '$lib/components/canvas/ShareDialog.svelte'
-  import TextFormattingToolbar from '$lib/components/canvas/TextFormattingToolbar.svelte'
+  import DrawingToolbar from '$lib/components/canvas/workspace/DrawingToolbar.svelte'
+  import LiveCursors from '$lib/components/canvas/workspace/LiveCursors.svelte'
+  import RequestEditAccessBanner from '$lib/components/canvas/workspace/RequestEditAccessBanner.svelte'
+  import ShareDialog from '$lib/components/canvas/workspace/ShareDialog.svelte'
+  import TextFormattingToolbar from '$lib/components/canvas/workspace/TextFormattingToolbar.svelte'
   import SceneCardLayer from '$lib/components/canvas/scenes/SceneCardLayer.svelte'
   import SceneDialog from '$lib/components/canvas/scenes/SceneDialog.svelte'
   import SceneModeSwitcher from '$lib/components/canvas/scenes/SceneModeSwitcher.svelte'
@@ -190,7 +191,7 @@
     </div>
   {/if}
 
-  <CanvasScene
+  <CanvasSurface
     bind:svgEl
     camera={workspace.camera}
     canEdit={workspace.canEdit}
@@ -214,7 +215,7 @@
     onCreateScene={() => void workspace.createScene('document')}
   />
 
-  <CanvasTextEditor
+  <TextEditor
     bind:textInputEl
     camera={workspace.camera}
     editingText={workspace.editingText}

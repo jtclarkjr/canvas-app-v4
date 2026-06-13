@@ -1,8 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import {
-  accessRequestResponseSchema,
-  resolveAccessRequestInputSchema
-} from '$lib/canvas/schema'
+import { accessRequestResponseSchema } from '$lib/canvas/schema'
+import { resolveAccessRequestInputSchema } from '$lib/workspace/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {
   badRequest,

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation'
-  import { Home } from 'lucide-svelte'
+  import { House } from 'lucide-svelte'
   import { onMount } from 'svelte'
   import type { Canvas } from '$lib/canvas/schema'
   import type { Tool } from '$lib/canvas/types'
-  import CanvasToolbar from '$lib/components/canvas/CanvasToolbar.svelte'
+  import CanvasToolbar from '$lib/components/canvas/workspace/CanvasToolbar.svelte'
 
   let {
     canvases,
@@ -76,7 +76,7 @@
       class="toolbar-pill flex h-10 w-10 items-center justify-center"
       title="Back to dashboard"
     >
-      <Home class="size-5" />
+      <House class="size-5" />
     </a>
     <CanvasToolbar {selectedTool} {readOnly} {onToolChange} />
   </div>

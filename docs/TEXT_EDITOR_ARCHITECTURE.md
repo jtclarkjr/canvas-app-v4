@@ -52,8 +52,8 @@ persistence responsibilities.
 ```mermaid
 flowchart TD
   Shell[CanvasWorkspace.svelte] --> Toolbar[TextFormattingToolbar.svelte]
-  Shell --> Scene[CanvasScene.svelte]
-  Shell --> Overlay[CanvasTextEditor.svelte]
+  Shell --> Surface[CanvasSurface.svelte]
+  Shell --> Overlay[TextEditor.svelte]
   Shell --> Coordinator[workspace coordinator]
 
   Coordinator --> Formatting[formatting store]
@@ -78,17 +78,17 @@ and presence.
 
 | Module | Responsibility |
 | --- | --- |
-| `src/lib/components/canvas/CanvasWorkspace.svelte` | Renders the workspace and passes editor props/handlers into the visible components. |
-| `src/lib/components/canvas/CanvasTextEditor.svelte` | Floating `textarea` overlay used while a canvas text element is being edited. |
-| `src/lib/components/canvas/TextFormattingToolbar.svelte` | Toolbar for font size, bold, italic, underline, list style, and color. |
-| `src/lib/components/canvas/CanvasScene.svelte` | SVG drawing layer that renders committed text elements as `<text>` and `<tspan>` nodes. |
+| `src/lib/components/canvas/workspace/CanvasWorkspace.svelte` | Renders the workspace and passes editor props/handlers into the visible components. |
+| `src/lib/components/shared/TextEditor.svelte` | Floating `textarea` overlay used while a canvas text element is being edited. |
+| `src/lib/components/canvas/workspace/TextFormattingToolbar.svelte` | Toolbar for font size, bold, italic, underline, list style, and color. |
+| `src/lib/components/canvas/CanvasSurface.svelte` | SVG drawing layer that renders committed text elements as `<text>` and `<tspan>` nodes. |
 | `src/lib/stores/canvas/workspace/text-editor.svelte.ts` | Owns text edit lifecycle, list handling, commit/cancel behavior, history creation, and persistence. |
 | `src/lib/stores/canvas/workspace/formatting.svelte.ts` | Owns current text and drawing formatting state. |
 | `src/lib/stores/canvas/workspace/scene-interactions.svelte.ts` | Turns pointer events into canvas actions, including starting text edits. |
 | `src/lib/canvas/text-lists.ts` | Pure functions for plain-text bullet and numbered list behavior. |
 | `src/lib/canvas/commands.ts` | Defines undoable canvas commands, including `CREATE_TEXT` and `UPDATE_TEXT`. |
 | `src/lib/canvas/apply-command.ts` | Applies commands and inverse commands back into local state and persistence. |
-| `src/lib/canvas/element-mapping.ts` | Converts server rows and realtime rows into local `TextElement` objects. |
+| `src/lib/workspace/element-mapping.ts` | Converts workspace server rows and realtime rows into local drawing state. |
 | `src/lib/stores/canvas/scenes/notes.svelte.ts` | Reuses the same editor stores for document annotation text. |
 | `src/lib/components/canvas/scenes/document/DocumentEditorView.svelte` | Separate Markdown document editor surface. |
 
@@ -140,8 +140,8 @@ sequenceDiagram
   participant User
   participant Scene as Scene interactions
   participant Store as Text editor store
-  participant Overlay as CanvasTextEditor
-  participant SVG as CanvasScene
+  participant Overlay as TextEditor
+  participant SVG as CanvasSurface
   participant API as Element API
   participant History
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    Loader2,
+    LoaderCircle,
     Maximize2,
     Mic,
     MicOff,
@@ -309,7 +309,7 @@
         <div
           class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 text-white backdrop-blur-sm"
         >
-          <Loader2 class="size-5 animate-spin" />
+          <LoaderCircle class="size-5 animate-spin" />
           <span class="text-xs font-semibold">
             {store.status === 'connecting' ? 'Joining…' : 'Reconnecting…'}
           </span>

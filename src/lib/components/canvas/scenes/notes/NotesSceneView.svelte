@@ -2,12 +2,12 @@
   import { onMount, untrack } from 'svelte'
   import { markdownDocumentContentSchema, type SceneDocument } from '$lib/scenes/schema'
   import type { SceneActivityKind } from '$lib/scenes/types'
-  import { getWorkspaceCursorStyle } from '$lib/canvas/helpers/workspace-cursor-style'
+  import { getWorkspaceCursorStyle } from '$lib/workspace/cursor-style'
   import { renderMarkdown } from '$lib/scenes/markdown'
   import { exportAnnotatedNotesPdf } from '$lib/scenes/notes-pdf'
   import { createNotesSceneStore } from '$lib/stores/canvas/scenes/notes.svelte'
-  import CanvasScene from '$lib/components/canvas/CanvasScene.svelte'
-  import CanvasTextEditor from '$lib/components/canvas/CanvasTextEditor.svelte'
+  import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
+  import TextEditor from '$lib/components/shared/TextEditor.svelte'
   import NotesToolbar from '$lib/components/canvas/scenes/notes/NotesToolbar.svelte'
 
   let {
@@ -136,7 +136,7 @@
         {@html renderedHtml}
       </div>
 
-      <CanvasScene
+      <CanvasSurface
         bind:svgEl
         camera={notes.camera}
         canEdit={canModify}
@@ -148,7 +148,7 @@
         handlers={notes.sceneHandlers}
       />
 
-      <CanvasTextEditor
+      <TextEditor
         bind:textInputEl
         camera={notes.camera}
         editingText={notes.editingText}

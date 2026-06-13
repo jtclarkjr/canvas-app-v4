@@ -4,10 +4,12 @@ import {
   canvasRowSchema,
   canvasSchema,
   createCanvasInputSchema,
-  requestAccessInputSchema,
+  requestAccessInputSchema
+} from '$lib/canvas/schema'
+import {
   updateCanvasInputSchema,
   upsertElementInputSchema
-} from '$lib/canvas/schema'
+} from '$lib/workspace/schema'
 
 describe('canvas schema', () => {
   it('trims and validates canvas titles', () => {

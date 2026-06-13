@@ -10,7 +10,7 @@ import {
   type SceneDocumentListsBySceneId
 } from '$lib/server/scene-documents'
 import { getSupabase } from '$lib/server/supabase'
-import type { CanvasElement } from '$lib/canvas/schema'
+import type { CanvasElement } from '$lib/workspace/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
 import type { Scene } from '$lib/scenes/schema'
 

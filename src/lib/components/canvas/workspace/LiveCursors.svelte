@@ -1,7 +1,8 @@
 <script lang="ts">
   import { MousePointer2 } from 'lucide-svelte'
   import { canvasToScreen } from '$lib/canvas/drawing-utils'
-  import type { Camera, CursorEventPayload, Point } from '$lib/canvas/types'
+  import type { Camera, Point } from '$lib/canvas/types'
+  import type { CursorEventPayload } from '$lib/workspace/types'
 
   let { cursors, camera } = $props<{
     cursors: Record<string, CursorEventPayload>

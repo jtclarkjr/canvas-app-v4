@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test'
 import { render } from 'svelte/server'
-import CanvasWorkspace from '$lib/components/canvas/CanvasWorkspace.svelte'
-import type { CanvasElement } from '$lib/canvas/schema'
+import CanvasWorkspace from '$lib/components/canvas/workspace/CanvasWorkspace.svelte'
+import type { CanvasElement } from '$lib/workspace/schema'
 import type { Scene } from '$lib/scenes/schema'
 
 // The Editor/Scenes mode switcher is an editing affordance: readers can

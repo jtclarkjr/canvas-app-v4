@@ -4,7 +4,7 @@ import {
   realtimeRowSchema,
   realtimeRowToPath,
   realtimeRowToText
-} from '$lib/canvas/element-mapping'
+} from '$lib/workspace/element-mapping'
 import type { Path, TextElement } from '$lib/canvas/types'
 
 type ElementSetter<T> = (next: T[] | ((previous: T[]) => T[])) => void

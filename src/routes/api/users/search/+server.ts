@@ -1,5 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import { userSearchResponseSchema } from '$lib/canvas/schema'
+import { userSearchResponseSchema } from '$lib/workspace/schema'
 import {
   badRequest,
   handleApiError,

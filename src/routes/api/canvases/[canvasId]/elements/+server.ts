@@ -2,7 +2,7 @@ import { json, type RequestHandler } from '@sveltejs/kit'
 import {
   upsertElementInputSchema,
   upsertElementResponseSchema
-} from '$lib/canvas/schema'
+} from '$lib/workspace/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import {
   listCanvasElementsForCanvas,

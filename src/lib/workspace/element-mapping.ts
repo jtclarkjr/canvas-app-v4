@@ -1,6 +1,7 @@
 import { z } from 'zod'
-import type { CanvasElement } from '$lib/canvas/schema'
-import type { Path, Point, RealtimeCanvasElementRow, TextElement } from '$lib/canvas/types'
+import type { Path, TextElement } from '$lib/canvas/types'
+import type { CanvasElement } from '$lib/workspace/schema'
+import type { RealtimeCanvasElementRow } from '$lib/workspace/types'
 import { applyLegacyListStyle } from '$lib/canvas/text-lists'
 
 const pointSchema = z.object({ x: z.number(), y: z.number() })
@@ -129,14 +130,5 @@ export function realtimeRowToText(row: RealtimeCanvasElementRow): TextElement | 
     isUnderline: textData.isUnderline,
     x: row.x ?? 0,
     y: row.y ?? 0
-  }
-}
-
-export function selectionRectFromPoints(start: Point, end: Point) {
-  return {
-    x: Math.min(start.x, end.x),
-    y: Math.min(start.y, end.y),
-    width: Math.abs(end.x - start.x),
-    height: Math.abs(end.y - start.y)
   }
 }

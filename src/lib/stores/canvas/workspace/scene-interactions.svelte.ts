@@ -11,7 +11,7 @@ import {
   isPointNearPath,
   textElementToData
 } from '$lib/canvas/drawing-utils'
-import type { UpsertElementInput } from '$lib/canvas/schema'
+import type { UpsertElementInput } from '$lib/workspace/schema'
 import type { EditingText, Path, Point, TextElement, Tool } from '$lib/canvas/types'
 import type { createWorkspaceFormattingStore } from '$lib/stores/canvas/workspace/formatting.svelte'
 
