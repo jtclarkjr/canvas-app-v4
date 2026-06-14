@@ -14,6 +14,7 @@ import {
   notFound,
   parseInput,
   parseJsonBody,
+  withAccountAuth,
   withAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
@@ -33,7 +34,11 @@ export const GET: RequestHandler = async (event) =>
 
       await requireCanvasRole(supabase, canvasId, user.id, 'reader')
 
-      return json(await listCanvasElementsForCanvas(supabase, canvasId))
+      return json(
+        await listCanvasElementsForCanvas(supabase, canvasId, {
+          excludeSceneBoundConnectors: user.isAnonymous
+        })
+      )
     } catch (error) {
       return handleApiError(error, event.request)
     }
@@ -43,7 +48,7 @@ export const POST: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const canvasId = event.params.canvasId
 
       if (!canvasId) {

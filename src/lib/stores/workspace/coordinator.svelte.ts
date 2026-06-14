@@ -7,6 +7,7 @@ import {
 } from '$lib/workspace/api'
 import { createApplyCommand } from '$lib/canvas/apply-command'
 import type { Command } from '$lib/canvas/commands'
+import { hasConnectorBindingToAnyScene } from '$lib/canvas/diagram-utils'
 import { canvasElementsToDrawingState } from '$lib/workspace/element-mapping'
 import type { CanvasElement, UpsertElementInput } from '$lib/workspace/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
@@ -55,8 +56,12 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   let userEmail = $state<string | null | undefined>(input.userEmail)
   let role = $state<CanvasRole>(input.role ?? 'owner')
   let isPublicViewer = $state(input.isPublicViewer ?? false)
+  const initiallyAnonymousPublicViewer = input.isAnonymousPublicViewer ?? false
+  let isAnonymousPublicViewer = $state(initiallyAnonymousPublicViewer)
   let canvasTitle = $state(input.canvasTitle ?? '')
-  let workflowEnabled = $state(input.workflowEnabled ?? false)
+  let workflowEnabled = $state(
+    !initiallyAnonymousPublicViewer && (input.workflowEnabled ?? false)
+  )
   const sceneDocumentsStore = input.sceneDocumentsStore
 
   let rootEl = $state<HTMLDivElement | null>(null)
@@ -138,7 +143,7 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getRootElement: () => rootEl,
     getCameraScale: () => cameraStore.camera.scale,
     screenToCanvasPoint,
-    initialScenes: input.initialScenes
+    initialScenes: initiallyAnonymousPublicViewer ? [] : input.initialScenes
   })
   const workflowsStore = createWorkspaceWorkflowsStore({
     getActiveCanvasId: () => activeCanvasId,
@@ -147,15 +152,18 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     getRootElement: () => rootEl,
     getCameraScale: () => cameraStore.camera.scale,
     screenToCanvasPoint,
-    initialWorkflows: input.workflowEnabled ? input.initialWorkflows : []
+    initialWorkflows:
+      !initiallyAnonymousPublicViewer && input.workflowEnabled
+        ? input.initialWorkflows
+        : []
   })
   const sceneActivityStore = createWorkspaceSceneActivityStore({
-    getActiveCanvasId: () => activeCanvasId,
+    getActiveCanvasId: () => (isAnonymousPublicViewer ? '' : activeCanvasId),
     getUserId: () => userId,
     getUserName: () => userEmail ?? 'A collaborator'
   })
   createWorkspaceRealtimeScenesStore({
-    getActiveCanvasId: () => activeCanvasId,
+    getActiveCanvasId: () => (isAnonymousPublicViewer ? '' : activeCanvasId),
     isSceneBusy: scenesStore.isSceneBusy,
     setScenes: scenesStore.setScenes,
     onSceneDeleted: scenesStore.handleSceneDeletedRemotely,
@@ -175,7 +183,8 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     }
   })
   createWorkspaceRealtimeWorkflowsStore({
-    getActiveCanvasId: () => (workflowEnabled ? activeCanvasId : ''),
+    getActiveCanvasId: () =>
+      workflowEnabled && !isAnonymousPublicViewer ? activeCanvasId : '',
     isWorkflowBusy: workflowsStore.isWorkflowBusy,
     setWorkflows: workflowsStore.setWorkflows,
     onWorkflowDeleted: workflowsStore.handleWorkflowDeletedRemotely
@@ -189,20 +198,30 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     userEmail = next.userEmail
     role = next.role ?? 'owner'
     isPublicViewer = next.isPublicViewer ?? false
+    isAnonymousPublicViewer = next.isAnonymousPublicViewer ?? false
     canvasTitle = next.canvasTitle ?? ''
-    workflowEnabled = next.workflowEnabled ?? false
+    workflowEnabled =
+      !isAnonymousPublicViewer && (next.workflowEnabled ?? false)
     activeCanvasId = next.canvasId
     canvasesStore.setCanvases(next.initialCanvases)
 
     if (canvasChanged) {
       syncElements(next.initialElements ?? [])
-      scenesStore.setScenes(next.initialScenes ?? [])
-      workflowsStore.setWorkflows(
-        workflowEnabled ? (next.initialWorkflows ?? []) : []
+      scenesStore.setScenes(
+        isAnonymousPublicViewer ? [] : (next.initialScenes ?? [])
       )
-    } else if (!workflowEnabled) {
+      workflowsStore.setWorkflows(
+        workflowEnabled && !isAnonymousPublicViewer
+          ? (next.initialWorkflows ?? [])
+          : []
+      )
+    } else if (!workflowEnabled || isAnonymousPublicViewer) {
       workflowsStore.clearFocusedWorkflow()
       workflowsStore.setWorkflows([])
+      if (isAnonymousPublicViewer) {
+        scenesStore.closeScene()
+        scenesStore.setScenes([])
+      }
     }
   }
 
@@ -451,6 +470,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   }
 
   function handleModeChange(nextMode: WorkspaceMode) {
+    if (isAnonymousPublicViewer && nextMode !== 'editor') {
+      return
+    }
+
     if (nextMode === modeStore.mode) {
       return
     }
@@ -504,6 +527,13 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
   // Scene/workflow modes keep the drawing layer passive: the hand tool turns
   // off the SVG's pointer events, so panning/zooming keep working untouched.
   $effect(() => {
+    if (isAnonymousPublicViewer && modeStore.mode !== 'editor') {
+      scenesStore.closeScene()
+      workflowsStore.clearFocusedWorkflow()
+      modeStore.setMode('editor')
+      return
+    }
+
     if (!workflowEnabled && modeStore.mode === 'workflows') {
       workflowsStore.clearFocusedWorkflow()
       modeStore.setMode('editor')
@@ -535,10 +565,18 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     scenesStore.closeScene()
     workflowsStore.clearFocusedWorkflow()
     modeStore.loadModeState(nextCanvasId)
+    if (isAnonymousPublicViewer) {
+      modeStore.setMode('editor')
+    }
     cameraStore.loadCameraState(nextCanvasId)
     void loadCanvasElements(nextCanvasId)
-    void scenesStore.loadScenes(nextCanvasId)
-    if (workflowEnabled) {
+    if (isAnonymousPublicViewer) {
+      scenesStore.setScenes([])
+      workflowsStore.setWorkflows([])
+    } else {
+      void scenesStore.loadScenes(nextCanvasId)
+    }
+    if (workflowEnabled && !isAnonymousPublicViewer) {
       void workflowsStore.loadWorkflows(nextCanvasId)
     } else {
       workflowsStore.setWorkflows([])
@@ -641,6 +679,9 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     get isPublicViewer() {
       return isPublicViewer
     },
+    get isAnonymousPublicViewer() {
+      return isAnonymousPublicViewer
+    },
     get canEdit() {
       return canEdit()
     },
@@ -701,8 +742,12 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
         currentPath,
         textElements,
         shapes,
-        connectors,
-        scenes: scenesStore.scenes,
+        connectors: isAnonymousPublicViewer
+          ? connectors.filter(
+              (connector) => !hasConnectorBindingToAnyScene(connector)
+            )
+          : connectors,
+        scenes: isAnonymousPublicViewer ? [] : scenesStore.scenes,
         draftShape,
         draftConnector
       }
@@ -732,16 +777,16 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
       return modeStore.mode
     },
     get scenes() {
-      return scenesStore.scenes
+      return isAnonymousPublicViewer ? [] : scenesStore.scenes
     },
     get workflows() {
-      return workflowsStore.workflows
+      return isAnonymousPublicViewer ? [] : workflowsStore.workflows
     },
     get scenesError() {
-      return scenesStore.error
+      return isAnonymousPublicViewer ? null : scenesStore.error
     },
     get workflowsError() {
-      return workflowsStore.error
+      return isAnonymousPublicViewer ? null : workflowsStore.error
     },
     get isCreatingScene() {
       return scenesStore.isCreatingScene
@@ -750,6 +795,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
       return workflowsStore.isCreatingWorkflow
     },
     get openScene() {
+      if (isAnonymousPublicViewer) {
+        return null
+      }
+
       const open = scenesStore.openScene
       if (!open) {
         return null

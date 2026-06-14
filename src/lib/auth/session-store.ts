@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Session, SessionListener, User } from '$lib/auth/types'
 import { getSupabaseAuthCookieName } from '$lib/auth/supabase-cookie'
+import { getSupabaseTokensFromCookieHeader } from '$lib/auth/supabase-token-cookie'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL ?? ''
 const supabasePublishableKey =
@@ -61,6 +62,29 @@ function syncSessionToCookie(session: Session | null) {
   document.cookie = `${cookieName}=; path=/; max-age=0`
 }
 
+async function restoreSessionFromCookie(): Promise<Session | null> {
+  if (!supabase || typeof document === 'undefined') {
+    return null
+  }
+
+  const tokens = getSupabaseTokensFromCookieHeader(document.cookie, cookieName)
+  if (!tokens?.accessToken || !tokens.refreshToken) {
+    return null
+  }
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: tokens.accessToken,
+    refresh_token: tokens.refreshToken
+  })
+
+  if (error) {
+    setLastSessionError(error.message)
+    return null
+  }
+
+  return data.session
+}
+
 export function setCurrentSession(session: Session | null, notify = true) {
   const previousSession = currentSession
   currentSession = session
@@ -99,16 +123,17 @@ export async function ensureSessionInitialized(): Promise<Session | null> {
   if (!initializePromise) {
     initializePromise = supabase.auth
       .getSession()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) {
           setLastSessionError(error.message)
           setCurrentSession(null)
           return null
         }
 
+        const session = data.session ?? (await restoreSessionFromCookie())
         setLastSessionError(null)
-        setCurrentSession(data.session, false)
-        return data.session
+        setCurrentSession(session, false)
+        return session
       })
       .finally(() => {
         initializePromise = null

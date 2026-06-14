@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type User as SupabaseUser } from '@supabase/supabase-js'
 import { env as privateEnv } from '$env/dynamic/private'
 import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
 import { getSupabaseAuthCookieName } from '$lib/auth/supabase-cookie'
@@ -9,6 +9,7 @@ export type RequestUser = {
   email: string
   name: string
   image: string | null
+  isAnonymous: boolean
 }
 
 export type RequestSession = {
@@ -23,6 +24,16 @@ function getBearerToken(authorizationHeader: string) {
   }
 
   return scheme.toLowerCase() === 'bearer' ? token : null
+}
+
+export function requestUserFromSupabaseUser(user: SupabaseUser): RequestUser {
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    name: getUserDisplayName(user),
+    image: getUserAvatarUrl(user),
+    isAnonymous: user.is_anonymous === true
+  }
 }
 
 export async function getRequestSession(
@@ -57,12 +68,7 @@ export async function getRequestSession(
 
   if (!error && user) {
     return {
-      user: {
-        id: user.id,
-        email: user.email ?? '',
-        name: getUserDisplayName(user),
-        image: getUserAvatarUrl(user)
-      }
+      user: requestUserFromSupabaseUser(user)
     }
   }
 
@@ -80,12 +86,7 @@ export async function getRequestSession(
   }
 
   return {
-    user: {
-      id: refreshData.user.id,
-      email: refreshData.user.email ?? '',
-      name: getUserDisplayName(refreshData.user),
-      image: getUserAvatarUrl(refreshData.user)
-    },
+    user: requestUserFromSupabaseUser(refreshData.user),
     refreshedTokens: {
       accessToken: refreshData.session.access_token,
       refreshToken: refreshData.session.refresh_token

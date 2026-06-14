@@ -1,4 +1,5 @@
 import type { LayoutServerLoad } from './$types'
+import { isAnonymousUser } from '$lib/auth/anonymous'
 import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
 import { getAuthConfig } from '$lib/server/auth-config'
 import {
@@ -18,7 +19,7 @@ function canvasListError(error: unknown): CanvasListData {
 export const load: LayoutServerLoad = async ({ depends, locals }) => {
   depends(CANVASES_DEPENDENCY)
 
-  const user = locals.user
+  const user = isAnonymousUser(locals.user) ? null : locals.user
   const baseData = {
     authConfig: getAuthConfig(),
     user

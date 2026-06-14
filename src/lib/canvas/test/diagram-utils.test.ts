@@ -5,6 +5,7 @@ import {
   getConnectorLabelPoint,
   getShapeAnchorPoint,
   getShapeResizeCursor,
+  hasConnectorBindingToAnyScene,
   isPointInShape,
   makeConnector,
   makeShapeFromBounds,
@@ -152,6 +153,7 @@ describe('diagram utils', () => {
     expect(connectorToSvgPath(connector, [], [{ ...scene, x: 40 }])).toBe(
       'M 240 90 L 300 90'
     )
+    expect(hasConnectorBindingToAnyScene(connector)).toBe(true)
   })
 
   it('resizes and rotates shapes from handles', () => {

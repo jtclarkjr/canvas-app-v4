@@ -7,7 +7,7 @@ import {
   requireWorkflow,
   requireWorkflowVersion
 } from '$lib/server/workflow-access'
-import { handleApiError, withAuth } from '$lib/server/api-error'
+import { handleApiError, withAccountAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 import { requireWorkflowsEnabled } from '$lib/server/features'
@@ -18,7 +18,7 @@ export const POST: RequestHandler = async (event) =>
     try {
       requireWorkflowsEnabled()
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, workflowId, versionId } = event.params
 
       if (!canvasId || !workflowId || !versionId) {

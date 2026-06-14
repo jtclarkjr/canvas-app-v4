@@ -7,6 +7,7 @@ import {
   setLastSessionError,
   supabase
 } from '$lib/auth/session-store'
+import { isAnonymousUser } from '$lib/auth/anonymous'
 import type { Session } from '$lib/auth/types'
 import { bestEffort, sanitizeRedirectTarget } from '$lib/utils'
 export { getUserDisplayName } from '$lib/auth/user-profile'
@@ -131,7 +132,7 @@ export async function signOut() {
 }
 
 export function hasAuthenticatedSession(session: Session | null | undefined) {
-  return Boolean(session?.access_token)
+  return Boolean(session?.access_token && !isAnonymousUser(session.user))
 }
 
 if (import.meta.vitest) {

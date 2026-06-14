@@ -6,6 +6,7 @@
   import { flip } from 'svelte/animate'
   import { createCanvas, deleteCanvas, listCanvases } from '$lib/canvas/api'
   import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
+  import { isAnonymousUser } from '$lib/auth/anonymous'
   import Modal from '$lib/components/shared/Modal.svelte'
   import RoleBadge from '$lib/components/shared/RoleBadge.svelte'
   import type { Canvas } from '$lib/canvas/schema'
@@ -18,7 +19,7 @@
   } = $props<{
     initialCanvases?: Canvas[]
     initialError?: string | null
-    user?: { id: string } | null
+    user?: { id: string; isAnonymous?: boolean } | null
   }>()
 
   function getInitialCanvases() {
@@ -33,7 +34,12 @@
   const sharedCanvases = $derived(
     canvases.filter((canvas) => canvas.role && canvas.role !== 'owner')
   )
-  const activeUser = $derived(user ?? session.data?.user ?? null)
+  const sessionUser = $derived(session.data?.user ?? null)
+  const activeUser = $derived.by(() => {
+    if (user && !isAnonymousUser(user)) return user
+    if (sessionUser && !isAnonymousUser(sessionUser)) return sessionUser
+    return null
+  })
   let isLoading = $state(false)
   let isCreating = $state(false)
   let isDeleteDialogOpen = $state(false)

@@ -33,6 +33,7 @@ export type CanvasWorkspaceStoreInput = {
   userEmail?: string | null
   role?: CanvasRole
   isPublicViewer?: boolean
+  isAnonymousPublicViewer?: boolean
   canvasTitle?: string
   initialCanvases?: Canvas[]
   initialElements?: CanvasElement[]

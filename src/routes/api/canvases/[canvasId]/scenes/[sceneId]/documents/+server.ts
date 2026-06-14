@@ -13,7 +13,7 @@ import {
   handleApiError,
   parseInput,
   parseJsonBody,
-  withAuth
+  withAccountAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { listSceneDocumentItemsForScene } from '$lib/server/scene-documents'
@@ -24,7 +24,7 @@ export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {
@@ -85,7 +85,7 @@ export const POST: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {

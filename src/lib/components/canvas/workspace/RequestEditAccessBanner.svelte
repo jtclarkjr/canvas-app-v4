@@ -8,9 +8,14 @@
   import { roleAtLeast, type CanvasRole } from '$lib/canvas/roles'
   import { toast } from '$lib/stores/shared/toast.svelte'
 
-  let { canvasId, isPublicViewer = false } = $props<{
+  let {
+    canvasId,
+    isPublicViewer = false,
+    isAnonymousPublicViewer = false
+  } = $props<{
     canvasId: string
     isPublicViewer?: boolean
+    isAnonymousPublicViewer?: boolean
   }>()
 
   let request = $state<AccessRequest | null>(null)
@@ -20,11 +25,22 @@
   let reloadRequested = false
 
   const status = $derived(request?.status ?? 'idle')
-  const viewingLabel = $derived(
-    isPublicViewer ? 'Viewing public canvas' : 'You have view-only access'
+  const viewingLabel = $derived.by(() => {
+    if (isAnonymousPublicViewer) return 'Limited view only'
+    if (isPublicViewer) return 'Viewing public canvas'
+    return 'You have view-only access'
+  })
+  const loginHref = $derived(
+    `/login?redirect=${encodeURIComponent(`/canvas/${canvasId}`)}`
   )
 
   async function loadMyRequest() {
+    if (isAnonymousPublicViewer) {
+      request = null
+      isLoading = false
+      return
+    }
+
     isLoading = true
     try {
       const response = await getMyAccessRequest(canvasId)
@@ -40,6 +56,11 @@
   }
 
   async function submitRequest() {
+    if (isAnonymousPublicViewer) {
+      window.location.assign(loginHref)
+      return
+    }
+
     isSubmitting = true
     errorMessage = null
     try {
@@ -57,6 +78,7 @@
 
   $effect(() => {
     void canvasId
+    void isAnonymousPublicViewer
     untrack(() => {
       void loadMyRequest()
     })
@@ -66,7 +88,12 @@
     const client = supabase
     const requestId = request?.id
     const requestStatus = request?.status
-    if (!client || !requestId || requestStatus !== 'pending') {
+    if (
+      !client ||
+      isAnonymousPublicViewer ||
+      !requestId ||
+      requestStatus !== 'pending'
+    ) {
       return
     }
 
@@ -142,6 +169,14 @@
   <Eye class="size-4 shrink-0 text-muted-foreground" />
   {#if isLoading}
     <span class="text-sm text-muted-foreground">{viewingLabel}</span>
+  {:else if isAnonymousPublicViewer}
+    <span class="text-sm text-muted-foreground">{viewingLabel}</span>
+    <a
+      class="shrink-0 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
+      href={loginHref}
+    >
+      Log in
+    </a>
   {:else if status === 'pending'}
     <span class="flex items-center gap-2 pr-2 text-sm text-muted-foreground">
       <span class="size-2 animate-pulse rounded-full bg-warning"></span>

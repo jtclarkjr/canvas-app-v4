@@ -6,7 +6,7 @@ import {
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import { requireScene } from '$lib/server/scene-access'
 import { sceneMessageRowToMessage } from '$lib/scenes/mapping'
-import { handleApiError, withAuth } from '$lib/server/api-error'
+import { handleApiError, withAccountAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
@@ -16,7 +16,7 @@ export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, sceneId } = event.params
 
       if (!canvasId || !sceneId) {

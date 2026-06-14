@@ -14,7 +14,7 @@ import {
   handleApiError,
   parseInput,
   parseJsonBody,
-  withAuth
+  withAccountAuth
 } from '$lib/server/api-error'
 import { roleAtLeast } from '$lib/canvas/roles'
 import { withRateLimit } from '$lib/server/rate-limit'
@@ -56,7 +56,7 @@ export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const canvasId = event.params.canvasId!
 
       await requireCanvasRole(supabase, canvasId, user.id, 'admin')
@@ -111,7 +111,7 @@ export const POST: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const canvasId = event.params.canvasId!
 
       const { role } = await resolveCanvasAccess(supabase, canvasId, user.id)

@@ -6,7 +6,13 @@ import {
   type CanvasElementRow,
   type ListElementsResponse
 } from '$lib/workspace/schema'
+import { hasConnectorBindingToAnyScene } from '$lib/canvas/diagram-utils'
 import type { Database } from '$lib/server/database.types'
+import { canvasElementToConnector } from '$lib/workspace/element-mapping'
+
+type ListCanvasElementsOptions = {
+  excludeSceneBoundConnectors?: boolean
+}
 
 export function toCanvasElement(row: unknown): CanvasElement {
   const element = canvasElementRowSchema.parse(row)
@@ -25,9 +31,19 @@ export function toCanvasElement(row: unknown): CanvasElement {
   }
 }
 
+export function isSceneBoundConnectorElement(element: CanvasElement) {
+  const connector = canvasElementToConnector(element)
+  return connector ? hasConnectorBindingToAnyScene(connector) : false
+}
+
+export function filterSceneBoundConnectors(items: CanvasElement[]) {
+  return items.filter((item) => !isSceneBoundConnectorElement(item))
+}
+
 export async function listCanvasElementsForCanvas(
   supabase: SupabaseClient<Database>,
-  canvasId: string
+  canvasId: string,
+  options: ListCanvasElementsOptions = {}
 ): Promise<ListElementsResponse> {
   const { data, error } = await supabase
     .from('canvas_elements')
@@ -40,8 +56,12 @@ export async function listCanvasElementsForCanvas(
     throw error
   }
 
+  const items = (data ?? []).map(toCanvasElement)
+
   return listElementsResponseSchema.parse({
-    items: (data ?? []).map(toCanvasElement)
+    items: options.excludeSceneBoundConnectors
+      ? filterSceneBoundConnectors(items)
+      : items
   })
 }
 
@@ -133,6 +153,34 @@ if (import.meta.vitest) {
         { ascending: true, nullsFirst: true }
       ])
       expect(calls).toContainEqual(['order', 'updated_at', { ascending: true }])
+    })
+
+    it('filters scene-bound connectors for anonymous limited view', () => {
+      const items = [
+        toCanvasElement(
+          row({
+            id: 'connector-1',
+            type: 'connector',
+            data: {
+              start: {
+                x: 0,
+                y: 0,
+                binding: {
+                  targetType: 'scene',
+                  targetId: 'scene-1',
+                  anchor: 'right'
+                }
+              },
+              end: { x: 100, y: 0, binding: null }
+            }
+          })
+        ),
+        toCanvasElement(row({ id: 'text-1', type: 'text' }))
+      ]
+
+      expect(filterSceneBoundConnectors(items).map((item) => item.id)).toEqual([
+        'text-1'
+      ])
     })
   })
 }

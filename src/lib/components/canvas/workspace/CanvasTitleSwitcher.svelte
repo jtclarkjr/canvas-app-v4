@@ -14,6 +14,7 @@
     isLoadingCanvases,
     selectedTool,
     readOnly,
+    showNavigation = true,
     onToolChange,
     onTitleSave
   } = $props<{
@@ -24,6 +25,7 @@
     isLoadingCanvases: boolean
     selectedTool: Tool
     readOnly: boolean
+    showNavigation?: boolean
     onToolChange: (tool: Tool) => void
     onTitleSave: (title: string) => void | Promise<void>
   }>()
@@ -82,9 +84,11 @@
 
 <div class="fixed left-4 top-4 z-20 flex items-start gap-3">
   <div class="flex flex-col gap-2">
-    <a href="/" class="toolbar-pill toolbar-button" title="Back to dashboard">
-      <House class="size-5" />
-    </a>
+    {#if showNavigation}
+      <a href="/" class="toolbar-pill toolbar-button" title="Back to dashboard">
+        <House class="size-5" />
+      </a>
+    {/if}
     <CanvasToolbar {selectedTool} {readOnly} {onToolChange} />
   </div>
 
@@ -119,51 +123,53 @@
       </span>
     {/if}
 
-    <div bind:this={dropdownEl} class="relative">
-      <button
-        type="button"
-        class="toolbar-pill toolbar-button"
-        onclick={() => (showCanvasSelector = !showCanvasSelector)}
-        title="Switch canvas"
-      >
-        <ChevronDown class="size-4" />
-      </button>
-      {#if showCanvasSelector}
-        <div
-          class="absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-border/70 bg-popover text-popover-foreground shadow-xl"
+    {#if showNavigation}
+      <div bind:this={dropdownEl} class="relative">
+        <button
+          type="button"
+          class="toolbar-pill toolbar-button"
+          onclick={() => (showCanvasSelector = !showCanvasSelector)}
+          title="Switch canvas"
         >
-          <div class="max-h-[300px] overflow-y-auto p-2">
-            {#if canvases.length > 0}
-              {#each canvases as canvas}
-                <button
-                  type="button"
-                  class={`w-full rounded px-3 py-2 text-left text-sm font-medium transition ${
-                    canvas.id === activeCanvasId
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'
-                  }`}
-                  onclick={() => {
-                    showCanvasSelector = false
-                    if (canvas.id !== activeCanvasId) {
-                      void goto(`/canvas/${canvas.id}`)
-                    }
-                  }}
-                >
-                  {canvas.title}
-                </button>
-              {/each}
-            {:else if isLoadingCanvases}
-              <div class="px-3 py-2 text-sm text-muted-foreground">
-                Loading canvases...
-              </div>
-            {:else}
-              <div class="px-3 py-2 text-sm text-muted-foreground">
-                No canvases yet
-              </div>
-            {/if}
+          <ChevronDown class="size-4" />
+        </button>
+        {#if showCanvasSelector}
+          <div
+            class="absolute left-0 top-full mt-2 min-w-[200px] rounded-lg border border-border/70 bg-popover text-popover-foreground shadow-xl"
+          >
+            <div class="max-h-[300px] overflow-y-auto p-2">
+              {#if canvases.length > 0}
+                {#each canvases as canvas}
+                  <button
+                    type="button"
+                    class={`w-full rounded px-3 py-2 text-left text-sm font-medium transition ${
+                      canvas.id === activeCanvasId
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'
+                    }`}
+                    onclick={() => {
+                      showCanvasSelector = false
+                      if (canvas.id !== activeCanvasId) {
+                        void goto(`/canvas/${canvas.id}`)
+                      }
+                    }}
+                  >
+                    {canvas.title}
+                  </button>
+                {/each}
+              {:else if isLoadingCanvases}
+                <div class="px-3 py-2 text-sm text-muted-foreground">
+                  Loading canvases...
+                </div>
+              {:else}
+                <div class="px-3 py-2 text-sm text-muted-foreground">
+                  No canvases yet
+                </div>
+              {/if}
+            </div>
           </div>
-        </div>
-      {/if}
-    </div>
+        {/if}
+      </div>
+    {/if}
   </div>
 </div>

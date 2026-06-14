@@ -13,7 +13,7 @@ import {
   handleApiError,
   parseInput,
   parseJsonBody,
-  withAuth
+  withAccountAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
@@ -28,7 +28,7 @@ export const GET: RequestHandler = async (event) =>
     try {
       requireWorkflowsEnabled()
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, workflowId } = event.params
 
       if (!canvasId || !workflowId) {
@@ -52,7 +52,7 @@ export const POST: RequestHandler = async (event) =>
     try {
       requireWorkflowsEnabled()
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const { canvasId, workflowId } = event.params
 
       if (!canvasId || !workflowId) {

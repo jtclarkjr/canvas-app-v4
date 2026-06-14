@@ -27,6 +27,7 @@
       access?:
         | { state: 'member'; role: CanvasRole; canvasTitle: string }
         | { state: 'public-viewer'; canvasTitle: string }
+        | { state: 'anonymous-public-viewer'; canvasTitle: string }
         | { state: 'no-access' }
         | { state: 'not-found' }
     }
@@ -84,13 +85,14 @@
       Back to dashboard
     </a>
   </div>
-{:else if data.access?.state === 'public-viewer'}
+{:else if data.access?.state === 'public-viewer' || data.access?.state === 'anonymous-public-viewer'}
   <CanvasWorkspace
     canvasId={data.canvasId}
     userId={data.userId ?? ''}
     userEmail={data.userEmail}
     role="reader"
     isPublicViewer
+    isAnonymousPublicViewer={data.access.state === 'anonymous-public-viewer'}
     canvasTitle={data.access.canvasTitle}
     initialCanvases={data.canvasList?.items ?? []}
     initialElements={data.initialElements ?? []}

@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
 import { myAccessRequestResponseSchema } from '$lib/canvas/schema'
-import { handleApiError, withAuth } from '$lib/server/api-error'
+import { handleApiError, withAccountAuth } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 
@@ -8,7 +8,7 @@ export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       const canvasId = event.params.canvasId!
 
       const { data, error } = await supabase

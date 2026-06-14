@@ -34,6 +34,7 @@
     userEmail,
     role = 'owner',
     isPublicViewer = false,
+    isAnonymousPublicViewer = false,
     canvasTitle,
     initialCanvases,
     initialElements,
@@ -46,6 +47,7 @@
     userEmail?: string | null
     role?: CanvasRole
     isPublicViewer?: boolean
+    isAnonymousPublicViewer?: boolean
     canvasTitle?: string
     initialCanvases?: Canvas[]
     initialElements?: CanvasElement[]
@@ -68,6 +70,7 @@
       userEmail,
       role,
       isPublicViewer,
+      isAnonymousPublicViewer,
       canvasTitle,
       initialCanvases,
       initialElements,
@@ -86,13 +89,19 @@
   provideCanvasChatStore({
     getCanvasId: () => workspace.canvasIdForActions,
     getUserId: () => userId,
-    getEnabled: () => !workspace.isPublicViewer && Boolean(userId)
+    getEnabled: () =>
+      !workspace.isPublicViewer &&
+      !workspace.isAnonymousPublicViewer &&
+      Boolean(userId)
   })
 
   provideCanvasConferenceStore({
     getCanvasId: () => workspace.canvasIdForActions,
     getUserId: () => userId,
-    getEnabled: () => !workspace.isPublicViewer && Boolean(userId)
+    getEnabled: () =>
+      !workspace.isPublicViewer &&
+      !workspace.isAnonymousPublicViewer &&
+      Boolean(userId)
   })
 
   let rootEl = $state<HTMLDivElement | null>(null)
@@ -154,6 +163,7 @@
     isLoadingCanvases={workspace.isLoadingCanvases}
     selectedTool={workspace.selectedTool}
     readOnly={!workspace.canEdit || workspace.mode === 'scenes'}
+    showNavigation={!workspace.isAnonymousPublicViewer}
     onTitleSave={workspace.saveTitle}
     onToolChange={workspace.handleToolChange}
   />
@@ -166,25 +176,29 @@
     />
   {/if}
 
-  <CanvasPresenceActions
-    canvasId={workspace.canvasIdForActions}
-    role={workspace.role}
-    members={workspace.displayMembers}
-    pendingCount={workspace.pendingRequests.length}
-    onShare={workspace.openShareDialog}
-  />
+  {#if !workspace.isAnonymousPublicViewer}
+    <CanvasPresenceActions
+      canvasId={workspace.canvasIdForActions}
+      role={workspace.role}
+      members={workspace.displayMembers}
+      pendingCount={workspace.pendingRequests.length}
+      onShare={workspace.openShareDialog}
+    />
+  {/if}
 
-  <ShareDialog
-    bind:open={workspace.shareDialogOpen}
-    canvasId={workspace.canvasIdForActions}
-    canvasTitle={workspace.currentCanvasTitle}
-    role={workspace.role}
-    currentUserId={userId}
-    visibility={workspace.currentCanvasVisibility}
-    pendingRequests={workspace.pendingRequests}
-    onRequestResolved={workspace.handleRequestResolved}
-    onVisibilityChange={workspace.saveVisibility}
-  />
+  {#if !workspace.isAnonymousPublicViewer}
+    <ShareDialog
+      bind:open={workspace.shareDialogOpen}
+      canvasId={workspace.canvasIdForActions}
+      canvasTitle={workspace.currentCanvasTitle}
+      role={workspace.role}
+      currentUserId={userId}
+      visibility={workspace.currentCanvasVisibility}
+      pendingRequests={workspace.pendingRequests}
+      onRequestResolved={workspace.handleRequestResolved}
+      onVisibilityChange={workspace.saveVisibility}
+    />
+  {/if}
 
   <TextFormattingToolbar
     fontSize={workspace.textFormatting.fontSize}
@@ -260,19 +274,21 @@
     handlers={workspace.sceneHandlers}
   />
 
-  <SceneCardLayer
-    scenes={workspace.scenes}
-    camera={workspace.camera}
-    mode={workspace.mode}
-    canEdit={workspace.canEdit}
-    canModifyScene={workspace.canModifyScene}
-    activity={workspace.sceneActivity}
-    handlers={workspace.sceneCardHandlers}
-    isCreatingScene={workspace.isCreatingScene}
-    onCreateScene={() => void workspace.createScene('document')}
-  />
+  {#if !workspace.isAnonymousPublicViewer}
+    <SceneCardLayer
+      scenes={workspace.scenes}
+      camera={workspace.camera}
+      mode={workspace.mode}
+      canEdit={workspace.canEdit}
+      canModifyScene={workspace.canModifyScene}
+      activity={workspace.sceneActivity}
+      handlers={workspace.sceneCardHandlers}
+      isCreatingScene={workspace.isCreatingScene}
+      onCreateScene={() => void workspace.createScene('document')}
+    />
+  {/if}
 
-  {#if workspace.workflowEnabled && WorkflowLayerComponent}
+  {#if !workspace.isAnonymousPublicViewer && workspace.workflowEnabled && WorkflowLayerComponent}
     <WorkflowLayerComponent
       canvasId={workspace.canvasIdForActions}
       workflows={workspace.workflows}
@@ -337,16 +353,19 @@
 
   <!-- Calls are members-only too; the conference store self-gates all
        network traffic via getEnabled. -->
-  <CanvasConference />
+  {#if !workspace.isAnonymousPublicViewer}
+    <CanvasConference />
+  {/if}
 
   {#if workspace.isPublicViewer || workspace.role === 'reader'}
     <RequestEditAccessBanner
       canvasId={workspace.canvasIdForActions}
       isPublicViewer={workspace.isPublicViewer}
+      isAnonymousPublicViewer={workspace.isAnonymousPublicViewer}
     />
   {/if}
 
-  {#if workspace.openScene}
+  {#if !workspace.isAnonymousPublicViewer && workspace.openScene}
     {@const open = workspace.openScene}
     {#key open.scene.id}
       <SceneDialog

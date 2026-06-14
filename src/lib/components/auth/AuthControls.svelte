@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state'
+  import { isAnonymousUser } from '$lib/auth/anonymous'
   import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
   import { signOut } from '$lib/auth/session-service'
   import Popover from '$lib/components/shared/Popover.svelte'
@@ -18,7 +19,13 @@
   const loginHref = $derived(
     `/login?redirect=${encodeURIComponent(`${page.url.pathname}${page.url.search}`)}`
   )
-  const user = $derived(session.data?.user ?? page.data.user ?? null)
+  const sessionUser = $derived(session.data?.user ?? null)
+  const pageUser = $derived(page.data.user ?? null)
+  const user = $derived.by(() => {
+    if (sessionUser && !isAnonymousUser(sessionUser)) return sessionUser
+    if (pageUser && !isAnonymousUser(pageUser)) return pageUser
+    return null
+  })
   const userDisplayName = $derived(user ? getUserDisplayName(user) : 'Guest')
   const userEmail = $derived(user?.email ?? 'Signed in')
   const userAvatarUrl = $derived(user ? getUserAvatarUrl(user) : null)

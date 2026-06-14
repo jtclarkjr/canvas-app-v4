@@ -962,3 +962,20 @@ export function hasConnectorBindingToShape(
 ): boolean {
   return hasConnectorBindingToTarget(connector, 'shape', shapeId)
 }
+
+export function hasConnectorBindingToScene(
+  connector: DiagramConnector,
+  sceneId: string
+): boolean {
+  return hasConnectorBindingToTarget(connector, 'scene', sceneId)
+}
+
+export function hasConnectorBindingToAnyScene(
+  connector: DiagramConnector
+): boolean {
+  const startBinding = normalizeAnchorBinding(connector.start.binding)
+  const endBinding = normalizeAnchorBinding(connector.end.binding)
+  return (
+    startBinding?.targetType === 'scene' || endBinding?.targetType === 'scene'
+  )
+}

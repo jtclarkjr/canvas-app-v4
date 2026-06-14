@@ -1,4 +1,5 @@
 import { ZodType } from 'zod'
+import { isAnonymousUser } from '$lib/auth/anonymous'
 import { logServerError, type ErrorLogger } from '$lib/server/logger'
 
 export type ApiErrorIssues = Record<string, string[]>
@@ -73,6 +74,16 @@ export function unauthorized(
 export function withAuth<U>(user: U | null | undefined): U {
   if (!user) throw unauthorized()
   return user
+}
+
+export function withAccountAuth<U>(user: U | null | undefined): U {
+  const currentUser = withAuth(user)
+  if (isAnonymousUser(currentUser)) {
+    throw unauthorized('Log in to continue.', {
+      code: 'login_required'
+    })
+  }
+  return currentUser
 }
 
 export function forbidden(

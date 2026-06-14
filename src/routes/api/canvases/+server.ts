@@ -8,7 +8,7 @@ import {
   handleApiError,
   parseInput,
   parseJsonBody,
-  withAuth
+  withAccountAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
@@ -18,7 +18,7 @@ export const GET: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
       return json(await listCanvasesForUser(supabase, user.id))
     } catch (error) {
       return handleApiError(error, event.request)
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async (event) =>
   withRateLimit(async () => {
     try {
       const supabase = getSupabase()
-      const user = withAuth(event.locals.user)
+      const user = withAccountAuth(event.locals.user)
 
       const payload = await parseJsonBody(event.request)
       const input = parseInput(createCanvasInputSchema, payload)

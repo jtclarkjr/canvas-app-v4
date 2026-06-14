@@ -3,7 +3,8 @@ import {
   forbidden,
   notFound,
   serializeApiError,
-  validationError
+  validationError,
+  withAccountAuth
 } from '$lib/server/api-error'
 
 describe('api-error', () => {
@@ -33,5 +34,16 @@ describe('api-error', () => {
     expect(serialized.message).toBe('Invalid.')
     expect(serialized.issues).toEqual({ title: ['Required'] })
     expect('code' in serialized).toBe(false)
+  })
+
+  it('requires a non-anonymous account user', () => {
+    expect(() =>
+      withAccountAuth({ id: 'anon-user', isAnonymous: true })
+    ).toThrow('Log in to continue.')
+
+    expect(withAccountAuth({ id: 'user-1', isAnonymous: false })).toEqual({
+      id: 'user-1',
+      isAnonymous: false
+    })
   })
 })
