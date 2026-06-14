@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { slide } from 'svelte/transition'
   import PlatformIcons from '$lib/components/shared/PlatformIcons.svelte'
   import {
     signInWithEmail,
@@ -199,15 +200,17 @@
 
       <form class="grid gap-3" onsubmit={handleSubmit}>
         {#if mode === 'sign-up'}
-          <label class="grid gap-2">
-            <span class="text-sm font-medium text-foreground">Name</span>
-            <input
-              bind:value={name}
-              class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
-              placeholder="Jane Doe"
-              autocomplete="name"
-            />
-          </label>
+          <div transition:slide={{ duration: 200 }}>
+            <label class="grid gap-2">
+              <span class="text-sm font-medium text-foreground">Name</span>
+              <input
+                bind:value={name}
+                class="rounded-2xl border border-input bg-card px-4 py-3 outline-none focus:border-primary"
+                placeholder="Jane Doe"
+                autocomplete="name"
+              />
+            </label>
+          </div>
         {/if}
 
         <label class="grid gap-2">
