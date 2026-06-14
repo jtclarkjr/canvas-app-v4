@@ -429,7 +429,10 @@ export function clonePath(path: Path): Path {
   return { ...path, points: path.points.map((p) => ({ ...p })) }
 }
 
-export function getPathBoundingBox(path: Path): {
+export function getPathBoundingBox(
+  path: Path,
+  padding = 0
+): {
   x: number
   y: number
   width: number
@@ -446,7 +449,12 @@ export function getPathBoundingBox(path: Path): {
     if (p.x > maxX) maxX = p.x
     if (p.y > maxY) maxY = p.y
   }
-  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+  return {
+    x: minX - padding,
+    y: minY - padding,
+    width: maxX - minX + 2 * padding,
+    height: maxY - minY + 2 * padding
+  }
 }
 
 export function getPathCenter(path: Path): Point {
@@ -455,7 +463,7 @@ export function getPathCenter(path: Path): Point {
 }
 
 export function getPathOutlinePoints(path: Path): Point[] {
-  const bb = getPathBoundingBox(path)
+  const bb = getPathBoundingBox(path, path.width / 2)
   return [
     { x: bb.x, y: bb.y },
     { x: bb.x + bb.width, y: bb.y },
@@ -468,7 +476,7 @@ export function getPathResizeHandles(
   path: Path
 ): Array<{ handle: PathResizeHandle; point: Point }> {
   const [nw, ne, se, sw] = getPathOutlinePoints(path)
-  const bb = getPathBoundingBox(path)
+  const bb = getPathBoundingBox(path, path.width / 2)
   return [
     { handle: 'nw', point: nw ?? { x: bb.x, y: bb.y } },
     { handle: 'ne', point: ne ?? { x: bb.x + bb.width, y: bb.y } },
@@ -481,7 +489,7 @@ export function getPathResizeHandles(
 }
 
 export function getPathRotateAnchor(path: Path): Point {
-  const bb = getPathBoundingBox(path)
+  const bb = getPathBoundingBox(path, path.width / 2)
   return { x: bb.x + bb.width / 2, y: bb.y }
 }
 
