@@ -50,11 +50,17 @@ function participantColor(metadata: string | undefined, identity: string) {
 }
 
 function mediaFailureDescription(
-  kind: 'camera' | 'microphone',
+  kind: 'camera' | 'microphone' | 'screen',
   error: unknown
 ) {
   const name =
     error instanceof DOMException || error instanceof Error ? error.name : ''
+  if (kind === 'screen') {
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
+      return 'Screen share was denied. Check your browser permissions.'
+    }
+    return 'Screen share could not be started.'
+  }
   if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
     return `No ${kind} was detected. Plug one in and try again.`
   }
@@ -83,6 +89,7 @@ export function createConferenceRoomStore({
   let participants = $state.raw<ConferenceParticipant[]>([])
   let micEnabled = $state(false)
   let camEnabled = $state(false)
+  let screenEnabled = $state(false)
   let lastActiveSpeaker = $state<string | null>(null)
   let pinnedIdentity = $state<string | null>(null)
   let canPlayAudio = $state(true)
@@ -122,6 +129,9 @@ export function createConferenceRoomStore({
       color: participantColor(p.metadata, p.identity),
       videoTrack:
         p.getTrackPublication(livekit.Track.Source.Camera)?.videoTrack ?? null,
+      screenShareTrack:
+        p.getTrackPublication(livekit.Track.Source.ScreenShare)?.videoTrack ??
+        null,
       audioTrack:
         p === r.localParticipant
           ? null
@@ -131,6 +141,7 @@ export function createConferenceRoomStore({
 
     micEnabled = r.localParticipant.isMicrophoneEnabled
     camEnabled = r.localParticipant.isCameraEnabled
+    screenEnabled = r.localParticipant.isScreenShareEnabled
 
     if (
       lastActiveSpeaker &&
@@ -145,6 +156,7 @@ export function createConferenceRoomStore({
     participants = []
     micEnabled = false
     camEnabled = false
+    screenEnabled = false
     lastActiveSpeaker = null
     pinnedIdentity = null
     canPlayAudio = true
@@ -446,6 +458,23 @@ export function createConferenceRoomStore({
     syncFromRoom()
   }
 
+  async function toggleScreenShare() {
+    const r = room
+    if (!r) return
+    try {
+      await r.localParticipant.setScreenShareEnabled(
+        !r.localParticipant.isScreenShareEnabled
+      )
+    } catch (error) {
+      toast.show({
+        title: 'Screen share failed',
+        description: mediaFailureDescription('screen', error),
+        variant: 'error'
+      })
+    }
+    syncFromRoom()
+  }
+
   async function applyDevice(kind: DeviceKind, deviceId: string) {
     if (!room) {
       return
@@ -537,6 +566,9 @@ export function createConferenceRoomStore({
     get camEnabled() {
       return camEnabled
     },
+    get screenEnabled() {
+      return screenEnabled
+    },
     get canPlayAudio() {
       return canPlayAudio
     },
@@ -556,6 +588,7 @@ export function createConferenceRoomStore({
     leave,
     toggleMic,
     toggleCam,
+    toggleScreenShare,
     setBackground,
     setBlurRadius,
     applyDevice,

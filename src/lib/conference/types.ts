@@ -46,6 +46,7 @@ export type ConferenceParticipant = {
   wantsCaptions: boolean
   color: string
   videoTrack: VideoTrack | null
+  screenShareTrack: VideoTrack | null
   audioTrack: AudioTrack | null
 }
 

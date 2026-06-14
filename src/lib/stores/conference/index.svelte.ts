@@ -101,6 +101,9 @@ export function createCanvasConferenceStore({
     get camEnabled() {
       return room.camEnabled
     },
+    get screenEnabled() {
+      return room.screenEnabled
+    },
     get canPlayAudio() {
       return room.canPlayAudio
     },
@@ -120,6 +123,7 @@ export function createCanvasConferenceStore({
     leave: room.leave,
     toggleMic: room.toggleMic,
     toggleCam: room.toggleCam,
+    toggleScreenShare: room.toggleScreenShare,
     setBackground: room.setBackground,
     setBlurRadius: (value: number) => room.setBlurRadius(value),
     pin: room.pin,
