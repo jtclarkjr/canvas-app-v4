@@ -17,6 +17,65 @@
     children?: () => unknown
   }>()
 
+  let backdropEl = $state<HTMLButtonElement | null>(null)
+  let cardEl = $state<HTMLDivElement | null>(null)
+  let visible = $state(false)
+  let cardAnim: Animation | null = null
+  let backdropAnim: Animation | null = null
+
+  $effect(() => {
+    if (open) {
+      visible = true
+      queueMicrotask(() => {
+        if (backdropEl) {
+          backdropAnim?.cancel()
+          backdropAnim = backdropEl.animate([{ opacity: 0 }, { opacity: 1 }], {
+            duration: 200,
+            easing: 'ease-out'
+          })
+        }
+        if (cardEl) {
+          cardAnim?.cancel()
+          cardAnim = cardEl.animate(
+            [
+              { opacity: 0, transform: 'scale(0.95)' },
+              { opacity: 1, transform: 'scale(1)' }
+            ],
+            { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+          )
+        }
+      })
+    } else {
+      if (!visible) return
+      const bEl = backdropEl
+      const cEl = cardEl
+      if (cEl) {
+        cardAnim?.cancel()
+        cardAnim = cEl.animate(
+          [
+            { opacity: 1, transform: 'scale(1)' },
+            { opacity: 0, transform: 'scale(0.95)' }
+          ],
+          { duration: 160, easing: 'ease-in', fill: 'forwards' }
+        )
+      }
+      if (bEl) {
+        backdropAnim?.cancel()
+        backdropAnim = bEl.animate([{ opacity: 1 }, { opacity: 0 }], {
+          duration: 160,
+          easing: 'ease-in',
+          fill: 'forwards'
+        })
+      }
+      ;(cardAnim ?? backdropAnim)?.finished
+        .then(() => {
+          visible = false
+        })
+        .catch(() => undefined)
+      if (!cardAnim && !backdropAnim) visible = false
+    }
+  })
+
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && open) {
@@ -38,18 +97,20 @@
   }
 </script>
 
-{#if open}
+{#if visible}
   <div
     use:portal
     class="fixed inset-0 z-50 flex items-center justify-center p-4"
   >
     <button
+      bind:this={backdropEl}
       type="button"
       class="absolute inset-0 bg-black/45 backdrop-blur-sm"
       onclick={() => (open = false)}
       aria-label="Close dialog"
     ></button>
     <div
+      bind:this={cardEl}
       class={`glass-card surface-border relative z-10 w-full rounded-[2rem] p-6 ${widthClass}`}
       role="dialog"
       aria-modal="true"

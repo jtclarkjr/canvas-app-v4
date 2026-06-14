@@ -28,6 +28,62 @@
   }>()
 
   let root = $state<HTMLDivElement | null>(null)
+  let panelEl = $state<HTMLDivElement | null>(null)
+  let panelVisible = $state(false)
+  let activeAnim: Animation | null = null
+
+  const alignOriginMap: Record<string, string> = {
+    start: 'left',
+    end: 'right',
+    center: 'center'
+  }
+  const transformOrigin = $derived(
+    `${side === 'bottom' ? 'top' : 'bottom'} ${alignOriginMap[align] ?? 'center'}`
+  )
+
+  $effect(() => {
+    const isOpen = open
+    if (isOpen) {
+      panelVisible = true
+      queueMicrotask(() => {
+        if (!panelEl) return
+        activeAnim?.cancel()
+        panelEl.style.transformOrigin = transformOrigin
+        activeAnim = panelEl.animate(
+          [
+            { transform: 'scale(0.85)', opacity: 0 },
+            { transform: 'scale(1)', opacity: 1 }
+          ],
+          { duration: 200, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+        )
+      })
+    } else {
+      if (!panelVisible) return
+      const el = panelEl
+      if (!el) {
+        panelVisible = false
+        return
+      }
+      activeAnim?.cancel()
+      el.style.transformOrigin = transformOrigin
+      activeAnim = el.animate(
+        [
+          { transform: 'scale(1)', opacity: 1 },
+          { transform: 'scale(0.85)', opacity: 0 }
+        ],
+        {
+          duration: 150,
+          easing: 'cubic-bezier(0.55, 0, 0.55, 0.2)',
+          fill: 'forwards'
+        }
+      )
+      activeAnim.finished
+        .then(() => {
+          panelVisible = false
+        })
+        .catch(() => undefined)
+    }
+  })
 
   function focusTrigger() {
     root
@@ -81,8 +137,9 @@
     {@render trigger?.({ id, expanded: open })}
   </div>
 
-  {#if open}
+  {#if panelVisible}
     <div
+      bind:this={panelEl}
       {id}
       {role}
       aria-label={label}
