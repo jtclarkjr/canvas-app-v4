@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition'
+  import { fade, fly } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
   import {
     ClosedCaption,
     LayoutGrid,
@@ -16,8 +17,7 @@
     Users,
     Video,
     VideoOff,
-    Volume2,
-    X
+    Volume2
   } from 'lucide-svelte'
   import {
     CAPTION_LANGUAGES,
@@ -318,16 +318,17 @@
       {/if}
     </div>
 
-    <!-- Side panel -->
     {#if store.fullscreenPanel !== 'none'}
-      <aside
-        class="flex w-80 shrink-0 flex-col border-l border-border/60 bg-card"
+      <div
+        transition:fly={{ x: 40, duration: 260, easing: cubicOut }}
+        class="glass-card my-3 mr-3 flex w-72 shrink-0 flex-col overflow-hidden"
+        role="dialog"
         aria-label={store.fullscreenPanel === 'chat'
           ? 'Canvas chat'
           : 'People in call'}
       >
         <header
-          class="flex items-center justify-between gap-3 border-b border-border/50 px-4 py-3"
+          class="flex shrink-0 items-center justify-between gap-3 border-b border-border/50 px-4 py-3"
         >
           <h2 class="text-sm font-bold text-foreground">
             {store.fullscreenPanel === 'chat'
@@ -341,18 +342,19 @@
               store.toggleFullscreenPanel(
                 store.fullscreenPanel === 'chat' ? 'chat' : 'people'
               )}
-            title="Close panel"
             aria-label="Close panel"
           >
-            <X class="size-4" />
+            <Minimize2 class="size-4" />
           </button>
         </header>
 
-        {#if store.fullscreenPanel === 'chat'}
-          <div class="min-h-0 flex-1">
-            <CanvasChatRoomPanel userId={store.userId} alwaysVisible />
-          </div>
-        {:else}
+        <div
+          class={store.fullscreenPanel === 'chat' ? 'min-h-0 flex-1' : 'hidden'}
+        >
+          <CanvasChatRoomPanel userId={store.userId} alwaysVisible />
+        </div>
+
+        {#if store.fullscreenPanel === 'people'}
           <div class="min-h-0 flex-1 overflow-y-auto p-2">
             {#each store.participants as participant (participant.identity)}
               <div
@@ -400,7 +402,7 @@
             {/each}
           </div>
         {/if}
-      </aside>
+      </div>
     {/if}
   </div>
 
