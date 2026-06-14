@@ -27,14 +27,59 @@
   // Video card matches the chat window's 24rem width at 16:9; the bar mode
   // collapses to a speaker pill. The participant strip overlays outside the
   // box, so drag/snap math only tracks the card itself.
-  const PIP_SIZE: Size = { width: 384, height: 216 }
+  const MAX_PIP_WIDTH = 384
+  const MIN_PIP_WIDTH = 240
+  // Width below which a resize-release snaps to bar mode
+  const SNAP_ZONE_WIDTH = 180
   const BAR_SIZE: Size = { width: 360, height: 56 }
 
   const reducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  const boxSize = $derived(store.viewMode === 'bar' ? BAR_SIZE : PIP_SIZE)
+  let pipWidth = $state(MAX_PIP_WIDTH)
+  const pipHeight = $derived(Math.round(pipWidth * (9 / 16)))
+
+  const boxSize = $derived(
+    store.viewMode === 'bar' ? BAR_SIZE : { width: pipWidth, height: pipHeight }
+  )
+
+  // Resize state
+  let resizing = $state(false)
+  let resizePointerId: number | null = null
+  let resizeStartX = 0
+  let resizeStartWidth = 0
+
+  function onResizePointerDown(event: PointerEvent) {
+    event.stopPropagation()
+    event.preventDefault()
+    resizePointerId = event.pointerId
+    resizeStartX = event.clientX
+    resizeStartWidth = pipWidth
+    resizing = true
+    ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+  }
+
+  function onResizePointerMove(event: PointerEvent) {
+    if (!resizing || event.pointerId !== resizePointerId) return
+    const delta = event.clientX - resizeStartX
+    pipWidth = Math.max(
+      SNAP_ZONE_WIDTH,
+      Math.min(MAX_PIP_WIDTH, resizeStartWidth + delta)
+    )
+  }
+
+  function onResizePointerUp(event: PointerEvent) {
+    if (!resizing || event.pointerId !== resizePointerId) return
+    resizing = false
+    resizePointerId = null
+    if (pipWidth < MIN_PIP_WIDTH) {
+      pipWidth = MAX_PIP_WIDTH
+      store.setViewMode('bar')
+    } else {
+      moveTo(anchorFor(store.corner, boxSize, viewport, store.chatOpen))
+    }
+  }
 
   let boxEl = $state<HTMLDivElement | null>(null)
   let viewport = $state<Size>({
@@ -75,7 +120,7 @@
   // pip/bar mode switches.
   $effect(() => {
     const target = anchorFor(store.corner, boxSize, viewport, store.chatOpen)
-    if (dragging) {
+    if (dragging || resizing) {
       return
     }
     if (target.x !== pos.x || target.y !== pos.y) {
@@ -153,7 +198,7 @@
 <div
   bind:this={boxEl}
   class={`group fixed left-0 top-0 z-[45] touch-none select-none ${
-    dragging ? 'cursor-grabbing' : 'cursor-grab'
+    resizing ? 'cursor-se-resize' : dragging ? 'cursor-grabbing' : 'cursor-grab'
   }`}
   style:width={`${boxSize.width}px`}
   style:transform={`translate3d(${pos.x}px, ${pos.y}px, 0)`}
@@ -330,6 +375,32 @@
           </span>
         </div>
       {/if}
+
+      <!-- Resize handle: drag to resize PIP, release below min snaps to bar -->
+      <div
+        class={`absolute bottom-0 right-0 z-10 flex h-6 w-6 cursor-se-resize items-end justify-end p-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 ${pipWidth < MIN_PIP_WIDTH ? 'opacity-100' : ''}`}
+        onpointerdown={onResizePointerDown}
+        onpointermove={onResizePointerMove}
+        onpointerup={onResizePointerUp}
+        onpointercancel={onResizePointerUp}
+        role="presentation"
+        aria-hidden="true"
+        title="Drag to resize"
+      >
+        <svg
+          width="8"
+          height="8"
+          viewBox="0 0 8 8"
+          class={pipWidth < MIN_PIP_WIDTH ? 'text-warning' : 'text-white/70'}
+        >
+          <path
+            d="M1 7L7 1M4 7L7 4"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
 
       <div
         class="absolute inset-x-0 bottom-0 flex justify-center gap-1.5 bg-gradient-to-t from-black/55 to-transparent p-2 pt-6 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
