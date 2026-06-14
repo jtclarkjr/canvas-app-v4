@@ -155,8 +155,14 @@
     {/each}
 
     {#if chat.status === 'submitted'}
-      <div class="flex items-center gap-2 px-1 text-xs text-muted-foreground">
-        <LoaderCircle class="size-3.5 animate-spin text-primary" />
+      <div
+        class="flex items-center gap-2 px-1 text-xs text-muted-foreground"
+        role="status"
+      >
+        <LoaderCircle
+          class="size-3.5 animate-spin text-primary"
+          aria-hidden="true"
+        />
         Thinking…
       </div>
     {/if}

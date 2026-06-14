@@ -71,7 +71,7 @@
 {#if data.access?.state === 'no-access'}
   <RequestAccessScreen canvasId={data.canvasId} />
 {:else if data.access?.state === 'not-found'}
-  <div
+  <main
     class="flex h-screen w-screen flex-col items-center justify-center gap-3 bg-background"
   >
     <h1 class="text-2xl font-bold text-foreground">Canvas not found</h1>
@@ -84,7 +84,7 @@
     >
       Back to dashboard
     </a>
-  </div>
+  </main>
 {:else if data.access?.state === 'public-viewer' || data.access?.state === 'anonymous-public-viewer'}
   <CanvasWorkspace
     canvasId={data.canvasId}

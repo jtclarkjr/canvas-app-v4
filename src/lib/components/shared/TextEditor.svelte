@@ -46,6 +46,7 @@
     style={`left:${camera.x + editingText.x * camera.scale}px;top:${camera.y + editingText.y * camera.scale}px;font-size:${textFormatting.fontSize * camera.scale}px;line-height:${TEXT_LINE_HEIGHT};color:${resolveCanvasDisplayColor(textFormatting.color)};font-weight:${textFormatting.isBold ? 'bold' : 'normal'};font-style:${textFormatting.isItalic ? 'italic' : 'normal'};text-decoration:${textFormatting.isUnderline ? 'underline' : 'none'};text-align:${editingText.textAlign ?? 'left'};width:${editorWidth(lines)}px;resize:none;overflow:hidden;white-space:pre;box-shadow:inset 0 0 0 1px var(--canvas-selection-shadow);padding:0;margin:0;transform:${editorTransform()};transform-origin:center center`}
     rows={lines.length}
     wrap="off"
+    aria-label="Edit text"
     value={editingText.value}
     oninput={(event) => {
       onValueChange((event.currentTarget as HTMLTextAreaElement).value)

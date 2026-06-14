@@ -20,6 +20,7 @@
   let backdropEl = $state<HTMLButtonElement | null>(null)
   let cardEl = $state<HTMLDivElement | null>(null)
   let visible = $state(false)
+  const titleId = `modal-title-${Math.random().toString(36).slice(2)}`
   let cardAnim: Animation | null = null
   let backdropAnim: Animation | null = null
 
@@ -27,6 +28,10 @@
     if (open) {
       visible = true
       queueMicrotask(() => {
+        const firstFocusable = cardEl?.querySelector<HTMLElement>(
+          'button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
+        )
+        firstFocusable?.focus()
         if (backdropEl) {
           backdropAnim?.cancel()
           backdropAnim = backdropEl.animate([{ opacity: 0 }, { opacity: 1 }], {
@@ -108,13 +113,14 @@
       class="absolute inset-0 bg-black/45 backdrop-blur-sm"
       onclick={() => (open = false)}
       aria-label="Close dialog"
+      tabindex="-1"
     ></button>
     <div
       bind:this={cardEl}
       class={`glass-card surface-border relative z-10 w-full rounded-[2rem] p-6 ${widthClass}`}
       role="dialog"
       aria-modal="true"
-      aria-label={title}
+      aria-labelledby={titleId}
     >
       <div class="mb-5 flex items-start justify-between gap-4">
         <div class="grid gap-1">
@@ -125,7 +131,9 @@
               {eyebrow}
             </p>
           {/if}
-          <h2 class="text-2xl font-bold text-foreground">{title}</h2>
+          <h2 id={titleId} class="text-2xl font-bold text-foreground">
+            {title}
+          </h2>
         </div>
         {#if showClose}
           <button

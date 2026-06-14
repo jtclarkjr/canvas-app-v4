@@ -62,6 +62,16 @@
     return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${scaleX}, ${scaleY})`
   }
 
+  // Move focus into the dialog when it opens.
+  $effect(() => {
+    if (dialogEl) {
+      const firstFocusable = dialogEl.querySelector<HTMLElement>(
+        'button,input,select,textarea,[tabindex]:not([tabindex="-1"])'
+      )
+      firstFocusable?.focus()
+    }
+  })
+
   // Expand from the card rect into the dialog rect (FLIP). Without an
   // origin rect (e.g. a freshly created scene) fall back to a centered
   // scale-in.
@@ -185,7 +195,7 @@
   class="glass-card fixed inset-x-[6vw] inset-y-[5vh] z-50 flex cursor-auto flex-col overflow-hidden md:inset-x-[10vw]"
   role="dialog"
   aria-modal="true"
-  aria-label={scene.title || sceneType?.defaultTitle || 'Scene'}
+  aria-labelledby="scene-dialog-title"
   data-camera-exempt
 >
   <header
@@ -197,7 +207,10 @@
       >
         {sceneType?.label ?? scene.type}
       </span>
-      <h2 class="truncate text-sm font-semibold text-foreground">
+      <h2
+        id="scene-dialog-title"
+        class="truncate text-sm font-semibold text-foreground"
+      >
         {scene.title || sceneType?.defaultTitle || 'Scene'}
       </h2>
     </div>
@@ -208,18 +221,18 @@
           type="button"
           class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
           onclick={() => (confirmDeleteOpen = true)}
-          title="Delete scene"
+          aria-label="Delete scene"
         >
-          <Trash2 class="size-4" />
+          <Trash2 class="size-4" aria-hidden="true" />
         </button>
       {/if}
       <button
         type="button"
         class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
         onclick={() => void minimize()}
-        title="Minimize"
+        aria-label="Minimize scene"
       >
-        <Minimize2 class="size-4" />
+        <Minimize2 class="size-4" aria-hidden="true" />
       </button>
     </div>
   </header>

@@ -175,10 +175,10 @@
         }`}
         onclick={onWebSearchToggle}
         disabled={disabled || isStreaming}
-        title="Search the web while answering"
+        aria-label="Search the web while answering"
         aria-pressed={webSearch}
       >
-        <Globe class="size-4" />
+        <Globe class="size-4" aria-hidden="true" />
       </button>
     {/if}
 
@@ -190,6 +190,7 @@
       rows="1"
       maxlength="4000"
       {placeholder}
+      aria-label={placeholder}
       class="max-h-30 min-h-9 w-full resize-none rounded-2xl border border-border/60 bg-background/70 px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-primary/40"
       {disabled}
     ></textarea>
@@ -199,9 +200,9 @@
       class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-40"
       onclick={send}
       disabled={!canSend}
-      title="Send"
+      aria-label="Send message"
     >
-      <ArrowUp class="size-4" />
+      <ArrowUp class="size-4" aria-hidden="true" />
     </button>
   </div>
 </div>

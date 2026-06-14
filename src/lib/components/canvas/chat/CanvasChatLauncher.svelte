@@ -20,13 +20,15 @@
     store.open ? 'pointer-events-none opacity-0' : 'pointer-events-auto'
   }`}
   onclick={() => store.openWindow()}
-  title="Canvas chat"
-  aria-label="Open canvas chat"
+  aria-label={store.unreadCount > 0 && !store.open
+    ? `Open canvas chat (${store.unreadCount} unread message${store.unreadCount !== 1 ? 's' : ''})`
+    : 'Open canvas chat'}
 >
-  <MessageCircle class="size-4" />
+  <MessageCircle class="size-4" aria-hidden="true" />
   {#if store.unreadCount > 0 && !store.open}
     <span
       class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"
+      aria-hidden="true"
     >
       {store.unreadCount > 9 ? '9+' : store.unreadCount}
     </span>

@@ -67,11 +67,17 @@
   onpointercancel={(event) => handlers.pointerCancel(event, scene.id)}
   ondblclick={(event) => handlers.open(event, scene.id)}
   onkeydown={(event) => {
-    if (event.key === 'Enter') handlers.open(event, scene.id)
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      handlers.open(event, scene.id)
+    }
   }}
 >
   <div class="flex items-center gap-2">
-    <TypeIcon class="size-4 shrink-0 text-muted-foreground" />
+    <TypeIcon
+      class="size-4 shrink-0 text-muted-foreground"
+      aria-hidden="true"
+    />
     <span class="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
       {scene.title || sceneType?.defaultTitle || 'Scene'}
     </span>
@@ -91,9 +97,10 @@
     {#if activityLabel}
       <span
         class="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary"
-        title={`${activity?.userName ?? 'A collaborator'} is ${activityLabel.toLowerCase()}`}
+        aria-live="polite"
+        aria-label={`${activity?.userName ?? 'A collaborator'} is ${activityLabel?.toLowerCase()}`}
       >
-        <Sparkles class="size-3 animate-pulse" />
+        <Sparkles class="size-3 animate-pulse" aria-hidden="true" />
         {activityLabel}
       </span>
     {/if}

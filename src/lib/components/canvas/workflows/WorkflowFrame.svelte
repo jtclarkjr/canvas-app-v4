@@ -66,7 +66,10 @@
   onpointercancel={(event) => handlers.pointerCancel(event, workflow.id)}
   ondblclick={() => onFocus(workflow.id)}
   onkeydown={(event) => {
-    if (event.key === 'Enter') onFocus(workflow.id)
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onFocus(workflow.id)
+    }
   }}
 >
   <div class="flex min-h-0 w-full flex-col bg-card/90">

@@ -49,9 +49,11 @@
     type="button"
     class="toolbar-pill toolbar-button"
     onclick={() => (isExpanded = !isExpanded)}
-    title="Tools"
+    aria-label={`Drawing tools — ${currentTool().label} selected`}
+    aria-expanded={isExpanded}
+    aria-haspopup="true"
   >
-    <CurrentIcon class="size-5" />
+    <CurrentIcon class="size-5" aria-hidden="true" />
   </button>
 
   {#if isExpanded}
@@ -73,9 +75,10 @@
               onToolChange(tool.id)
               isExpanded = false
             }}
-            title={tool.label}
+            aria-label={tool.label}
+            aria-pressed={selectedTool === tool.id}
           >
-            <tool.icon class="size-4" />
+            <tool.icon class="size-4" aria-hidden="true" />
           </button>
         {/each}
       </div>

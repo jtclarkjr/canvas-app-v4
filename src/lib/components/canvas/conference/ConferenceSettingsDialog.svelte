@@ -88,6 +88,7 @@
       <!-- Camera device selector -->
       <select
         class={selectClass}
+        aria-label="Camera device"
         value={store.activeDeviceIds.videoinput ??
           store.devices.cameras[0]?.deviceId ??
           ''}

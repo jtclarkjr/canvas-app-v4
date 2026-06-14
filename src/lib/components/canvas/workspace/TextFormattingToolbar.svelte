@@ -65,9 +65,9 @@
         class="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
         onmousedown={preventEditorBlur}
         onclick={() => onFontSizeChange(Math.max(fontSize - 2, 8))}
-        title="Decrease font size"
+        aria-label="Decrease font size"
       >
-        <Minus class="size-3" />
+        <Minus class="size-3" aria-hidden="true" />
       </button>
       <input
         class="w-12 border-0 bg-transparent text-center text-sm text-foreground outline-none"
@@ -76,16 +76,16 @@
         type="number"
         value={fontSize}
         oninput={handleFontSizeChange}
-        title="Font size"
+        aria-label="Font size"
       />
       <button
         type="button"
         class="flex h-6 w-6 items-center justify-center rounded text-muted-foreground transition hover:text-foreground"
         onmousedown={preventEditorBlur}
         onclick={() => onFontSizeChange(Math.min(fontSize + 2, 100))}
-        title="Increase font size"
+        aria-label="Increase font size"
       >
-        <Plus class="size-3" />
+        <Plus class="size-3" aria-hidden="true" />
       </button>
     </div>
 
@@ -98,9 +98,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={onBoldToggle}
-      title="Bold"
+      aria-label="Bold"
+      aria-pressed={isBold}
     >
-      <Bold class="size-4" />
+      <Bold class="size-4" aria-hidden="true" />
     </button>
     <button
       type="button"
@@ -111,9 +112,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={onItalicToggle}
-      title="Italic"
+      aria-label="Italic"
+      aria-pressed={isItalic}
     >
-      <Italic class="size-4" />
+      <Italic class="size-4" aria-hidden="true" />
     </button>
     <button
       type="button"
@@ -124,9 +126,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={onUnderlineToggle}
-      title="Underline"
+      aria-label="Underline"
+      aria-pressed={isUnderline}
     >
-      <Underline class="size-4" />
+      <Underline class="size-4" aria-hidden="true" />
     </button>
     <button
       type="button"
@@ -137,9 +140,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onListStyleChange('bullet')}
-      title="Bullet list"
+      aria-label="Bullet list"
+      aria-pressed={listStyle === 'bullet'}
     >
-      <List class="size-4" />
+      <List class="size-4" aria-hidden="true" />
     </button>
     <button
       type="button"
@@ -150,9 +154,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onListStyleChange('number')}
-      title="Numbered list"
+      aria-label="Numbered list"
+      aria-pressed={listStyle === 'number'}
     >
-      <ListOrdered class="size-4" />
+      <ListOrdered class="size-4" aria-hidden="true" />
     </button>
 
     <div class="relative">

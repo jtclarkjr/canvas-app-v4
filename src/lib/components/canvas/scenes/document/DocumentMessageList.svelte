@@ -147,9 +147,10 @@
                 href={source.url}
                 target="_blank"
                 rel="noreferrer noopener"
+                aria-label={`${source.title} (opens in new tab)`}
                 class="my-1 mr-1 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border/60 px-2 py-0.5 text-xs text-primary hover:bg-primary/5"
               >
-                <Globe class="size-3 shrink-0" />
+                <Globe class="size-3 shrink-0" aria-hidden="true" />
                 <span class="truncate">{source.title}</span>
               </a>
             {/if}
@@ -160,7 +161,7 @@
   {/each}
 
   {#if isRemoteGenerating}
-    <div class="flex justify-start">
+    <div class="flex justify-start" role="status">
       <div
         class="max-w-[85%] rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-4 py-2.5 text-sm leading-relaxed text-foreground"
       >

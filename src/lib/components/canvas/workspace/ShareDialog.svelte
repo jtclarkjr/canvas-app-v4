@@ -254,6 +254,7 @@
           class="min-w-0 flex-1 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground outline-none"
           readonly
           value={shareUrl}
+          aria-label="Share URL"
           onfocus={(event) =>
             (event.currentTarget as HTMLInputElement).select()}
         />
@@ -334,6 +335,7 @@
             <input
               class="w-full rounded-xl border border-border bg-secondary/40 px-3 py-2 pr-9 text-sm text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Search by name or email"
+              aria-label="Search people by name or email"
               bind:value={searchQuery}
             />
             {#if searchQuery}

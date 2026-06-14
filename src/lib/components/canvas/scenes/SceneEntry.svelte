@@ -72,7 +72,7 @@
               : 'border-border/60 text-muted-foreground hover:text-foreground'
           }`}
           onclick={() => (selectedType = entry.id)}
-          title={entry.description}
+          aria-pressed={selectedType === entry.id}
           disabled={readOnly}
         >
           {entry.label}
@@ -90,6 +90,7 @@
         onkeydown={handleKeydown}
         rows="3"
         placeholder="Describe the document you want to draft…"
+        aria-label="Describe the document you want to draft"
         class="max-h-60 w-full resize-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
         disabled={readOnly}
       ></textarea>
@@ -117,9 +118,9 @@
           class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-40"
           onclick={submit}
           disabled={!canSubmit}
-          title="Start"
+          aria-label="Start"
         >
-          <ArrowUp class="size-4" />
+          <ArrowUp class="size-4" aria-hidden="true" />
         </button>
       </div>
     </div>

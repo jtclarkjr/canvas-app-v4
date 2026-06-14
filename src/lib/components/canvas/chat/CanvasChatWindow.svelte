@@ -149,9 +149,9 @@
       type="button"
       class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
       onclick={() => void minimize()}
-      title="Minimize"
+      aria-label="Minimize chat"
     >
-      <Minimize2 class="size-4" />
+      <Minimize2 class="size-4" aria-hidden="true" />
     </button>
   </header>
 

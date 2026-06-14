@@ -30,7 +30,7 @@
             : 'border-border/60 text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => onCategoryChange(entry.id)}
-        title={entry.description}
+        aria-pressed={entry.id === categoryId}
         {disabled}
       >
         {entry.label}

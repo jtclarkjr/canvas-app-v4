@@ -151,7 +151,8 @@
   ontouchmove={workspace.handleTouchMove}
   ontouchend={workspace.handleTouchEnd}
   style={workspace.rootStyle}
-  role="application"
+  role="region"
+  aria-label="Drawing workspace"
 >
   <div class="absolute inset-0 screen-grid"></div>
 

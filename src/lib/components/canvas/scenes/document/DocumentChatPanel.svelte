@@ -204,6 +204,7 @@
   {#if chat.error}
     <div
       class="mx-5 mb-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
+      role="alert"
     >
       <span>{chat.error.message || 'Something went wrong.'}</span>
       <button

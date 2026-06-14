@@ -120,27 +120,30 @@
           class={buttonClass(formatting.shapeKind === 'rectangle')}
           onmousedown={preventEditorBlur}
           onclick={() => onShapeKindChange('rectangle')}
-          title="Rectangle"
+          aria-label="Rectangle"
+          aria-pressed={formatting.shapeKind === 'rectangle'}
         >
-          <Square class="size-4" />
+          <Square class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(formatting.shapeKind === 'diamond')}
           onmousedown={preventEditorBlur}
           onclick={() => onShapeKindChange('diamond')}
-          title="Diamond"
+          aria-label="Diamond"
+          aria-pressed={formatting.shapeKind === 'diamond'}
         >
-          <Diamond class="size-4" />
+          <Diamond class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(formatting.shapeKind === 'ellipse')}
           onmousedown={preventEditorBlur}
           onclick={() => onShapeKindChange('ellipse')}
-          title="Ellipse"
+          aria-label="Ellipse"
+          aria-pressed={formatting.shapeKind === 'ellipse'}
         >
-          <Circle class="size-4" />
+          <Circle class="size-4" aria-hidden="true" />
         </button>
       </div>
     {/if}
@@ -152,27 +155,30 @@
           class={buttonClass(formatting.connectorKind === 'straight')}
           onmousedown={preventEditorBlur}
           onclick={() => onConnectorKindChange('straight')}
-          title="Straight connector"
+          aria-label="Straight connector"
+          aria-pressed={formatting.connectorKind === 'straight'}
         >
-          <ArrowRight class="size-4" />
+          <ArrowRight class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(formatting.connectorKind === 'elbow')}
           onmousedown={preventEditorBlur}
           onclick={() => onConnectorKindChange('elbow')}
-          title="Elbow connector"
+          aria-label="Elbow connector"
+          aria-pressed={formatting.connectorKind === 'elbow'}
         >
-          <CornerDownRight class="size-4" />
+          <CornerDownRight class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(formatting.connectorKind === 'curved')}
           onmousedown={preventEditorBlur}
           onclick={() => onConnectorKindChange('curved')}
-          title="Curved connector"
+          aria-label="Curved connector"
+          aria-pressed={formatting.connectorKind === 'curved'}
         >
-          <Spline class="size-4" />
+          <Spline class="size-4" aria-hidden="true" />
         </button>
       </div>
     {/if}
@@ -185,8 +191,8 @@
           style={`background:${color}`}
           onmousedown={preventEditorBlur}
           onclick={() => onStrokeColorChange(color)}
-          title="Stroke color"
-          aria-label={`Stroke ${color}`}
+          aria-label={`Stroke color ${color}`}
+          aria-pressed={formatting.strokeColor === color}
         ></button>
       {/each}
     </div>
@@ -202,8 +208,10 @@
               : `background:${color}`}
             onmousedown={preventEditorBlur}
             onclick={() => onFillColorChange(color)}
-            title="Fill color"
-            aria-label={`Fill ${color}`}
+            aria-label={color === 'transparent'
+              ? 'Fill transparent'
+              : `Fill color ${color}`}
+            aria-pressed={formatting.fillColor === color}
           ></button>
         {/each}
       </div>
@@ -216,9 +224,13 @@
           class={buttonClass(formatting.strokeWidth === width)}
           onmousedown={preventEditorBlur}
           onclick={() => onStrokeWidthChange(width)}
-          title={`Stroke width ${width}`}
+          aria-label={`Stroke width ${width}`}
+          aria-pressed={formatting.strokeWidth === width}
         >
-          <span class="w-4 rounded-full bg-current" style={`height:${width}px`}
+          <span
+            class="w-4 rounded-full bg-current"
+            style={`height:${width}px`}
+            aria-hidden="true"
           ></span>
         </button>
       {/each}
@@ -230,20 +242,24 @@
         class={buttonClass(formatting.strokeStyle === 'solid')}
         onmousedown={preventEditorBlur}
         onclick={() => onStrokeStyleChange('solid')}
-        title="Solid stroke"
+        aria-label="Solid stroke"
+        aria-pressed={formatting.strokeStyle === 'solid'}
       >
-        <span class="h-0.5 w-4 rounded-full bg-current"></span>
+        <span class="h-0.5 w-4 rounded-full bg-current" aria-hidden="true"
+        ></span>
       </button>
       <button
         type="button"
         class={buttonClass(formatting.strokeStyle === 'dashed')}
         onmousedown={preventEditorBlur}
         onclick={() => onStrokeStyleChange('dashed')}
-        title="Dashed stroke"
+        aria-label="Dashed stroke"
+        aria-pressed={formatting.strokeStyle === 'dashed'}
       >
         <span
           class="h-0.5 w-4"
           style="background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px)"
+          aria-hidden="true"
         ></span>
       </button>
       <button
@@ -251,11 +267,13 @@
         class={buttonClass(formatting.strokeStyle === 'dotted')}
         onmousedown={preventEditorBlur}
         onclick={() => onStrokeStyleChange('dotted')}
-        title="Dotted stroke"
+        aria-label="Dotted stroke"
+        aria-pressed={formatting.strokeStyle === 'dotted'}
       >
         <span
           class="h-1 w-4"
           style="background:repeating-linear-gradient(90deg,currentColor 0 2px,transparent 2px 5px)"
+          aria-hidden="true"
         ></span>
       </button>
     </div>
@@ -270,9 +288,10 @@
             onStartArrowChange(
               formatting.startArrow === 'arrow' ? 'none' : 'arrow'
             )}
-          title="Start arrowhead"
+          aria-label="Start arrowhead"
+          aria-pressed={formatting.startArrow === 'arrow'}
         >
-          <ArrowRight class="size-4 rotate-180" />
+          <ArrowRight class="size-4 rotate-180" aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -282,9 +301,10 @@
             onEndArrowChange(
               formatting.endArrow === 'arrow' ? 'none' : 'arrow'
             )}
-          title="End arrowhead"
+          aria-label="End arrowhead"
+          aria-pressed={formatting.endArrow === 'arrow'}
         >
-          <ArrowRight class="size-4" />
+          <ArrowRight class="size-4" aria-hidden="true" />
         </button>
       </div>
     {/if}
@@ -298,7 +318,8 @@
         type="range"
         value={Math.round(formatting.opacity * 100)}
         oninput={handleOpacityChange}
-        title="Opacity"
+        aria-label="Opacity"
+        aria-valuetext={`${Math.round(formatting.opacity * 100)}%`}
       />
     </div>
 
@@ -309,36 +330,36 @@
           class={buttonClass(false)}
           onmousedown={preventEditorBlur}
           onclick={() => onArrange('back')}
-          title="Send to back"
+          aria-label="Send to back"
         >
-          <ArrowDownToLine class="size-4" />
+          <ArrowDownToLine class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(false)}
           onmousedown={preventEditorBlur}
           onclick={() => onArrange('backward')}
-          title="Send backward"
+          aria-label="Send backward"
         >
-          <ArrowDown class="size-4" />
+          <ArrowDown class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(false)}
           onmousedown={preventEditorBlur}
           onclick={() => onArrange('forward')}
-          title="Bring forward"
+          aria-label="Bring forward"
         >
-          <ArrowUp class="size-4" />
+          <ArrowUp class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class={buttonClass(false)}
           onmousedown={preventEditorBlur}
           onclick={() => onArrange('front')}
-          title="Bring to front"
+          aria-label="Bring to front"
         >
-          <ArrowUpToLine class="size-4" />
+          <ArrowUpToLine class="size-4" aria-hidden="true" />
         </button>
       </div>
     {/if}

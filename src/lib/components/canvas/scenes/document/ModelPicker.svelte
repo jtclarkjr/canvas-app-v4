@@ -28,14 +28,18 @@
   align="start"
   {side}
 >
-  {#snippet trigger()}
+  {#snippet trigger({ id: popoverId, expanded })}
     <button
       type="button"
       class="flex h-8 items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 text-xs text-muted-foreground transition hover:text-foreground disabled:opacity-50"
       onclick={() => (open = !open)}
+      aria-expanded={expanded}
+      aria-haspopup="menu"
+      aria-controls={popoverId}
+      aria-label={`AI model: ${selected?.label ?? 'Model'}`}
       {disabled}
     >
-      <Cpu class="size-3.5" />
+      <Cpu class="size-3.5" aria-hidden="true" />
       {selected?.label ?? 'Model'}
     </button>
   {/snippet}
@@ -44,6 +48,8 @@
     {#each modelOptions as option (option.id)}
       <button
         type="button"
+        role="menuitemradio"
+        aria-checked={option.id === modelId}
         class={`flex items-center justify-between rounded-md px-2 py-1.5 text-left text-sm transition ${
           option.id === modelId
             ? 'bg-primary/10 text-primary'

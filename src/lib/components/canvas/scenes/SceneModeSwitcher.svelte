@@ -55,6 +55,8 @@
   <div
     class="mode-switcher toolbar-pill relative overflow-hidden p-1"
     style={switcherStyle}
+    role="group"
+    aria-label="Workspace mode"
   >
     <span
       class="mode-switcher__thumb pointer-events-none absolute top-1 bottom-1 left-1 rounded-full bg-primary shadow-sm"

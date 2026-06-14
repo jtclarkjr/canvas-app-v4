@@ -46,9 +46,9 @@
       aria-controls={id}
       aria-expanded={expanded}
       onclick={() => (open = !open)}
-      title="Share & access"
+      aria-label={`Share and access${canManage && pendingCount > 0 ? ` (${pendingCount} pending)` : ''}`}
     >
-      <Share2 class="size-4" />
+      <Share2 class="size-4" aria-hidden="true" />
       {#if canManage && pendingCount > 0}
         <span
           class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"

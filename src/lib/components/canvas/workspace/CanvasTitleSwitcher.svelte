@@ -85,8 +85,12 @@
 <div class="fixed left-4 top-4 z-30 flex items-start gap-3">
   <div class="flex flex-col gap-2">
     {#if showNavigation}
-      <a href="/" class="toolbar-pill toolbar-button" title="Back to dashboard">
-        <House class="size-5" />
+      <a
+        href="/"
+        class="toolbar-pill toolbar-button"
+        aria-label="Back to dashboard"
+      >
+        <House class="size-5" aria-hidden="true" />
       </a>
     {/if}
     <CanvasToolbar {selectedTool} {readOnly} {onToolChange} />
@@ -99,6 +103,7 @@
           bind:this={titleInputEl}
           class="w-[200px] border-0 bg-transparent text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground outline-none"
           bind:value={editedTitle}
+          aria-label="Canvas title"
           onblur={() => void saveTitle()}
           onkeydown={(event) => {
             if (event.key === 'Enter') {
@@ -114,6 +119,7 @@
         type="button"
         class="toolbar-pill toolbar-label"
         onclick={beginTitleEdit}
+        aria-label={`Canvas title: ${displayTitle || 'Select Canvas'}. Click to edit.`}
       >
         {displayTitle || 'Select Canvas'}
       </button>
@@ -129,13 +135,16 @@
           type="button"
           class="toolbar-pill toolbar-button"
           onclick={() => (showCanvasSelector = !showCanvasSelector)}
-          title="Switch canvas"
+          aria-label="Switch canvas"
+          aria-expanded={showCanvasSelector}
+          aria-haspopup="menu"
         >
-          <ChevronDown class="size-4" />
+          <ChevronDown class="size-4" aria-hidden="true" />
         </button>
         {#if showCanvasSelector}
           <div
             class="absolute left-0 top-full mt-1 min-w-[200px] rounded-lg border border-border/70 bg-popover text-popover-foreground shadow-xl"
+            role="menu"
           >
             <div class="max-h-[300px] overflow-y-auto p-1">
               {#if canvases.length > 0}
@@ -147,6 +156,7 @@
                         ? 'bg-primary text-primary-foreground'
                         : 'text-popover-foreground hover:bg-accent hover:text-accent-foreground'
                     }`}
+                    role="menuitem"
                     onclick={() => {
                       showCanvasSelector = false
                       if (canvas.id !== activeCanvasId) {

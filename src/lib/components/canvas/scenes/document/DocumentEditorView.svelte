@@ -184,6 +184,7 @@
       type="text"
       bind:value={title}
       placeholder="Document title"
+      aria-label="Document title"
       class="min-w-0 flex-1 bg-transparent text-sm font-semibold text-foreground outline-none placeholder:text-muted-foreground"
       disabled={!canModify}
     />
@@ -197,18 +198,18 @@
         type="button"
         class="flex h-8 items-center gap-1.5 rounded-full border border-border/60 px-3 text-xs text-muted-foreground transition hover:text-foreground md:hidden"
         onclick={onBack}
-        title="Back to AI chat"
+        aria-label="Back to AI chat"
       >
-        <MessageSquare class="size-3.5" />
+        <MessageSquare class="size-3.5" aria-hidden="true" />
         Back to AI
       </button>
       <button
         type="button"
         class="flex h-8 items-center gap-1.5 rounded-full border border-border/60 px-3 text-xs text-muted-foreground transition hover:text-foreground"
         onclick={() => downloadMarkdown(title || 'document', markdown)}
-        title="Download as .md"
+        aria-label="Download as Markdown file"
       >
-        <Download class="size-3.5" />
+        <Download class="size-3.5" aria-hidden="true" />
         .md
       </button>
       {#if canModify}
@@ -217,9 +218,9 @@
             type="button"
             class="flex h-8 items-center gap-1.5 rounded-full border border-border/60 px-3 text-xs text-muted-foreground transition hover:text-foreground"
             onclick={onPromote}
-            title="Save to the scene's library"
+            aria-label="Save to the scene's library"
           >
-            <BookMarked class="size-3.5" />
+            <BookMarked class="size-3.5" aria-hidden="true" />
             Save to library
           </button>
         {/if}
@@ -228,9 +229,9 @@
           class="flex h-8 items-center gap-1.5 rounded-full bg-primary px-3 text-xs font-medium text-primary-foreground transition disabled:opacity-40"
           onclick={() => void saveSnapshot(currentSnapshot(), { manual: true })}
           disabled={!isDirty || isSaving}
-          title="Save now"
+          aria-label="Save now"
         >
-          <Save class="size-3.5" />
+          <Save class="size-3.5" aria-hidden="true" />
           Save
         </button>
       {/if}
@@ -241,6 +242,7 @@
     bind:value={markdown}
     class="min-h-0 flex-1 resize-none bg-transparent px-5 py-4 font-mono text-sm leading-relaxed text-foreground outline-none"
     placeholder="Document content (markdown)"
+    aria-label="Document content in Markdown"
     spellcheck="false"
     disabled={!canModify}
   ></textarea>

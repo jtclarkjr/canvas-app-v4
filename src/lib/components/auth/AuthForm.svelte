@@ -177,6 +177,7 @@
               ? 'text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
           }`}
+          aria-pressed={mode === 'sign-in'}
           onclick={() => {
             setMode('sign-in')
           }}
@@ -190,6 +191,7 @@
               ? 'text-primary-foreground'
               : 'text-muted-foreground hover:text-foreground'
           }`}
+          aria-pressed={mode === 'sign-up'}
           onclick={() => {
             setMode('sign-up')
           }}
@@ -255,10 +257,10 @@
     {/if}
 
     {#if error}
-      <p class="m-0 text-sm text-destructive">{error}</p>
+      <p class="m-0 text-sm text-destructive" role="alert">{error}</p>
     {/if}
     {#if message}
-      <p class="m-0 text-sm text-muted-foreground">{message}</p>
+      <p class="m-0 text-sm text-muted-foreground" role="status">{message}</p>
     {/if}
   </div>
 {/if}

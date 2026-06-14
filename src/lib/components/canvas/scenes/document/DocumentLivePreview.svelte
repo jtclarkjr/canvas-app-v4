@@ -26,8 +26,9 @@
     </span>
     <span
       class="flex shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs text-primary"
+      role="status"
     >
-      <LoaderCircle class="size-3 animate-spin" />
+      <LoaderCircle class="size-3 animate-spin" aria-hidden="true" />
       AI is writing…
     </span>
   </div>

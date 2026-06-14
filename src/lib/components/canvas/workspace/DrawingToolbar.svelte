@@ -63,7 +63,7 @@
         type="range"
         value={width}
         oninput={handleWidthChange}
-        title="Stroke width"
+        aria-label="Stroke width"
       />
       <span class="w-6 text-center text-sm text-foreground">{width}</span>
     </div>
@@ -95,9 +95,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onStyleChange('freeform')}
-      title="Freeform"
+      aria-label="Freeform"
+      aria-pressed={style === 'freeform'}
     >
-      <Spline class="size-4" />
+      <Spline class="size-4" aria-hidden="true" />
     </button>
     <button
       type="button"
@@ -108,9 +109,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={() => onStyleChange('straight')}
-      title="Straight line"
+      aria-label="Straight line"
+      aria-pressed={style === 'straight'}
     >
-      <Slash class="size-4" />
+      <Slash class="size-4" aria-hidden="true" />
     </button>
 
     <button
@@ -122,9 +124,10 @@
       }`}
       onmousedown={preventEditorBlur}
       onclick={onHighlighterToggle}
-      title="Highlighter"
+      aria-label="Highlighter"
+      aria-pressed={isHighlighter}
     >
-      <Highlighter class="size-4" />
+      <Highlighter class="size-4" aria-hidden="true" />
     </button>
     {#if isHighlighter}
       <div
@@ -138,7 +141,8 @@
           type="range"
           value={Math.round(highlighterOpacity * 100)}
           oninput={handleHighlighterOpacityChange}
-          title="Highlighter opacity"
+          aria-label="Highlighter opacity"
+          aria-valuetext={`${Math.round(highlighterOpacity * 100)}%`}
         />
         <span class="w-9 text-center text-sm text-foreground">
           {Math.round(highlighterOpacity * 100)}%

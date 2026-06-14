@@ -55,18 +55,18 @@
           type="button"
           class="hidden size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-primary/10 hover:text-primary group-hover:flex"
           onclick={() => onPromote(document.id)}
-          title="Save to library"
+          aria-label={`Save "${document.title || 'document'}" to library`}
         >
-          <BookMarked class="size-3.5" />
+          <BookMarked class="size-3.5" aria-hidden="true" />
         </button>
       {/if}
       <button
         type="button"
         class="hidden size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive group-hover:flex"
         onclick={() => onDelete(document.id)}
-        title="Delete document"
+        aria-label={`Delete "${document.title || 'document'}"`}
       >
-        <Trash2 class="size-3.5" />
+        <Trash2 class="size-3.5" aria-hidden="true" />
       </button>
     {/if}
   </div>
@@ -86,9 +86,9 @@
           type="button"
           class="flex size-6 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
           onclick={onNewDraft}
-          title="New draft"
+          aria-label="New draft"
         >
-          <Plus class="size-3.5" />
+          <Plus class="size-3.5" aria-hidden="true" />
         </button>
       {/if}
     </div>

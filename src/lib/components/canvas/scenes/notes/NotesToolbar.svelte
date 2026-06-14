@@ -84,9 +84,10 @@
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
           onclick={() => onToolChange(tool.id)}
-          title={tool.label}
+          aria-label={tool.label}
+          aria-pressed={selectedTool === tool.id}
         >
-          <tool.icon class="size-4" />
+          <tool.icon class="size-4" aria-hidden="true" />
         </button>
       {/each}
     </div>
@@ -102,8 +103,8 @@
           }`}
           style={`background:${color}`}
           onclick={() => onColorChange(color)}
-          title="Set color"
           aria-label={`Set color ${color}`}
+          aria-pressed={drawColor === color}
         ></button>
       {/each}
     </div>
@@ -118,11 +119,13 @@
               : 'text-muted-foreground hover:bg-muted'
           }`}
           onclick={() => onWidthChange(width)}
-          title={`Stroke width ${width}`}
+          aria-label={`Stroke width ${width}`}
+          aria-pressed={drawWidth === width}
         >
           <span
             class="rounded-full bg-current"
             style={`width:${width + 4}px;height:${width + 4}px`}
+            aria-hidden="true"
           ></span>
         </button>
       {/each}
@@ -136,10 +139,10 @@
           : 'text-muted-foreground hover:bg-muted'
       }`}
       onclick={onHighlighterToggle}
-      title="Highlighter"
+      aria-label="Highlighter"
       aria-pressed={isHighlighter}
     >
-      <Highlighter class="size-4" />
+      <Highlighter class="size-4" aria-hidden="true" />
     </button>
 
     <div class="flex items-center gap-0.5">
@@ -148,27 +151,27 @@
         class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-30"
         onclick={onUndo}
         disabled={!canUndo}
-        title="Undo"
+        aria-label="Undo"
       >
-        <Undo2 class="size-4" />
+        <Undo2 class="size-4" aria-hidden="true" />
       </button>
       <button
         type="button"
         class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground disabled:opacity-30"
         onclick={onRedo}
         disabled={!canRedo}
-        title="Redo"
+        aria-label="Redo"
       >
-        <Redo2 class="size-4" />
+        <Redo2 class="size-4" aria-hidden="true" />
       </button>
       {#if selectedCount > 0}
         <button
           type="button"
           class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
           onclick={onDeleteSelected}
-          title={`Delete ${selectedCount} selected`}
+          aria-label={`Delete ${selectedCount} selected`}
         >
-          <Trash2 class="size-4" />
+          <Trash2 class="size-4" aria-hidden="true" />
         </button>
       {/if}
     </div>
@@ -182,9 +185,9 @@
       type="button"
       class="flex h-8 items-center gap-1.5 rounded-full border border-border/60 px-3 text-xs text-muted-foreground transition hover:text-foreground"
       onclick={onExportPdf}
-      title="Download as PDF"
+      aria-label="Download as PDF"
     >
-      <Download class="size-3.5" />
+      <Download class="size-3.5" aria-hidden="true" />
       PDF
     </button>
   </div>

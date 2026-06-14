@@ -30,10 +30,7 @@
             : ''
       }`}
       onclick={() => store.pin(participant.identity)}
-      title={`${participant.isLocal ? 'You' : participant.name}${
-        store.pinnedIdentity === participant.identity ? ' (pinned)' : ''
-      }`}
-      aria-label={`Pin ${participant.isLocal ? 'yourself' : participant.name}`}
+      aria-label={`${store.pinnedIdentity === participant.identity ? 'Unpin' : 'Pin'} ${participant.isLocal ? 'yourself' : participant.name}${!participant.micEnabled ? ' (muted)' : ''}`}
       aria-pressed={store.pinnedIdentity === participant.identity}
     >
       {#if participant.videoTrack && participant.camEnabled}
@@ -42,6 +39,9 @@
           autoplay
           playsinline
           muted
+          aria-label={participant.isLocal
+            ? 'Your video'
+            : `${participant.name}'s video`}
           class={`h-full w-full object-cover ${participant.isLocal ? '-scale-x-100' : ''}`}
         ></video>
       {:else}
@@ -55,8 +55,9 @@
       {#if !participant.micEnabled}
         <span
           class="absolute bottom-0 right-0 flex size-3.5 items-center justify-center rounded-full bg-destructive text-destructive-foreground"
+          aria-label="Microphone muted"
         >
-          <MicOff class="size-2" />
+          <MicOff class="size-2" aria-hidden="true" />
         </span>
       {/if}
     </button>

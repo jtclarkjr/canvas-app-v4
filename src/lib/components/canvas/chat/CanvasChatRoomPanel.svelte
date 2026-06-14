@@ -161,6 +161,7 @@
                  members, so the error is only shown to this user. -->
             <div
               class="mt-0.5 flex items-center gap-2 px-1 text-[11px] text-destructive"
+              role="alert"
             >
               <span>{entry.errorMessage ?? 'Failed to send.'}</span>
               <button

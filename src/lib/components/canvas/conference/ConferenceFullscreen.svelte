@@ -187,7 +187,8 @@
           : ''
     } ${extraClass}`}
     onclick={() => store.pin(participant.identity)}
-    title={pinned ? 'Unpin' : 'Pin to the floating video'}
+    aria-label={`${pinned ? 'Unpin' : 'Pin'} ${participant.isLocal ? 'yourself' : participant.name}`}
+    aria-pressed={pinned}
   >
     {#if participant.videoTrack && participant.camEnabled}
       <video
@@ -222,8 +223,9 @@
     {#if !participant.micEnabled}
       <span
         class="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur"
+        aria-label="Microphone muted"
       >
-        <MicOff class="size-3" />
+        <MicOff class="size-3" aria-hidden="true" />
       </span>
     {/if}
   </button>
@@ -375,22 +377,23 @@
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                   }`}
                   onclick={() => store.pin(participant.identity)}
-                  title={store.pinnedIdentity === participant.identity
-                    ? 'Unpin'
-                    : 'Pin'}
-                  aria-label={`Pin ${participant.isLocal ? 'yourself' : participant.name}`}
+                  aria-label={`${store.pinnedIdentity === participant.identity ? 'Unpin' : 'Pin'} ${participant.isLocal ? 'yourself' : participant.name}`}
+                  aria-pressed={store.pinnedIdentity === participant.identity}
                 >
-                  <Pin class="size-3.5" />
+                  <Pin class="size-3.5" aria-hidden="true" />
                 </button>
                 <span
                   class={participant.micEnabled
                     ? 'text-muted-foreground'
                     : 'text-destructive'}
+                  aria-label={participant.micEnabled
+                    ? 'Microphone on'
+                    : 'Microphone muted'}
                 >
                   {#if participant.micEnabled}
-                    <Mic class="size-4" />
+                    <Mic class="size-4" aria-hidden="true" />
                   {:else}
-                    <MicOff class="size-4" />
+                    <MicOff class="size-4" aria-hidden="true" />
                   {/if}
                 </span>
               </div>

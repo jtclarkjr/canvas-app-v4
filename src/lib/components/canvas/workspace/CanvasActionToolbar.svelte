@@ -22,18 +22,20 @@
           class="rounded-md p-2 text-muted-foreground transition hover:bg-accent hover:text-accent-foreground disabled:opacity-40"
           onclick={onUndo}
           disabled={!canUndo}
-          title="Undo (Cmd+Z)"
+          aria-label="Undo"
+          aria-keyshortcuts="Meta+Z"
         >
-          <Undo2 class="size-4" />
+          <Undo2 class="size-4" aria-hidden="true" />
         </button>
         <button
           type="button"
           class="rounded-md p-2 text-muted-foreground transition hover:bg-accent hover:text-accent-foreground disabled:opacity-40"
           onclick={onRedo}
           disabled={!canRedo}
-          title="Redo (Cmd+Shift+Z)"
+          aria-label="Redo"
+          aria-keyshortcuts="Meta+Shift+Z"
         >
-          <Redo2 class="size-4" />
+          <Redo2 class="size-4" aria-hidden="true" />
         </button>
       </div>
     {/if}
@@ -46,10 +48,10 @@
         type="button"
         class="flex items-center gap-2 rounded-md p-2 text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
         onclick={onDelete}
-        title={`Delete ${selectedCount} element${selectedCount > 1 ? 's' : ''}`}
+        aria-label={`Delete ${selectedCount} selected element${selectedCount > 1 ? 's' : ''}`}
       >
-        <Trash2 class="size-4" />
-        <span class="text-sm">{selectedCount}</span>
+        <Trash2 class="size-4" aria-hidden="true" />
+        <span class="text-sm" aria-hidden="true">{selectedCount}</span>
       </button>
     {/if}
   </div>

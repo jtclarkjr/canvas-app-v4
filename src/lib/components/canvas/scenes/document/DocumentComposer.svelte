@@ -77,6 +77,7 @@
       placeholder={disabled
         ? 'You have view-only access to this scene'
         : 'Ask for changes, or describe a new document…'}
+      aria-label="Ask for changes or describe a new document"
       class="document-composer-input max-h-52 w-full resize-none bg-transparent text-sm outline-none"
       {disabled}
     ></textarea>
@@ -98,10 +99,10 @@
           }`}
           onclick={onWebSearchToggle}
           disabled={disabled || isStreaming}
-          title="Search the web while answering"
+          aria-label="Search the web while answering"
           aria-pressed={webSearch}
         >
-          <Globe class="size-3.5" />
+          <Globe class="size-3.5" aria-hidden="true" />
           Search
         </button>
         <ContextPicker
@@ -118,9 +119,9 @@
         class="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition disabled:opacity-40"
         onclick={send}
         disabled={!canSend}
-        title="Send"
+        aria-label="Send message"
       >
-        <ArrowUp class="size-4" />
+        <ArrowUp class="size-4" aria-hidden="true" />
       </button>
     </div>
   </div>

@@ -521,7 +521,7 @@
             : 'text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => (showLibrary = !showLibrary)}
-        title="Toggle document library"
+        aria-label="Toggle document library"
         aria-pressed={showLibrary}
       >
         <PanelLeft class="size-4" />
@@ -532,7 +532,7 @@
           type="button"
           class="hidden size-7 items-center justify-center rounded-full text-muted-foreground transition hover:text-foreground md:flex"
           onclick={() => (chatCollapsed = !chatCollapsed)}
-          title={chatCollapsed ? 'Show the AI chat' : 'Hide the AI chat'}
+          aria-label={chatCollapsed ? 'Show AI chat' : 'Hide AI chat'}
           aria-pressed={chatCollapsed}
         >
           {#if chatCollapsed}
@@ -551,8 +551,9 @@
             : 'text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => (view = 'chat')}
+        aria-pressed={view === 'chat'}
       >
-        <MessageSquare class="size-3.5" />
+        <MessageSquare class="size-3.5" aria-hidden="true" />
         AI chat
       </button>
       <button
@@ -564,8 +565,9 @@
         }`}
         onclick={() => (view = 'editor')}
         disabled={!activeDocument}
+        aria-pressed={view === 'editor'}
       >
-        <PencilLine class="size-3.5" />
+        <PencilLine class="size-3.5" aria-hidden="true" />
         Editor
       </button>
       {#if activeDocument}
@@ -597,6 +599,7 @@
     {#if error}
       <div
         class="mx-5 mt-2 flex items-center justify-between rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
+        role="alert"
       >
         <span>{error}</span>
         <button

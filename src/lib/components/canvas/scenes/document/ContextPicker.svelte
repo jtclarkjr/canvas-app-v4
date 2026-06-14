@@ -29,7 +29,7 @@
     align="start"
     {side}
   >
-    {#snippet trigger()}
+    {#snippet trigger({ id: popoverId, expanded })}
       <button
         type="button"
         class={`flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs transition disabled:opacity-50 ${
@@ -38,9 +38,15 @@
             : 'border-border/60 bg-background/70 text-muted-foreground hover:text-foreground'
         }`}
         onclick={() => (open = !open)}
+        aria-expanded={expanded}
+        aria-haspopup="menu"
+        aria-controls={popoverId}
+        aria-label={selectedIds.length > 0
+          ? `Context: ${selectedIds.length} document${selectedIds.length !== 1 ? 's' : ''} selected`
+          : 'Add context documents'}
         {disabled}
       >
-        <BookOpen class="size-3.5" />
+        <BookOpen class="size-3.5" aria-hidden="true" />
         {selectedIds.length > 0
           ? `Context (${selectedIds.length})`
           : 'Add context'}
@@ -55,6 +61,8 @@
         {@const selected = selectedIds.includes(document.id)}
         <button
           type="button"
+          role="menuitemcheckbox"
+          aria-checked={selected}
           class={`flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm transition ${
             selected ? 'bg-primary/10 text-primary' : 'hover:bg-muted'
           }`}
@@ -62,7 +70,7 @@
         >
           <span class="truncate">{document.title || 'Untitled'}</span>
           {#if selected}
-            <Check class="size-3.5 shrink-0" />
+            <Check class="size-3.5 shrink-0" aria-hidden="true" />
           {/if}
         </button>
       {/each}

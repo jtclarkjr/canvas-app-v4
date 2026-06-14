@@ -297,9 +297,9 @@
               event.stopPropagation()
               handleDeleteRequest(canvas)
             }}
-            title="Delete canvas"
+            aria-label={`Delete "${canvas.title}"`}
           >
-            <Trash2 class="size-4" />
+            <Trash2 class="size-4" aria-hidden="true" />
           </button>
 
           <div
@@ -415,8 +415,12 @@
     <div
       in:scale={{ duration: 140, start: 0.96 }}
       class="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 py-2 text-sm font-medium text-foreground shadow-xl backdrop-blur"
+      role="status"
     >
-      <LoaderCircle class="size-4 animate-spin text-primary" />
+      <LoaderCircle
+        class="size-4 animate-spin text-primary"
+        aria-hidden="true"
+      />
       Opening {openingCanvasTitle ?? 'canvas'}
     </div>
   </div>

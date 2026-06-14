@@ -179,7 +179,10 @@
     </a>
   {:else if status === 'pending'}
     <span class="flex items-center gap-2 pr-2 text-sm text-muted-foreground">
-      <span class="size-2 animate-pulse rounded-full bg-warning"></span>
+      <span
+        class="size-2 animate-pulse rounded-full bg-warning"
+        aria-hidden="true"
+      ></span>
       Edit access requested — waiting for approval
     </span>
   {:else if status === 'denied'}

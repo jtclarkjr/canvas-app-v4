@@ -404,6 +404,7 @@
       bind:value={prompt}
       class="min-h-20 resize-none rounded-md border border-input bg-background p-2 text-sm text-foreground"
       placeholder="Describe the workflow tree to build..."
+      aria-label="Describe the workflow to build"
       disabled={!canModify || isAsking}
     ></textarea>
     <button
@@ -430,9 +431,15 @@
   onpointerdown={(event) => event.stopPropagation()}
   onkeydown={(event) => event.stopPropagation()}
 >
-  <div class="grid grid-cols-3 border-b border-border/70 p-1">
+  <div
+    class="grid grid-cols-3 border-b border-border/70 p-1"
+    role="tablist"
+    aria-label="Workflow panels"
+  >
     <button
       type="button"
+      role="tab"
+      aria-selected={activeTab === 'code'}
       class={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium ${
         activeTab === 'code'
           ? 'bg-primary text-primary-foreground'
@@ -440,11 +447,13 @@
       }`}
       onclick={() => (activeTab = 'code')}
     >
-      <Code2 class="size-3.5" />
+      <Code2 class="size-3.5" aria-hidden="true" />
       Code
     </button>
     <button
       type="button"
+      role="tab"
+      aria-selected={activeTab === 'notepad'}
       class={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium ${
         activeTab === 'notepad'
           ? 'bg-primary text-primary-foreground'
@@ -452,11 +461,13 @@
       }`}
       onclick={() => (activeTab = 'notepad')}
     >
-      <NotebookPen class="size-3.5" />
+      <NotebookPen class="size-3.5" aria-hidden="true" />
       Notepad
     </button>
     <button
       type="button"
+      role="tab"
+      aria-selected={activeTab === 'versions'}
       class={`flex h-8 items-center justify-center gap-1.5 rounded-md text-xs font-medium ${
         activeTab === 'versions'
           ? 'bg-primary text-primary-foreground'
@@ -464,7 +475,7 @@
       }`}
       onclick={() => (activeTab = 'versions')}
     >
-      <History class="size-3.5" />
+      <History class="size-3.5" aria-hidden="true" />
       Versions
     </button>
   </div>
@@ -472,6 +483,7 @@
   {#if error}
     <div
       class="border-b border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+      role="alert"
     >
       {error}
     </div>
@@ -482,6 +494,7 @@
       <textarea
         bind:value={yamlDraft}
         spellcheck="false"
+        aria-label="Workflow YAML configuration"
         class="min-h-0 flex-1 resize-none rounded-md border border-input bg-background p-3 font-mono text-xs leading-relaxed text-foreground"
         disabled={!canModify}
       ></textarea>
@@ -505,6 +518,7 @@
         bind:value={notesDraft}
         class="min-h-0 flex-1 resize-none rounded-md border border-input bg-background p-3 text-sm leading-relaxed text-foreground"
         placeholder="Workflow notes..."
+        aria-label="Workflow notes"
         disabled={!canModify}
       ></textarea>
       <button

@@ -16,7 +16,7 @@
     type="button"
     class="toolbar-pill toolbar-button"
     onclick={onZoomIn}
-    title="Zoom in"
+    aria-label="Zoom in"
   >
     +
   </button>
@@ -24,7 +24,7 @@
     type="button"
     class="toolbar-pill toolbar-button"
     onclick={onZoomOut}
-    title="Zoom out"
+    aria-label="Zoom out"
   >
     -
   </button>
@@ -32,7 +32,7 @@
     type="button"
     class="toolbar-pill toolbar-button text-[11px] font-semibold"
     onclick={onReset}
-    title="Reset view"
+    aria-label={`Reset zoom (currently ${Math.round(camera.scale * 100)}%)`}
   >
     {Math.round(camera.scale * 100)}%
   </button>
