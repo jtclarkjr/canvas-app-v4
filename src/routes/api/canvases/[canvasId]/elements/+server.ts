@@ -9,7 +9,6 @@ import {
   toCanvasElement
 } from '$lib/server/canvas-elements'
 import {
-  forbidden,
   handleApiError,
   notFound,
   parseInput,
@@ -55,12 +54,7 @@ export const POST: RequestHandler = async (event) =>
         return json({ message: 'Canvas id is required.' }, { status: 400 })
       }
 
-      const { role } = await requireCanvasRole(
-        supabase,
-        canvasId,
-        user.id,
-        'editor'
-      )
+      await requireCanvasRole(supabase, canvasId, user.id, 'editor')
 
       const payload = await parseJsonBody(event.request)
       const input = parseInput(upsertElementInputSchema, payload)
@@ -94,13 +88,6 @@ export const POST: RequestHandler = async (event) =>
         if (existing.data.canvas_id !== canvasId) {
           throw notFound('Element not found.', {
             code: 'element_not_found',
-            details: { elementId: input.id }
-          })
-        }
-
-        if (role === 'editor' && existing.data.created_by !== user.id) {
-          throw forbidden('You can only edit elements you created.', {
-            code: 'element_forbidden',
             details: { elementId: input.id }
           })
         }
