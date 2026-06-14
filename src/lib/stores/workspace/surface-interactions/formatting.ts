@@ -14,7 +14,7 @@ import type {
   ShapeKind,
   StrokeStyle
 } from './types'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import {
   allElements,
   isShapeElement,
@@ -23,7 +23,7 @@ import {
 } from './element-utils'
 
 export function updateSelectedDiagramElements(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   shapeUpdater: ((shape: DiagramShape) => DiagramShape) | null,
   connectorUpdater: ((connector: DiagramConnector) => DiagramConnector) | null
 ) {
@@ -82,12 +82,12 @@ export function updateSelectedDiagramElements(
   }
 }
 
-export function setShapeKind(ctx: SceneCtx, kind: ShapeKind) {
+export function setShapeKind(ctx: SurfaceCtx, kind: ShapeKind) {
   ctx.formattingStore.setShapeKind(kind)
   updateSelectedDiagramElements(ctx, (shape) => ({ ...shape, kind }), null)
 }
 
-export function setConnectorKind(ctx: SceneCtx, kind: ConnectorKind) {
+export function setConnectorKind(ctx: SurfaceCtx, kind: ConnectorKind) {
   ctx.formattingStore.setConnectorKind(kind)
   updateSelectedDiagramElements(ctx, null, (connector) => ({
     ...connector,
@@ -95,12 +95,12 @@ export function setConnectorKind(ctx: SceneCtx, kind: ConnectorKind) {
   }))
 }
 
-export function setDiagramFillColor(ctx: SceneCtx, fillColor: string) {
+export function setDiagramFillColor(ctx: SurfaceCtx, fillColor: string) {
   ctx.formattingStore.setDiagramFillColor(fillColor)
   updateSelectedDiagramElements(ctx, (shape) => ({ ...shape, fillColor }), null)
 }
 
-export function setDiagramStrokeColor(ctx: SceneCtx, strokeColor: string) {
+export function setDiagramStrokeColor(ctx: SurfaceCtx, strokeColor: string) {
   ctx.formattingStore.setDiagramStrokeColor(strokeColor)
   updateSelectedDiagramElements(
     ctx,
@@ -109,7 +109,7 @@ export function setDiagramStrokeColor(ctx: SceneCtx, strokeColor: string) {
   )
 }
 
-export function setDiagramStrokeWidth(ctx: SceneCtx, strokeWidth: number) {
+export function setDiagramStrokeWidth(ctx: SurfaceCtx, strokeWidth: number) {
   ctx.formattingStore.setDiagramStrokeWidth(strokeWidth)
   updateSelectedDiagramElements(
     ctx,
@@ -118,7 +118,10 @@ export function setDiagramStrokeWidth(ctx: SceneCtx, strokeWidth: number) {
   )
 }
 
-export function setDiagramStrokeStyle(ctx: SceneCtx, strokeStyle: StrokeStyle) {
+export function setDiagramStrokeStyle(
+  ctx: SurfaceCtx,
+  strokeStyle: StrokeStyle
+) {
   ctx.formattingStore.setDiagramStrokeStyle(strokeStyle)
   updateSelectedDiagramElements(
     ctx,
@@ -127,7 +130,7 @@ export function setDiagramStrokeStyle(ctx: SceneCtx, strokeStyle: StrokeStyle) {
   )
 }
 
-export function setDiagramOpacity(ctx: SceneCtx, opacity: number) {
+export function setDiagramOpacity(ctx: SurfaceCtx, opacity: number) {
   ctx.formattingStore.setDiagramOpacity(opacity)
   updateSelectedDiagramElements(
     ctx,
@@ -136,7 +139,7 @@ export function setDiagramOpacity(ctx: SceneCtx, opacity: number) {
   )
 }
 
-export function setDiagramStartArrow(ctx: SceneCtx, startArrow: Arrowhead) {
+export function setDiagramStartArrow(ctx: SurfaceCtx, startArrow: Arrowhead) {
   ctx.formattingStore.setDiagramStartArrow(startArrow)
   updateSelectedDiagramElements(ctx, null, (connector) => ({
     ...connector,
@@ -144,7 +147,7 @@ export function setDiagramStartArrow(ctx: SceneCtx, startArrow: Arrowhead) {
   }))
 }
 
-export function setDiagramEndArrow(ctx: SceneCtx, endArrow: Arrowhead) {
+export function setDiagramEndArrow(ctx: SurfaceCtx, endArrow: Arrowhead) {
   ctx.formattingStore.setDiagramEndArrow(endArrow)
   updateSelectedDiagramElements(ctx, null, (connector) => ({
     ...connector,
@@ -153,7 +156,7 @@ export function setDiagramEndArrow(ctx: SceneCtx, endArrow: Arrowhead) {
 }
 
 export function arrangeSelectedElements(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   action: ArrangementAction
 ) {
   const selectedIds = ctx.getSelectedElementIds()

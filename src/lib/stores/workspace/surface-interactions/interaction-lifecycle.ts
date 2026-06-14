@@ -20,12 +20,12 @@ import {
 } from '$lib/canvas/drawing-utils'
 import type { Point } from './types'
 import { MAX_SCENE_SIZE, MIN_SCENE_HEIGHT, MIN_SCENE_WIDTH } from './types'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import { nowZ, persistElement, snapEndpoint } from './element-utils'
 import { cursorForInteraction, cursorForPoint, setCursorStyle } from './cursor'
 
 export function finishActiveInteraction(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   event: PointerEvent
 ): boolean {
   if (!ctx.activeInteraction) {
@@ -227,7 +227,7 @@ export function finishActiveInteraction(
 }
 
 export function updateActiveInteraction(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   event: PointerEvent
 ): boolean {
   if (!ctx.activeInteraction) {
@@ -404,7 +404,7 @@ export function updateActiveInteraction(
 }
 
 export function beginShapeCreation(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   event: PointerEvent,
   point: Point
 ) {
@@ -431,7 +431,7 @@ export function beginShapeCreation(
 }
 
 export function beginConnectorCreation(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   event: PointerEvent,
   point: Point
 ) {

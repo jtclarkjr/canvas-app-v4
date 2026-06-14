@@ -13,7 +13,7 @@ import {
   findTextAtPoint,
   findTextHandleAtPoint
 } from '$lib/canvas/drawing-utils'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import {
   checkDoubleClick,
   findTopElementAtPoint,
@@ -42,7 +42,7 @@ import {
   finishSelection
 } from './drag'
 
-export function handleSvgPointerDown(ctx: SceneCtx, event: PointerEvent) {
+export function handleSvgPointerDown(ctx: SurfaceCtx, event: PointerEvent) {
   if (!event.isPrimary) return
   if (!ctx.canEdit()) return
 
@@ -381,7 +381,7 @@ export function handleSvgPointerDown(ctx: SceneCtx, event: PointerEvent) {
   }
 }
 
-export function handleSvgPointerMove(ctx: SceneCtx, event: PointerEvent) {
+export function handleSvgPointerMove(ctx: SurfaceCtx, event: PointerEvent) {
   if (updateActiveInteraction(ctx, event)) {
     return
   }
@@ -417,7 +417,7 @@ export function handleSvgPointerMove(ctx: SceneCtx, event: PointerEvent) {
   updateHoverCursor(ctx, event)
 }
 
-export function handleSvgPointerUp(ctx: SceneCtx, event: PointerEvent) {
+export function handleSvgPointerUp(ctx: SurfaceCtx, event: PointerEvent) {
   if (
     (event.currentTarget as SVGSVGElement).hasPointerCapture(event.pointerId)
   ) {

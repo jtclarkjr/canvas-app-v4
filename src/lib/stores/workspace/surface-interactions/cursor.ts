@@ -10,18 +10,18 @@ import {
   getTextResizeCursor
 } from '$lib/canvas/drawing-utils'
 import type { ActiveInteraction, HitElement, Point } from './types'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import { findTopElementAtPoint } from './element-utils'
 
-export function setCursorStyle(ctx: SceneCtx, next: string | null) {
+export function setCursorStyle(ctx: SurfaceCtx, next: string | null) {
   ctx.setHoverCursorStyle?.(next)
 }
 
-export function canModifySceneSafe(ctx: SceneCtx, id: string): boolean {
+export function canModifySceneSafe(ctx: SurfaceCtx, id: string): boolean {
   return ctx.canModifyScene?.(id) ?? false
 }
 
-export function canModifyHit(ctx: SceneCtx, hit: HitElement): boolean {
+export function canModifyHit(ctx: SurfaceCtx, hit: HitElement): boolean {
   return hit.type === 'scene'
     ? canModifySceneSafe(ctx, hit.id)
     : ctx.canModifyElement(hit.id)
@@ -66,7 +66,7 @@ export function cursorForInteraction(
   return null
 }
 
-export function cursorForPoint(ctx: SceneCtx, point: Point): string | null {
+export function cursorForPoint(ctx: SurfaceCtx, point: Point): string | null {
   if (!ctx.canEdit()) return null
   if (ctx.isDraggingSelection || ctx.pendingDrag) return 'move'
 
@@ -78,7 +78,7 @@ export function cursorForPoint(ctx: SceneCtx, point: Point): string | null {
   }
 }
 
-function selectCursorForPoint(ctx: SceneCtx, point: Point): string | null {
+function selectCursorForPoint(ctx: SurfaceCtx, point: Point): string | null {
   const selectedIds = ctx.getSelectedElementIds()
   const threshold = 10 / ctx.getCameraScale()
 
@@ -178,7 +178,7 @@ function selectCursorForPoint(ctx: SceneCtx, point: Point): string | null {
   return null
 }
 
-export function updateHoverCursor(ctx: SceneCtx, event: PointerEvent) {
+export function updateHoverCursor(ctx: SurfaceCtx, event: PointerEvent) {
   if (event.type === 'pointerleave') {
     setCursorStyle(ctx, null)
     return

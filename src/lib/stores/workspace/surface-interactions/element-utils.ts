@@ -22,13 +22,13 @@ import type {
   TextElement
 } from './types'
 import type { HitElement } from './types'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 
 export function nowZ() {
   return Date.now()
 }
 
-export function checkDoubleClick(ctx: SceneCtx, point: Point): boolean {
+export function checkDoubleClick(ctx: SurfaceCtx, point: Point): boolean {
   const timeSinceLastClick = Date.now() - ctx.lastClickTime
   const isSamePosition =
     ctx.lastClickPos !== null &&
@@ -37,7 +37,7 @@ export function checkDoubleClick(ctx: SceneCtx, point: Point): boolean {
   return timeSinceLastClick < 300 && isSamePosition
 }
 
-export function updateClickTracking(ctx: SceneCtx, point: Point) {
+export function updateClickTracking(ctx: SurfaceCtx, point: Point) {
   ctx.lastClickTime = Date.now()
   ctx.lastClickPos = point
 }
@@ -99,7 +99,7 @@ export function elementData(
 }
 
 export function persistElement(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   type: CanvasElementType,
   element: CanvasDrawableElement
 ) {
@@ -115,7 +115,7 @@ export function persistElement(
   })
 }
 
-export function removeElementLocally(ctx: SceneCtx, id: string) {
+export function removeElementLocally(ctx: SurfaceCtx, id: string) {
   ctx.setPaths((previous) => previous.filter((entry) => entry.id !== id))
   ctx.setTextElements((previous) => previous.filter((entry) => entry.id !== id))
   ctx.setShapesSafe((previous) => previous.filter((entry) => entry.id !== id))
@@ -124,7 +124,7 @@ export function removeElementLocally(ctx: SceneCtx, id: string) {
   )
 }
 
-export function allElements(ctx: SceneCtx): HitElement[] {
+export function allElements(ctx: SurfaceCtx): HitElement[] {
   const scenes = ctx.getScenesSafe()
   const items: HitElement[] = [
     ...ctx.getPaths().map((element) => ({
@@ -161,12 +161,15 @@ export function allElements(ctx: SceneCtx): HitElement[] {
   return items.sort((first, second) => first.z - second.z)
 }
 
-export function findElementById(ctx: SceneCtx, id: string): HitElement | null {
+export function findElementById(
+  ctx: SurfaceCtx,
+  id: string
+): HitElement | null {
   return allElements(ctx).find((entry) => entry.id === id) ?? null
 }
 
 export function findTopElementAtPoint(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   point: Point
 ): HitElement | null {
   const threshold = 10 / ctx.getCameraScale()
@@ -219,7 +222,7 @@ export function findTopElementAtPoint(
   return null
 }
 
-export function snapEndpoint(ctx: SceneCtx, point: Point): DiagramEndpoint {
+export function snapEndpoint(ctx: SurfaceCtx, point: Point): DiagramEndpoint {
   const anchor = findNearestShapeAnchor(
     point,
     ctx.getShapesSafe(),

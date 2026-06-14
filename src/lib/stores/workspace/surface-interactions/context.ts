@@ -7,10 +7,10 @@ import type {
   Point,
   Scene,
   TextElement,
-  WorkspaceSceneInteractionsInput
+  WorkspaceSurfaceInteractionsInput
 } from './types'
 
-export type SceneCtx = WorkspaceSceneInteractionsInput & {
+export type SurfaceCtx = WorkspaceSurfaceInteractionsInput & {
   getShapesSafe: () => DiagramShape[]
   getConnectorsSafe: () => DiagramConnector[]
   getScenesSafe: () => Scene[]
@@ -32,9 +32,9 @@ export type SceneCtx = WorkspaceSceneInteractionsInput & {
   dragStartPos: Point | null
 }
 
-export function createSceneCtx(
-  config: WorkspaceSceneInteractionsInput
-): SceneCtx {
+export function createSurfaceCtx(
+  config: WorkspaceSurfaceInteractionsInput
+): SurfaceCtx {
   return {
     ...config,
     getShapesSafe: () => config.getShapes?.() ?? [],

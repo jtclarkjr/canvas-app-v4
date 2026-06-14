@@ -1,5 +1,5 @@
 import { findTextAtPoint } from '$lib/canvas/drawing-utils'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import {
   findTopElementAtPoint,
   isConnectorElement,
@@ -7,7 +7,7 @@ import {
 } from './element-utils'
 import { canModifySceneSafe, setCursorStyle } from './cursor'
 
-export function handleSvgDoubleClick(ctx: SceneCtx, event: MouseEvent) {
+export function handleSvgDoubleClick(ctx: SurfaceCtx, event: MouseEvent) {
   if (!ctx.canEdit()) return
   const editingTarget = ctx.getEditingText()?.target
   if (editingTarget === 'shape' || editingTarget === 'connector') return

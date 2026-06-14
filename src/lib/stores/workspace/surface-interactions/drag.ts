@@ -21,7 +21,7 @@ import type {
   Point,
   Scene
 } from './types'
-import type { SceneCtx } from './context'
+import type { SurfaceCtx } from './context'
 import {
   findElementById,
   nowZ,
@@ -30,7 +30,7 @@ import {
 } from './element-utils'
 import { canModifyHit, setCursorStyle } from './cursor'
 
-export function deleteSelectedElements(ctx: SceneCtx) {
+export function deleteSelectedElements(ctx: SurfaceCtx) {
   const mutableSelectedIds = new Set(
     [...ctx.getSelectedElementIds()].filter((id) => ctx.canModifyElement(id))
   )
@@ -84,7 +84,7 @@ export function deleteSelectedElements(ctx: SceneCtx) {
   ctx.setSelectedElementIds(new Set())
 }
 
-export function startMultiDrag(ctx: SceneCtx, point: Point) {
+export function startMultiDrag(ctx: SurfaceCtx, point: Point) {
   ctx.isDraggingSelection = true
   setCursorStyle(ctx, 'move')
   ctx.dragStartPos = point
@@ -126,7 +126,7 @@ export function startMultiDrag(ctx: SceneCtx, point: Point) {
 }
 
 function movedEndpoint(
-  ctx: SceneCtx,
+  ctx: SurfaceCtx,
   endpoint: DiagramEndpoint,
   dx: number,
   dy: number,
@@ -151,7 +151,10 @@ function movedEndpoint(
   return { x: point.x + dx, y: point.y + dy, binding: null }
 }
 
-export function continueMultiDrag(ctx: SceneCtx, event: PointerEvent): boolean {
+export function continueMultiDrag(
+  ctx: SurfaceCtx,
+  event: PointerEvent
+): boolean {
   if (ctx.pendingDrag && ctx.getSelectedTool() === 'select') {
     const point = ctx.screenToCanvasPoint(event.clientX, event.clientY)
     const dx = Math.abs(point.x - ctx.pendingDrag.startPos.x)
@@ -267,7 +270,7 @@ export function continueMultiDrag(ctx: SceneCtx, event: PointerEvent): boolean {
   return true
 }
 
-export function finishMultiDrag(ctx: SceneCtx): boolean {
+export function finishMultiDrag(ctx: SurfaceCtx): boolean {
   if (!ctx.isDraggingSelection) {
     return false
   }
@@ -330,7 +333,7 @@ export function finishMultiDrag(ctx: SceneCtx): boolean {
   return true
 }
 
-export function finishSelection(ctx: SceneCtx): boolean {
+export function finishSelection(ctx: SurfaceCtx): boolean {
   const selectionStart = ctx.getSelectionStart()
   const selectionEnd = ctx.getSelectionEnd()
   if (!ctx.getIsSelecting() || !selectionStart || !selectionEnd) {
@@ -404,7 +407,7 @@ export function finishSelection(ctx: SceneCtx): boolean {
   return true
 }
 
-export function finishDrawing(ctx: SceneCtx): boolean {
+export function finishDrawing(ctx: SurfaceCtx): boolean {
   if (ctx.getSelectedTool() !== 'pencil' || !ctx.getIsCurrentlyDrawing()) {
     return false
   }

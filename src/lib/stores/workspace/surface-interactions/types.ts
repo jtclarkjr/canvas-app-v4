@@ -63,7 +63,7 @@ export type DeleteElementMutation = {
   ): void
 }
 
-export type WorkspaceSceneInteractionsInput = {
+export type WorkspaceSurfaceInteractionsInput = {
   getActiveCanvasId: () => string
   getUserId: () => string
   getSelectedTool: () => Tool

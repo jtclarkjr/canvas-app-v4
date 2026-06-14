@@ -1,5 +1,5 @@
-import type { WorkspaceSceneInteractionsInput } from './types'
-import { createSceneCtx } from './context'
+import type { WorkspaceSurfaceInteractionsInput } from './types'
+import { createSurfaceCtx } from './context'
 import {
   handleSvgPointerDown,
   handleSvgPointerMove,
@@ -20,12 +20,12 @@ import {
   setShapeKind
 } from './formatting'
 
-export type { WorkspaceSceneInteractionsInput }
+export type { WorkspaceSurfaceInteractionsInput }
 
-export function createWorkspaceSceneInteractionsStore(
-  config: WorkspaceSceneInteractionsInput
+export function createWorkspaceSurfaceInteractionsStore(
+  config: WorkspaceSurfaceInteractionsInput
 ) {
-  const ctx = createSceneCtx(config)
+  const ctx = createSurfaceCtx(config)
 
   return {
     deleteSelectedElements: () => deleteSelectedElements(ctx),
