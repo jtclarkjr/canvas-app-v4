@@ -152,7 +152,7 @@
                   class={`rounded-md px-1.5 py-0.5 font-semibold not-italic ${
                     own
                       ? 'bg-white/20 text-primary-foreground'
-                      : 'bg-warning/30 text-warning-foreground'
+                      : 'bg-warning/25 text-warning-foreground dark:bg-warning/20 dark:text-warning'
                   }`}>{seg.text}</mark
                 >{:else}{seg.text}{/if}{/each}
           </div>
