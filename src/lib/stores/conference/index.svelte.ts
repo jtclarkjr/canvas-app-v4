@@ -107,8 +107,11 @@ export function createCanvasConferenceStore({
     get pinnedIdentity() {
       return room.pinnedIdentity
     },
-    get blurEnabled() {
-      return room.blurEnabled
+    get backgroundEffect() {
+      return room.backgroundEffect
+    },
+    get virtualBgImage() {
+      return room.virtualBgImage
     },
     get blurRadius() {
       return room.blurRadius
@@ -117,7 +120,7 @@ export function createCanvasConferenceStore({
     leave: room.leave,
     toggleMic: room.toggleMic,
     toggleCam: room.toggleCam,
-    toggleBlur: room.toggleBlur,
+    setBackground: room.setBackground,
     setBlurRadius: (value: number) => room.setBlurRadius(value),
     pin: room.pin,
     startAudio: room.startAudio,

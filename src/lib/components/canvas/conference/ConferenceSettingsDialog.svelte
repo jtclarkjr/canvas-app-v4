@@ -1,6 +1,11 @@
 <script lang="ts">
   import { VideoOff } from 'lucide-svelte'
   import Modal from '$lib/components/shared/Modal.svelte'
+  import {
+    BG_PRESETS,
+    bgThumbnailUrl,
+    type BgPreset
+  } from '$lib/conference/backgrounds'
   import { attachTrack } from '$lib/components/canvas/conference/media-actions'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
 
@@ -12,6 +17,21 @@
 
   const selectClass =
     'w-full rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60'
+
+  function isActive(preset: BgPreset) {
+    if (preset.type !== store.backgroundEffect) return false
+    if (preset.type === 'virtual')
+      return store.virtualBgImage === preset.imagePath
+    return true
+  }
+
+  function selectPreset(preset: BgPreset) {
+    if (preset.type === 'virtual') {
+      void store.setBackground('virtual', preset.imagePath)
+    } else {
+      void store.setBackground(preset.type)
+    }
+  }
 </script>
 
 <Modal
@@ -21,7 +41,8 @@
   showClose
 >
   <div class="grid gap-5">
-    <div class="grid gap-1.5">
+    <!-- Camera section -->
+    <div class="grid gap-2">
       <span
         class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
       >
@@ -47,43 +68,7 @@
             <VideoOff class="size-8 opacity-40" />
           </div>
         {/if}
-
-        <!-- Blur toggle overlay button -->
-        <button
-          type="button"
-          class={`absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow transition ${
-            store.blurEnabled
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-black/50 text-white hover:bg-black/70'
-          }`}
-          onclick={() => void store.toggleBlur()}
-          aria-pressed={store.blurEnabled}
-        >
-          {store.blurEnabled ? 'Blur on' : 'Blur off'}
-        </button>
       </div>
-
-      <!-- Blur intensity slider -->
-      {#if store.blurEnabled}
-        <div class="flex items-center gap-3">
-          <span class="w-16 text-xs text-muted-foreground">Intensity</span>
-          <input
-            type="range"
-            min="1"
-            max="20"
-            step="1"
-            value={store.blurRadius}
-            oninput={(e) =>
-              void store.setBlurRadius(Number(e.currentTarget.value))}
-            class="h-1.5 flex-1 cursor-pointer accent-primary"
-            aria-label="Blur intensity"
-          />
-          <span
-            class="w-6 text-right text-xs tabular-nums text-muted-foreground"
-            >{store.blurRadius}</span
-          >
-        </div>
-      {/if}
 
       <!-- Camera device selector -->
       <select
@@ -106,6 +91,90 @@
       </select>
     </div>
 
+    <!-- Background section -->
+    <div class="grid gap-2">
+      <span
+        class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
+      >
+        Background
+      </span>
+
+      <!-- Preset tiles -->
+      <div class="flex gap-2 overflow-x-auto pb-1">
+        {#each BG_PRESETS as preset (preset.id)}
+          {@const active = isActive(preset)}
+          {@const thumb = bgThumbnailUrl(preset)}
+          <button
+            type="button"
+            class={`group flex shrink-0 flex-col items-center gap-1.5 rounded-lg p-1 transition ${
+              active ? 'ring-2 ring-primary' : 'hover:bg-muted'
+            }`}
+            onclick={() => selectPreset(preset)}
+            aria-pressed={active}
+            aria-label={preset.label}
+          >
+            <!-- Thumbnail -->
+            <div
+              class="h-[54px] w-24 overflow-hidden rounded-md border border-border/50"
+            >
+              {#if preset.type === 'none'}
+                <div
+                  class="flex h-full w-full items-center justify-center bg-muted text-muted-foreground"
+                >
+                  <VideoOff class="size-5 opacity-50" />
+                </div>
+              {:else if preset.type === 'blur'}
+                <div
+                  class="flex h-full w-full items-center justify-center bg-gradient-to-br from-muted-foreground/20 to-muted-foreground/5 backdrop-blur"
+                >
+                  <span class="text-lg opacity-40">⬛</span>
+                  <div
+                    class="absolute inset-0 rounded-md"
+                    style="backdrop-filter:blur(6px)"
+                  ></div>
+                </div>
+              {:else if thumb}
+                <img
+                  src={thumb}
+                  alt={preset.label}
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              {/if}
+            </div>
+            <span
+              class={`text-[11px] font-medium ${active ? 'text-primary' : 'text-muted-foreground'}`}
+            >
+              {preset.label}
+            </span>
+          </button>
+        {/each}
+      </div>
+
+      <!-- Blur intensity (only when blur is selected) -->
+      {#if store.backgroundEffect === 'blur'}
+        <div class="flex items-center gap-3 px-1">
+          <span class="w-16 text-xs text-muted-foreground">Intensity</span>
+          <input
+            type="range"
+            min="1"
+            max="20"
+            step="1"
+            value={store.blurRadius}
+            oninput={(e) =>
+              void store.setBlurRadius(Number(e.currentTarget.value))}
+            class="h-1.5 flex-1 cursor-pointer accent-primary"
+            aria-label="Blur intensity"
+          />
+          <span
+            class="w-6 text-right text-xs tabular-nums text-muted-foreground"
+            >{store.blurRadius}</span
+          >
+        </div>
+      {/if}
+    </div>
+
+    <!-- Microphone -->
     <label class="grid gap-1.5">
       <span
         class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground"
@@ -133,8 +202,7 @@
       </select>
     </label>
 
-    <!-- Speaker selection needs setSinkId, which Safari doesn't expose; it
-         enumerates zero outputs there, so the row hides itself. -->
+    <!-- Speaker (hidden on Safari — no setSinkId) -->
     {#if store.devices.speakers.length > 0}
       <label class="grid gap-1.5">
         <span

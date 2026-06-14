@@ -98,6 +98,7 @@ export function pickFeatured<T extends Featurable>(
 }
 
 const DEVICE_PREFS_KEY = 'canvas-conference-devices'
+const BG_PREFS_KEY = 'canvas-conference-background'
 
 export function loadDevicePrefs(): DevicePrefs {
   if (typeof localStorage === 'undefined') {
@@ -134,5 +135,50 @@ export function saveDevicePrefs(prefs: DevicePrefs) {
   } catch {
     // Storage being unavailable (private mode, quota) only loses the
     // preference, never the call.
+  }
+}
+
+export type BgPrefs = {
+  effect: 'none' | 'blur' | 'virtual'
+  imagePath: string | null
+  blurRadius: number
+}
+
+export function loadBgPrefs(): BgPrefs {
+  if (typeof localStorage === 'undefined') {
+    return { effect: 'none', imagePath: null, blurRadius: 10 }
+  }
+  try {
+    const raw = localStorage.getItem(BG_PREFS_KEY)
+    if (!raw) return { effect: 'none', imagePath: null, blurRadius: 10 }
+    const parsed: unknown = JSON.parse(raw)
+    if (typeof parsed !== 'object' || parsed === null) {
+      return { effect: 'none', imagePath: null, blurRadius: 10 }
+    }
+    const p = parsed as Record<string, unknown>
+    const effect =
+      p.effect === 'blur' || p.effect === 'virtual' ? p.effect : 'none'
+    const imagePath =
+      effect === 'virtual' && typeof p.imagePath === 'string'
+        ? p.imagePath
+        : null
+    const blurRadius =
+      typeof p.blurRadius === 'number' &&
+      p.blurRadius >= 1 &&
+      p.blurRadius <= 20
+        ? p.blurRadius
+        : 10
+    return { effect, imagePath, blurRadius }
+  } catch {
+    return { effect: 'none', imagePath: null, blurRadius: 10 }
+  }
+}
+
+export function saveBgPrefs(prefs: BgPrefs) {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(BG_PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    // Losing the preference is acceptable.
   }
 }

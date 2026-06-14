@@ -1,9 +1,10 @@
 import type { BackgroundProcessorWrapper } from '@livekit/track-processors'
-import type { LocalVideoTrack, Room } from 'livekit-client'
+import type { Room } from 'livekit-client'
+import type { BackgroundEffect } from '$lib/conference/backgrounds'
 import { ApiClientError } from '$lib/api-client'
 import { colorFromId } from '$lib/canvas/helpers/color-from-id'
 import { fetchConferenceToken } from '$lib/conference/api'
-import { pickFeatured } from '$lib/conference/helpers'
+import { loadBgPrefs, pickFeatured, saveBgPrefs } from '$lib/conference/helpers'
 import type {
   ConferenceParticipant,
   ConferenceStatus,
@@ -85,9 +86,12 @@ export function createConferenceRoomStore({
   let lastActiveSpeaker = $state<string | null>(null)
   let pinnedIdentity = $state<string | null>(null)
   let canPlayAudio = $state(true)
-  let blurEnabled = $state(false)
-  let blurRadius = $state(10)
+  const _bgPrefs = loadBgPrefs()
+  let backgroundEffect = $state<BackgroundEffect>(_bgPrefs.effect)
+  let virtualBgImage = $state<string | null>(_bgPrefs.imagePath)
+  let blurRadius = $state(_bgPrefs.blurRadius)
   let blurProcessor: BackgroundProcessorWrapper | null = null
+  let processorAttached = false
 
   const isInCall = $derived(status === 'connected' || status === 'reconnecting')
   const featured = $derived(
@@ -144,8 +148,8 @@ export function createConferenceRoomStore({
     lastActiveSpeaker = null
     pinnedIdentity = null
     canPlayAudio = true
-    blurEnabled = false
     blurProcessor = null
+    processorAttached = false
     onCallEnded()
   }
 
@@ -157,33 +161,58 @@ export function createConferenceRoomStore({
     )
   }
 
-  async function attachBlurProcessor(track: LocalVideoTrack) {
-    const { BackgroundProcessor } = await import('@livekit/track-processors')
-    if (!blurProcessor) {
-      blurProcessor = BackgroundProcessor({
-        mode: 'background-blur',
-        blurRadius
-      })
-    } else {
-      await blurProcessor.switchTo({ mode: 'background-blur', blurRadius })
-    }
-    await track.setProcessor(blurProcessor)
-  }
-
-  async function toggleBlur() {
-    blurEnabled = !blurEnabled
+  async function applyBackgroundEffect() {
     const track = getLocalCameraTrack()
     if (!track) return
-    if (blurEnabled) {
-      await attachBlurProcessor(track)
-    } else {
-      await track.stopProcessor()
+
+    if (backgroundEffect === 'none') {
+      if (processorAttached) {
+        await track.stopProcessor()
+        processorAttached = false
+      }
+      return
     }
+
+    if (backgroundEffect === 'virtual' && !virtualBgImage) return
+
+    const options =
+      backgroundEffect === 'blur'
+        ? ({ mode: 'background-blur', blurRadius } as const)
+        : ({ mode: 'virtual-background', imagePath: virtualBgImage! } as const)
+
+    const { BackgroundProcessor } = await import('@livekit/track-processors')
+    if (!blurProcessor) {
+      blurProcessor = BackgroundProcessor(options)
+      await track.setProcessor(blurProcessor)
+      processorAttached = true
+    } else if (!processorAttached) {
+      await blurProcessor.switchTo(options)
+      await track.setProcessor(blurProcessor)
+      processorAttached = true
+    } else {
+      await blurProcessor.switchTo(options)
+    }
+  }
+
+  async function setBackground(effect: BackgroundEffect, imagePath?: string) {
+    backgroundEffect = effect
+    if (imagePath !== undefined) virtualBgImage = imagePath
+    saveBgPrefs({
+      effect: backgroundEffect,
+      imagePath: virtualBgImage,
+      blurRadius
+    })
+    await applyBackgroundEffect()
   }
 
   async function setBlurRadius(value: number) {
     blurRadius = value
-    if (blurEnabled && blurProcessor) {
+    saveBgPrefs({
+      effect: backgroundEffect,
+      imagePath: virtualBgImage,
+      blurRadius: value
+    })
+    if (backgroundEffect === 'blur' && blurProcessor && processorAttached) {
       await blurProcessor.switchTo({
         mode: 'background-blur',
         blurRadius: value
@@ -230,11 +259,12 @@ export function createConferenceRoomStore({
       }
       r.on(livekit.RoomEvent.LocalTrackPublished, (pub) => {
         if (
-          blurEnabled &&
+          backgroundEffect !== 'none' &&
           pub.source === livekit.Track.Source.Camera &&
           pub.track
         ) {
-          void attachBlurProcessor(pub.track as LocalVideoTrack)
+          processorAttached = false
+          void applyBackgroundEffect()
         }
       })
       r.on(
@@ -513,8 +543,11 @@ export function createConferenceRoomStore({
     get pinnedIdentity() {
       return pinnedIdentity
     },
-    get blurEnabled() {
-      return blurEnabled
+    get backgroundEffect() {
+      return backgroundEffect
+    },
+    get virtualBgImage() {
+      return virtualBgImage
     },
     get blurRadius() {
       return blurRadius
@@ -523,7 +556,7 @@ export function createConferenceRoomStore({
     leave,
     toggleMic,
     toggleCam,
-    toggleBlur,
+    setBackground,
     setBlurRadius,
     applyDevice,
     pin,
