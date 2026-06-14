@@ -65,11 +65,12 @@
       }
     }
 
-    document.addEventListener('pointerdown', handlePointerDown)
+    // capture:true so canvas stopPropagation() on pointerdown can't block dismissal
+    document.addEventListener('pointerdown', handlePointerDown, true)
     document.addEventListener('keydown', handleEscape)
 
     return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('pointerdown', handlePointerDown, true)
       document.removeEventListener('keydown', handleEscape)
     }
   })
