@@ -99,6 +99,12 @@ describe('isRenderableVideoTrack', () => {
       isRenderableVideoTrack({ mediaStreamTrack: { readyState: 'ended' } })
     ).toBe(false)
   })
+
+  it('rejects muted media tracks', () => {
+    expect(
+      isRenderableVideoTrack({ mediaStreamTrack: { readyState: 'live' } }, true)
+    ).toBe(false)
+  })
 })
 
 describe('pickFeatured', () => {

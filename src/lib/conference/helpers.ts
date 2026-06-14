@@ -75,9 +75,12 @@ export function clampToViewport(
 }
 
 export function isRenderableVideoTrack(
-  track: RenderableVideoTrack | null
+  track: RenderableVideoTrack | null,
+  muted = false
 ): track is RenderableVideoTrack {
-  return track !== null && track.mediaStreamTrack.readyState !== 'ended'
+  return (
+    track !== null && !muted && track.mediaStreamTrack.readyState !== 'ended'
+  )
 }
 
 type Featurable = { identity: string; isLocal: boolean }

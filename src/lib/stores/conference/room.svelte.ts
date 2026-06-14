@@ -125,13 +125,15 @@ export function createConferenceRoomStore({
     participants = all.map((p) => {
       const videoTrack =
         p.getTrackPublication(livekit.Track.Source.Camera)?.videoTrack ?? null
-      const screenShareTrack =
-        p.getTrackPublication(livekit.Track.Source.ScreenShare)?.videoTrack ??
-        null
+      const screenSharePublication = p.getTrackPublication(
+        livekit.Track.Source.ScreenShare
+      )
+      const screenShareTrack = screenSharePublication?.videoTrack ?? null
+      const screenShareMuted = screenSharePublication?.isMuted ?? true
       let renderableScreenShareTrack: VideoTrack | null = null
       let audioTrack: AudioTrack | null = null
 
-      if (isRenderableVideoTrack(screenShareTrack)) {
+      if (isRenderableVideoTrack(screenShareTrack, screenShareMuted)) {
         renderableScreenShareTrack = screenShareTrack
       }
 
