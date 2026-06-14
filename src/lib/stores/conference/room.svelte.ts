@@ -22,6 +22,7 @@ type ConferenceRoomInput = {
   getCanvasId: () => string
   getEnabled: () => boolean
   devices: ConferenceDevicesStore
+  textStreamTopics?: string[]
   // Nudges other members (broadcast) and refreshes the idle indicator.
   onRosterChanged: () => void
   // Resets call-scoped UI state (view mode, panels, settings dialog).
@@ -32,9 +33,19 @@ type ConferenceRoomInput = {
     participantIdentity: string | undefined,
     topic: string | undefined
   ) => void
+  onTextReceived?: (stream: ConferenceTextStream) => void
 }
 
 type LiveKitModule = typeof import('livekit-client')
+
+export type ConferenceTextStream = {
+  topic: string
+  text: string
+  streamId: string
+  timestamp: number
+  attributes: Record<string, string>
+  participantIdentity: string | undefined
+}
 
 function participantColor(metadata: string | undefined, identity: string) {
   if (metadata) {
@@ -82,9 +93,11 @@ export function createConferenceRoomStore({
   getCanvasId,
   getEnabled,
   devices,
+  textStreamTopics = [],
   onRosterChanged,
   onCallEnded,
-  onDataReceived
+  onDataReceived,
+  onTextReceived
 }: ConferenceRoomInput) {
   let room: Room | null = null
   let roomCanvasId: string | null = null
@@ -283,6 +296,25 @@ export function createConferenceRoomStore({
         audioCaptureDefaults: { deviceId: prefs.audioinput },
         videoCaptureDefaults: { deviceId: prefs.videoinput }
       })
+
+      for (const topic of textStreamTopics) {
+        r.registerTextStreamHandler(topic, (reader, participantInfo) => {
+          void (async () => {
+            try {
+              onTextReceived?.({
+                topic,
+                text: await reader.readAll(),
+                streamId: reader.info.id,
+                timestamp: reader.info.timestamp,
+                attributes: reader.info.attributes ?? {},
+                participantIdentity: participantInfo.identity
+              })
+            } catch {
+              // Ignore interrupted streams; Call chat is ephemeral.
+            }
+          })()
+        })
+      }
 
       const resyncEvents = [
         livekit.RoomEvent.ParticipantConnected,
@@ -540,6 +572,18 @@ export function createConferenceRoomStore({
       })
   }
 
+  async function sendText(
+    topic: string,
+    text: string,
+    attributes: Record<string, string>
+  ) {
+    const r = room
+    if (!r) {
+      throw new Error('You are not connected to the call.')
+    }
+    return r.localParticipant.sendText(text, { topic, attributes })
+  }
+
   async function setLocalAttributes(attributes: Record<string, string>) {
     await room?.localParticipant.setAttributes(attributes).catch(() => {})
   }
@@ -625,6 +669,7 @@ export function createConferenceRoomStore({
     pin,
     startAudio,
     publishData,
+    sendText,
     setLocalAttributes
   }
 }

@@ -1,4 +1,5 @@
 import type {
+  ConferenceFullscreenChatTab,
   ConferenceFullscreenPanel,
   ConferenceLayoutMode,
   ConferenceViewMode,
@@ -12,6 +13,7 @@ export function createConferenceViewStore() {
   let chatOpen = $state(false)
   let viewMode = $state<ConferenceViewMode>('pip')
   let fullscreenPanel = $state<ConferenceFullscreenPanel>('none')
+  let fullscreenChatTab = $state<ConferenceFullscreenChatTab>('call')
   let layoutMode = $state<ConferenceLayoutMode>('auto')
 
   return {
@@ -27,6 +29,9 @@ export function createConferenceViewStore() {
     get fullscreenPanel() {
       return fullscreenPanel
     },
+    get fullscreenChatTab() {
+      return fullscreenChatTab
+    },
     get layoutMode() {
       return layoutMode
     },
@@ -40,7 +45,17 @@ export function createConferenceViewStore() {
       viewMode = value
     },
     toggleFullscreenPanel(panel: Exclude<ConferenceFullscreenPanel, 'none'>) {
-      fullscreenPanel = fullscreenPanel === panel ? 'none' : panel
+      if (fullscreenPanel === panel) {
+        fullscreenPanel = 'none'
+        return
+      }
+      fullscreenPanel = panel
+      if (panel === 'chat') {
+        fullscreenChatTab = 'call'
+      }
+    },
+    setFullscreenChatTab(tab: ConferenceFullscreenChatTab) {
+      fullscreenChatTab = tab
     },
     setLayoutMode(mode: ConferenceLayoutMode) {
       layoutMode = mode
@@ -50,6 +65,7 @@ export function createConferenceViewStore() {
     resetForCallEnd() {
       viewMode = 'pip'
       fullscreenPanel = 'none'
+      fullscreenChatTab = 'call'
       layoutMode = 'auto'
     }
   }

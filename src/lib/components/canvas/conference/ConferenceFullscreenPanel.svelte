@@ -5,25 +5,31 @@
   import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
   import CanvasChatRoomPanel from '$lib/components/canvas/chat/CanvasChatRoomPanel.svelte'
+  import ConferenceCallChatPanel from './ConferenceCallChatPanel.svelte'
 
   const store = useCanvasConferenceStore()
   const chatStore = useCanvasChatStore()
+
+  const chatTabClass = (active: boolean) =>
+    `relative flex h-8 flex-1 items-center justify-center rounded-full px-3 text-xs font-bold transition ${
+      active
+        ? 'bg-primary text-primary-foreground'
+        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+    }`
 </script>
 
 <div
   transition:fly={{ x: 40, duration: 260, easing: cubicOut }}
   class="glass-card my-3 mr-3 flex w-72 shrink-0 flex-col overflow-hidden"
   role="dialog"
-  aria-label={store.fullscreenPanel === 'chat'
-    ? 'Canvas chat'
-    : 'People in call'}
+  aria-label={store.fullscreenPanel === 'chat' ? 'Chat' : 'People in call'}
 >
   <header
     class="flex shrink-0 items-center justify-between gap-3 border-b border-border/50 px-4 py-3"
   >
     <h2 class="text-sm font-bold text-foreground">
       {store.fullscreenPanel === 'chat'
-        ? 'Canvas chat'
+        ? 'Chat'
         : `People · ${store.participants.length}`}
     </h2>
     <button
@@ -39,9 +45,50 @@
     </button>
   </header>
 
-  <div class={store.fullscreenPanel === 'chat' ? 'min-h-0 flex-1' : 'hidden'}>
-    <CanvasChatRoomPanel userId={store.userId} alwaysVisible />
-  </div>
+  {#if store.fullscreenPanel === 'chat'}
+    <div class="border-b border-border/50 px-3 py-2">
+      <div class="flex rounded-full bg-muted/50 p-1">
+        <button
+          type="button"
+          class={chatTabClass(store.fullscreenChatTab === 'call')}
+          onclick={() => store.setFullscreenChatTab('call')}
+          aria-pressed={store.fullscreenChatTab === 'call'}
+        >
+          Call
+          {#if store.callChatUnreadCount > 0 && store.fullscreenChatTab !== 'call'}
+            <span
+              class="ml-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"
+            >
+              {store.callChatUnreadCount > 9 ? '9+' : store.callChatUnreadCount}
+            </span>
+          {/if}
+        </button>
+        <button
+          type="button"
+          class={chatTabClass(store.fullscreenChatTab === 'canvas')}
+          onclick={() => store.setFullscreenChatTab('canvas')}
+          aria-pressed={store.fullscreenChatTab === 'canvas'}
+        >
+          Canvas
+          {#if chatStore.unreadCount > 0 && store.fullscreenChatTab !== 'canvas'}
+            <span
+              class="ml-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"
+            >
+              {chatStore.unreadCount > 9 ? '9+' : chatStore.unreadCount}
+            </span>
+          {/if}
+        </button>
+      </div>
+    </div>
+
+    <div class="min-h-0 flex-1">
+      {#if store.fullscreenChatTab === 'call'}
+        <ConferenceCallChatPanel />
+      {:else}
+        <CanvasChatRoomPanel userId={store.userId} alwaysVisible />
+      {/if}
+    </div>
+  {/if}
 
   {#if store.fullscreenPanel === 'people'}
     <div class="min-h-0 flex-1 overflow-y-auto p-2">

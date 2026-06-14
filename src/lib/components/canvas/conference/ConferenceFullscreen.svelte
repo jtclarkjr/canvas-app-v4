@@ -20,15 +20,32 @@
   })
 
   $effect(() => {
-    if (store.fullscreenPanel === 'chat') {
+    if (
+      store.fullscreenPanel === 'chat' &&
+      store.fullscreenChatTab === 'canvas'
+    ) {
       void chatStore.ensureLoaded()
+      void chatStore.ensureMembersLoaded()
     }
   })
 
   $effect(() => {
     void chatStore.entries.length
-    if (store.fullscreenPanel === 'chat') {
+    if (
+      store.fullscreenPanel === 'chat' &&
+      store.fullscreenChatTab === 'canvas'
+    ) {
       chatStore.markChatRead()
+    }
+  })
+
+  $effect(() => {
+    void store.callChatEntries.length
+    if (
+      store.fullscreenPanel === 'chat' &&
+      store.fullscreenChatTab === 'call'
+    ) {
+      store.markCallChatRead()
     }
   })
 </script>

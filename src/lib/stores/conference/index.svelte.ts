@@ -4,13 +4,16 @@ import type {
   CaptionTextColor,
   CaptionTextSize
 } from '$lib/conference/captions'
+import { CALL_CHAT_TEXT_TOPIC } from '$lib/conference/call-chat'
 import type {
+  ConferenceFullscreenChatTab,
   ConferenceFullscreenPanel,
   ConferenceLayoutMode,
   ConferenceViewMode,
   Corner,
   DeviceKind
 } from '$lib/conference/types'
+import { createConferenceCallChatStore } from '$lib/stores/conference/call-chat.svelte'
 import { createConferenceCaptionsStore } from '$lib/stores/conference/captions.svelte'
 import { createConferenceDevicesStore } from '$lib/stores/conference/devices.svelte'
 import { createConferenceRoomStore } from '$lib/stores/conference/room.svelte'
@@ -52,6 +55,7 @@ export function createCanvasConferenceStore({
     getCanvasId,
     getEnabled,
     devices,
+    textStreamTopics: [CALL_CHAT_TEXT_TOPIC],
     onRosterChanged: () => {
       status.broadcastChanged()
       void status.refresh()
@@ -61,7 +65,8 @@ export function createCanvasConferenceStore({
       devices.setSettingsOpen(false)
     },
     onDataReceived: (payload, participantIdentity, topic) =>
-      captions.handleData(payload, participantIdentity, topic)
+      captions.handleData(payload, participantIdentity, topic),
+    onTextReceived: (stream) => callChat.handleText(stream)
   })
 
   const captions = createConferenceCaptionsStore({
@@ -69,6 +74,16 @@ export function createCanvasConferenceStore({
     getEnabled,
     room,
     devices
+  })
+
+  const callChat = createConferenceCallChatStore({
+    getUserId,
+    getEnabled,
+    room,
+    isVisible: () =>
+      view.viewMode === 'fullscreen' &&
+      view.fullscreenPanel === 'chat' &&
+      view.fullscreenChatTab === 'call'
   })
 
   return {
@@ -170,6 +185,9 @@ export function createCanvasConferenceStore({
     get fullscreenPanel() {
       return view.fullscreenPanel
     },
+    get fullscreenChatTab() {
+      return view.fullscreenChatTab
+    },
     get layoutMode() {
       return view.layoutMode
     },
@@ -179,7 +197,22 @@ export function createCanvasConferenceStore({
     toggleFullscreenPanel: (
       panel: Exclude<ConferenceFullscreenPanel, 'none'>
     ) => view.toggleFullscreenPanel(panel),
+    setFullscreenChatTab: (tab: ConferenceFullscreenChatTab) =>
+      view.setFullscreenChatTab(tab),
     setLayoutMode: (mode: ConferenceLayoutMode) => view.setLayoutMode(mode),
+
+    // Ephemeral in-call chat
+    get callChatEntries() {
+      return callChat.entries
+    },
+    get callChatUnreadCount() {
+      return callChat.unreadCount
+    },
+    sendCallChatMessage: (text: string) => callChat.send(text),
+    retryCallChatMessage: (messageId: string) => callChat.retry(messageId),
+    dismissCallChatMessage: (messageId: string) =>
+      callChat.dismissFailed(messageId),
+    markCallChatRead: () => callChat.markRead(),
 
     // Captions
     get captionsEnabled() {

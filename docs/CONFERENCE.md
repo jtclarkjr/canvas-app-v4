@@ -92,9 +92,10 @@ WebRTC conferencing.
   minimized **bar** (active-speaker pill with compact controls, same
   drag/snap), and a Meet-style **fullscreen** dialog (participant tile
   grid, bottom control bar, Escape exits). Fullscreen has toggleable side
-  panels: the people list and the canvas chat (the chat store is provided
-  from `CanvasWorkspace` so the fullscreen panel reuses
-  `CanvasChatRoomPanel` directly).
+  panels: the people list and chat. The chat panel defaults to the **Call**
+  tab, an ephemeral LiveKit text-stream chat for the active call, and also
+  has a **Canvas** tab that reuses the persistent canvas chat from
+  `CanvasChatRoomPanel`.
 - The PiP features the last remote speaker (sticky), falls back to self,
   and a strip-tile click pins someone. Z-order: above the chat window
   (z-40), below modals (z-50); toasts (z-60) may overlap it intentionally.
@@ -146,6 +147,18 @@ WebRTC conferencing.
   published nor rendered.
 - Privacy note: with captions on, call audio is streamed to OpenAI for
   transcription.
+
+## Call chat
+
+- Fullscreen chat has two tabs: **Call** and **Canvas**. Call is the default
+  when the chat side panel opens.
+- Call chat uses LiveKit text streams on the `call-chat` topic. It is
+  realtime-only: messages are not stored in Postgres, do not replay for late
+  joiners, and clear when the call ends.
+- Canvas chat remains the existing Supabase-backed member chat and keeps its
+  normal persistence, realtime, unread, and @mention behavior.
+- The fullscreen chat button shows the combined unread count while the side
+  panel is closed. Inside the panel, each tab owns its own badge/read state.
 
 ## Agents later
 

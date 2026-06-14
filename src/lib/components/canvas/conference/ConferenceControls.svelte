@@ -21,6 +21,9 @@
 
   const store = useCanvasConferenceStore()
   const chatStore = useCanvasChatStore()
+  const chatUnreadCount = $derived(
+    chatStore.unreadCount + store.callChatUnreadCount
+  )
 
   const panelToggleClass = (active: boolean) =>
     `relative flex size-10 items-center justify-center rounded-full transition ${
@@ -177,16 +180,16 @@
       type="button"
       class={panelToggleClass(store.fullscreenPanel === 'chat')}
       onclick={() => store.toggleFullscreenPanel('chat')}
-      title="Canvas chat"
-      aria-label="Canvas chat"
+      title="Chat"
+      aria-label="Chat"
       aria-pressed={store.fullscreenPanel === 'chat'}
     >
       <MessageSquare class="size-5" />
-      {#if chatStore.unreadCount > 0 && store.fullscreenPanel !== 'chat'}
+      {#if chatUnreadCount > 0 && store.fullscreenPanel !== 'chat'}
         <span
           class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-warning px-1 text-[9px] font-bold text-warning-foreground"
         >
-          {chatStore.unreadCount > 9 ? '9+' : chatStore.unreadCount}
+          {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
         </span>
       {/if}
     </button>

@@ -18,6 +18,7 @@ for access and persistence.
 | Surface | Purpose | Storage | Realtime |
 | --- | --- | --- | --- |
 | Member chatroom | Shared text chat for canvas members | `canvas_chat_messages` | Supabase INSERT events |
+| Call chat | Ephemeral text chat for the active fullscreen call | None | LiveKit text streams |
 | Canvas assistant | Private per-user AI thread for the canvas | `canvas_assistant_messages` | AI response stream only |
 
 Document-scene AI chat is separate. It belongs to scenes, persists in
@@ -46,7 +47,8 @@ flowchart TD
 
 `CanvasWorkspace.svelte` provides the chat store above sibling subtrees that
 need it. The floating launcher/window consumes the store directly, and the
-conference fullscreen view can render the same member chat panel.
+conference fullscreen view renders it in the **Canvas** tab beside the
+ephemeral **Call** tab.
 
 ## Responsibility Split
 
