@@ -1,4 +1,20 @@
 import { z } from 'zod'
+import { databaseFlowDefinitionSchema } from '$lib/workflows/database/schema'
+
+export {
+  databaseColumnSchema,
+  databaseFlowDefinitionSchema,
+  databaseRelationSchema,
+  databaseTableSchema
+} from '$lib/workflows/database/schema'
+export type {
+  DatabaseColumn,
+  DatabaseFlowDefinition,
+  DatabaseRelation,
+  DatabaseTable
+} from '$lib/workflows/database/schema'
+
+export const workflowFlowTypeSchema = z.enum(['workflow', 'database'])
 
 export const workflowStepTypeSchema = z.enum([
   'input',
@@ -35,9 +51,10 @@ export const workflowStepSchema = z.object({
   position: workflowPositionSchema.default({ x: 0, y: 0 })
 })
 
-export const workflowDefinitionSchema = z
+export const workflowGraphDefinitionSchema = z
   .object({
     version: z.literal(1).default(1),
+    flowType: z.literal('workflow').default('workflow'),
     name: z.string().trim().min(1).max(120).default('Workflow'),
     description: z.string().default(''),
     steps: z.array(workflowStepSchema).default([])
@@ -67,6 +84,22 @@ export const workflowDefinitionSchema = z
       }
     }
   })
+
+export const workflowDefinitionSchema = z.preprocess(
+  (input) => {
+    if (input && typeof input === 'object' && !Array.isArray(input)) {
+      const record = input as Record<string, unknown>
+      if (!record.flowType) {
+        return { ...record, flowType: 'workflow' }
+      }
+    }
+    return input
+  },
+  z.discriminatedUnion('flowType', [
+    workflowGraphDefinitionSchema,
+    databaseFlowDefinitionSchema
+  ])
+)
 
 export const workflowContextSettingsSchema = z.object({
   documentIds: z.array(z.string()).max(20).default([]),
@@ -128,6 +161,7 @@ export const workflowTitleSchema = z
 
 export const createWorkflowInputSchema = z.object({
   title: workflowTitleSchema.optional(),
+  flowType: workflowFlowTypeSchema.optional(),
   x: z.number(),
   y: z.number(),
   width: z.number().min(360).max(4000).optional(),
@@ -213,8 +247,12 @@ export const workflowAssistantResponseSchema = z.object({
   proposal: workflowProposalSchema.nullable()
 })
 
+export type WorkflowFlowType = z.infer<typeof workflowFlowTypeSchema>
 export type WorkflowStepType = z.infer<typeof workflowStepTypeSchema>
 export type WorkflowStep = z.infer<typeof workflowStepSchema>
+export type WorkflowGraphDefinition = z.infer<
+  typeof workflowGraphDefinitionSchema
+>
 export type WorkflowDefinition = z.infer<typeof workflowDefinitionSchema>
 export type WorkflowContextSettings = z.infer<
   typeof workflowContextSettingsSchema

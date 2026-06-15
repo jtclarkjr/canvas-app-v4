@@ -2,6 +2,7 @@ import { parse, stringify } from 'yaml'
 import {
   workflowDefinitionSchema,
   type WorkflowDefinition,
+  type WorkflowGraphDefinition,
   type WorkflowStep,
   type WorkflowStepType
 } from '$lib/workflows/schema'
@@ -11,9 +12,10 @@ const DEFAULT_NODE_GAP = 220
 
 export function defaultWorkflowDefinition(
   name = 'Workflow'
-): WorkflowDefinition {
-  return normalizeWorkflowDefinition({
+): WorkflowGraphDefinition {
+  return normalizeWorkflowGraphDefinition({
     version: 1,
+    flowType: 'workflow',
     name,
     description: '',
     steps: [
@@ -50,6 +52,22 @@ export function normalizeWorkflowDefinition(
   return workflowDefinitionSchema.parse(input)
 }
 
+export function normalizeWorkflowGraphDefinition(
+  input: unknown
+): WorkflowGraphDefinition {
+  const normalized = normalizeWorkflowDefinition(input)
+  if (!isWorkflowGraphDefinition(normalized)) {
+    throw new Error('Expected a workflow definition.')
+  }
+  return normalized
+}
+
+export function isWorkflowGraphDefinition(
+  definition: WorkflowDefinition
+): definition is WorkflowGraphDefinition {
+  return definition.flowType === 'workflow'
+}
+
 export function workflowDefinitionToYaml(
   definition: WorkflowDefinition
 ): string {
@@ -71,7 +89,7 @@ export function workflowDefinitionToFlow(definition: WorkflowDefinition): {
   nodes: WorkflowFlowNode[]
   edges: WorkflowFlowEdge[]
 } {
-  const normalized = normalizeWorkflowDefinition(definition)
+  const normalized = normalizeWorkflowGraphDefinition(definition)
   const nodes = normalized.steps.map((step, index) => ({
     id: step.id,
     type: 'workflow' as const,
@@ -106,8 +124,9 @@ export function workflowDefinitionFromFlow(
   nodes: WorkflowFlowNode[],
   edges: WorkflowFlowEdge[],
   previous: WorkflowDefinition
-): WorkflowDefinition {
-  const previousById = new Map(previous.steps.map((step) => [step.id, step]))
+): WorkflowGraphDefinition {
+  const normalized = normalizeWorkflowGraphDefinition(previous)
+  const previousById = new Map(normalized.steps.map((step) => [step.id, step]))
   const nodeIds = new Set(nodes.map((node) => node.id))
   const dependenciesByTarget = new Map<string, string[]>()
 
@@ -120,8 +139,8 @@ export function workflowDefinitionFromFlow(
     }
   }
 
-  return normalizeWorkflowDefinition({
-    ...previous,
+  return normalizeWorkflowGraphDefinition({
+    ...normalized,
     steps: nodes.map((node, index) => {
       const previousStep = previousById.get(node.id)
       return {
@@ -135,7 +154,7 @@ export function workflowDefinitionFromFlow(
         config: node.data.config ?? previousStep?.config ?? {},
         action: previousStep?.action ?? { kind: 'none', config: {} },
         position: node.position ??
-          previousStep?.position ?? { x: index * 220, y: 80 }
+          previousStep?.position ?? { x: index * DEFAULT_NODE_GAP, y: 80 }
       } satisfies WorkflowStep
     })
   })
@@ -145,16 +164,17 @@ export function createWorkflowStep(
   existing: WorkflowDefinition,
   type: WorkflowStepType
 ): WorkflowStep {
+  const normalized = normalizeWorkflowGraphDefinition(existing)
   const baseId = type
-  const usedIds = new Set(existing.steps.map((step) => step.id))
-  let suffix = existing.steps.length + 1
+  const usedIds = new Set(normalized.steps.map((step) => step.id))
+  let suffix = normalized.steps.length + 1
   let id = `${baseId}_${suffix}`
   while (usedIds.has(id)) {
     suffix += 1
     id = `${baseId}_${suffix}`
   }
 
-  const lastStep = existing.steps.at(-1)
+  const lastStep = normalized.steps.at(-1)
   return {
     id,
     title: titleForStepType(type),
@@ -197,6 +217,17 @@ if (import.meta.vitest) {
       const yaml = workflowDefinitionToYaml(definition)
 
       expect(workflowDefinitionFromYaml(yaml)).toEqual(definition)
+    })
+
+    it('normalizes legacy workflow definitions without a flow type', () => {
+      expect(
+        normalizeWorkflowDefinition({
+          version: 1,
+          name: 'Legacy',
+          description: '',
+          steps: []
+        }).flowType
+      ).toBe('workflow')
     })
 
     it('converts flow edges back to step dependencies', () => {

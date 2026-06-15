@@ -16,7 +16,10 @@ import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
 import { requireWorkflowsEnabled } from '$lib/server/features'
 import {
-  defaultWorkflowDefinition,
+  createDefaultDefinitionForFlowType,
+  getWorkflowFlowTypeDefinition
+} from '$lib/workflows/flow-types'
+import {
   workflowDefinitionFromYaml,
   workflowDefinitionToYaml
 } from '$lib/workflows/definition'
@@ -77,10 +80,13 @@ export const POST: RequestHandler = async (event) =>
 
       const payload = await parseJsonBody(event.request)
       const input = parseInput(createWorkflowInputSchema, payload)
-      const title = input.title ?? 'Workflow'
+      const flowType = input.flowType ?? 'workflow'
+      const flowTypeDefinition = getWorkflowFlowTypeDefinition(flowType)
+      const title = input.title ?? flowTypeDefinition.defaultTitle
       const definition = input.configYaml
         ? parseWorkflowYaml(input.configYaml)
-        : (input.definition ?? defaultWorkflowDefinition(title))
+        : (input.definition ??
+          createDefaultDefinitionForFlowType(flowType, title))
       const configYaml =
         input.configYaml ?? workflowDefinitionToYaml(definition)
 

@@ -1,5 +1,10 @@
 <script lang="ts">
-  import { Plus, Workflow as WorkflowIcon } from 'lucide-svelte'
+  import {
+    ChevronDown,
+    Database,
+    Plus,
+    Workflow as WorkflowIcon
+  } from 'lucide-svelte'
   import type { Camera } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
@@ -8,21 +13,39 @@
     UpdateWorkflowInput,
     Workflow,
     WorkflowDefinition,
+    WorkflowFlowType,
     WorkflowSettings
   } from '$lib/workflows/schema'
+  import { workflowFlowTypeOptions } from '$lib/workflows/flow-types'
+  import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte'
   import WorkflowBuilderPanels from '$lib/components/canvas/workflows/WorkflowBuilderPanels.svelte'
   import WorkflowFrame from '$lib/components/canvas/workflows/WorkflowFrame.svelte'
+  import WorkflowFullscreenView from '$lib/components/canvas/workflows/WorkflowFullscreenView.svelte'
 
   type FrameHandlers = {
     pointerDown: (event: PointerEvent, workflowId: string) => void
     pointerMove: (event: PointerEvent, workflowId: string) => void
-    pointerUp: (event: PointerEvent, workflowId: string) => void
+    pointerUp: (
+      event: PointerEvent,
+      workflowId: string,
+      options?: { focusOnClick?: boolean }
+    ) => void
     pointerCancel: (event: PointerEvent, workflowId: string) => void
     resizePointerDown: (event: PointerEvent, workflowId: string) => void
     resizePointerMove: (event: PointerEvent, workflowId: string) => void
     resizePointerUp: (event: PointerEvent, workflowId: string) => void
     resizePointerCancel: (event: PointerEvent, workflowId: string) => void
   }
+
+  const FLOW_TYPE_ICONS = {
+    workflow: WorkflowIcon,
+    database: Database
+  } satisfies Record<WorkflowFlowType, typeof WorkflowIcon>
+
+  const CREATE_FLOW_TYPES = workflowFlowTypeOptions.map((option) => ({
+    ...option,
+    icon: FLOW_TYPE_ICONS[option.id]
+  }))
 
   let {
     canvasId,
@@ -57,7 +80,7 @@
     canModifyWorkflow: (workflowId: string) => boolean
     handlers: FrameHandlers
     isCreatingWorkflow?: boolean
-    onCreateWorkflow: () => void
+    onCreateWorkflow: (flowType?: WorkflowFlowType) => void
     onFocusWorkflow: (workflowId: string) => void
     onClearFocusedWorkflow: () => void
     onDeleteWorkflow: (workflowId: string) => void
@@ -84,6 +107,70 @@
   }>()
 
   const interactive = $derived(mode === 'workflows')
+  let selectedCreateType = $state<WorkflowFlowType>('workflow')
+  let createMenuOpen = $state(false)
+  let fullscreenWorkflowId = $state<string | null>(null)
+  let deleteWorkflowId = $state<string | null>(null)
+  let confirmDeleteOpen = $state(false)
+  const selectedCreateOption = $derived(
+    CREATE_FLOW_TYPES.find((entry) => entry.id === selectedCreateType) ??
+      CREATE_FLOW_TYPES[0]
+  )
+  const fullscreenWorkflow = $derived(
+    workflows.find(
+      (workflow: Workflow) => workflow.id === fullscreenWorkflowId
+    ) ?? null
+  )
+  const workflowPendingDelete = $derived(
+    workflows.find((workflow: Workflow) => workflow.id === deleteWorkflowId) ??
+      null
+  )
+
+  $effect(() => {
+    if (
+      mode !== 'workflows' ||
+      (fullscreenWorkflowId &&
+        !workflows.some(
+          (workflow: Workflow) => workflow.id === fullscreenWorkflowId
+        ))
+    ) {
+      fullscreenWorkflowId = null
+    }
+  })
+
+  function createSelectedWorkflow() {
+    createMenuOpen = false
+    onCreateWorkflow(selectedCreateType)
+  }
+
+  function selectCreateType(flowType: WorkflowFlowType) {
+    selectedCreateType = flowType
+    createMenuOpen = false
+  }
+
+  function maximizeWorkflow(workflowId: string) {
+    createMenuOpen = false
+    fullscreenWorkflowId = workflowId
+    onFocusWorkflow(workflowId)
+  }
+
+  function minimizeFullscreenWorkflow() {
+    fullscreenWorkflowId = null
+  }
+
+  function requestDeleteWorkflow(workflowId: string) {
+    deleteWorkflowId = workflowId
+    confirmDeleteOpen = true
+  }
+
+  function confirmDeleteWorkflow() {
+    if (!deleteWorkflowId) return
+    if (fullscreenWorkflowId === deleteWorkflowId) {
+      fullscreenWorkflowId = null
+    }
+    onDeleteWorkflow(deleteWorkflowId)
+    deleteWorkflowId = null
+  }
 </script>
 
 <div class="pointer-events-none absolute inset-0 z-10">
@@ -92,28 +179,93 @@
     <WorkflowFrame
       {workflow}
       {camera}
-      {focused}
+      focused={interactive && focused && fullscreenWorkflowId !== workflow.id}
       canModify={canModifyWorkflow(workflow.id)}
+      canDrag={canEdit && canModifyWorkflow(workflow.id)}
       {interactive}
       {handlers}
       onFocus={onFocusWorkflow}
-      onDelete={onDeleteWorkflow}
+      onMaximize={maximizeWorkflow}
+      onDelete={requestDeleteWorkflow}
       onDefinitionChange={(definition) =>
         onPatchWorkflowDefinition(workflow.id, definition)}
     />
   {/each}
 </div>
 
-{#if mode === 'workflows' && canEdit}
-  <button
-    type="button"
-    class="toolbar-pill fixed bottom-6 left-1/2 z-20 flex h-11 -translate-x-1/2 items-center gap-2 px-4 text-sm font-medium disabled:opacity-60"
-    onclick={onCreateWorkflow}
-    disabled={isCreatingWorkflow}
-  >
-    <Plus class="size-4" />
-    {isCreatingWorkflow ? 'Creating…' : 'New workflow'}
-  </button>
+{#if mode === 'workflows' && fullscreenWorkflow}
+  <WorkflowFullscreenView
+    workflow={fullscreenWorkflow}
+    {canEdit}
+    canModify={canModifyWorkflow(fullscreenWorkflow.id)}
+    onMinimize={minimizeFullscreenWorkflow}
+    onDelete={requestDeleteWorkflow}
+    onDefinitionChange={(definition) =>
+      onPatchWorkflowDefinition(fullscreenWorkflow.id, definition)}
+  />
+{/if}
+
+<ConfirmDialog
+  bind:open={confirmDeleteOpen}
+  title="Delete workflow?"
+  message={`“${workflowPendingDelete?.title || 'This workflow'}” and its saved definition, notes, and versions will be permanently deleted.`}
+  confirmLabel="Delete workflow"
+  onConfirm={confirmDeleteWorkflow}
+/>
+
+{#if mode === 'workflows' && canEdit && !fullscreenWorkflow}
+  <div class="fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center">
+    <div class="relative">
+      <div class="toolbar-pill flex h-11 items-center overflow-hidden p-0">
+        <button
+          type="button"
+          class="flex h-full items-center gap-2 px-4 text-sm font-medium disabled:opacity-60"
+          onclick={createSelectedWorkflow}
+          disabled={isCreatingWorkflow}
+        >
+          <Plus class="size-4" />
+          {isCreatingWorkflow
+            ? 'Creating...'
+            : selectedCreateOption.createLabel}
+        </button>
+        <button
+          type="button"
+          class="flex h-full w-10 items-center justify-center border-l border-border/70 text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+          onclick={() => (createMenuOpen = !createMenuOpen)}
+          disabled={isCreatingWorkflow}
+          aria-label="Choose workflow item type"
+          aria-expanded={createMenuOpen}
+          aria-haspopup="menu"
+        >
+          <ChevronDown class="size-4" aria-hidden="true" />
+        </button>
+      </div>
+
+      {#if createMenuOpen}
+        <div
+          class="absolute bottom-full left-0 mb-2 min-w-[190px] rounded-lg border border-border/70 bg-popover p-1 text-popover-foreground shadow-xl"
+          role="menu"
+        >
+          {#each CREATE_FLOW_TYPES as option (option.id)}
+            <button
+              type="button"
+              class={`flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-medium transition ${
+                selectedCreateType === option.id
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-accent hover:text-accent-foreground'
+              }`}
+              role="menuitemradio"
+              aria-checked={selectedCreateType === option.id}
+              onclick={() => selectCreateType(option.id)}
+            >
+              <option.icon class="size-4" aria-hidden="true" />
+              {option.label}
+            </button>
+          {/each}
+        </div>
+      {/if}
+    </div>
+  </div>
 {/if}
 
 {#if mode === 'workflows' && focusedWorkflow}
@@ -123,7 +275,7 @@
     {scenes}
     {sceneDocumentsStore}
     canModify={canModifyWorkflow(focusedWorkflow.id)}
-    onClose={onClearFocusedWorkflow}
+    fullscreen={Boolean(fullscreenWorkflow)}
     onPatchWorkflow={(patch) => onPatchWorkflow(focusedWorkflow.id, patch)}
     onPatchYaml={(configYaml) =>
       onPatchWorkflowYaml(focusedWorkflow.id, configYaml)}
@@ -141,7 +293,7 @@
       class="flex items-center gap-2 rounded-full border border-border/80 bg-card/90 px-3 py-2 text-xs text-muted-foreground shadow-sm backdrop-blur"
     >
       <WorkflowIcon class="size-4" />
-      No workflows yet
+      No workflow items yet
     </div>
   </div>
 {/if}

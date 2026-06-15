@@ -23,6 +23,7 @@ import type {
 import type { CanvasWorkspaceStoreInput } from '$lib/workspace/types'
 import type { SceneMessage } from '$lib/scenes/schema'
 import type { WorkspaceMode } from '$lib/scenes/types'
+import type { WorkflowFlowType } from '$lib/workflows/schema'
 import { createWorkspaceModeStore } from '$lib/stores/scenes/mode.svelte'
 import { createWorkspaceRealtimeScenesStore } from '$lib/stores/scenes/realtime-scenes.svelte'
 import { createWorkspaceSceneActivityStore } from '$lib/stores/scenes/scene-activity.svelte'
@@ -651,8 +652,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     insertDiagramTemplate: templeStore.insertDiagramTemplate,
     handleModeChange,
     createScene: scenesStore.createSceneAtViewportCenter,
-    createWorkflow: () =>
-      workflowEnabled ? workflowsStore.createWorkflowAtViewportCenter() : null,
+    createWorkflow: (flowType?: WorkflowFlowType) =>
+      workflowEnabled
+        ? workflowsStore.createWorkflowAtViewportCenter(flowType)
+        : null,
     patchScene: scenesStore.patchScene,
     patchWorkflow: workflowsStore.patchWorkflow,
     patchWorkflowDefinition: workflowsStore.patchWorkflowDefinition,

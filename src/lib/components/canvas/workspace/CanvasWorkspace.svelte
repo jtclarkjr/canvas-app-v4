@@ -304,7 +304,7 @@
       canModifyWorkflow={workspace.canModifyWorkflow}
       handlers={workspace.workflowFrameHandlers}
       isCreatingWorkflow={workspace.isCreatingWorkflow}
-      onCreateWorkflow={() => void workspace.createWorkflow()}
+      onCreateWorkflow={(flowType) => void workspace.createWorkflow(flowType)}
       onFocusWorkflow={workspace.focusWorkflow}
       onClearFocusedWorkflow={workspace.clearFocusedWorkflow}
       onDeleteWorkflow={(workflowId) =>

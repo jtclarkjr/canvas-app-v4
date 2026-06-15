@@ -25,6 +25,7 @@ import {
   workflowAssistantResponseSchema,
   workflowProposalSchema
 } from '$lib/workflows/schema'
+import { getWorkflowFlowTypeDefinition } from '$lib/workflows/flow-types'
 import { workflowDefinitionToYaml as definitionToYaml } from '$lib/workflows/definition'
 
 const AI_RATE_LIMIT = { maxRequests: 10, windowMs: 60_000 }
@@ -111,17 +112,21 @@ export const POST: RequestHandler = async (event) =>
             markdown: parsed.success ? parsed.data.markdown : ''
           }
         })
+      const flowTypeDefinition = getWorkflowFlowTypeDefinition(
+        input.workflow.definition.flowType
+      )
+      const { proposalKind, system, finalInstruction } =
+        flowTypeDefinition.assistant
 
       const result = await generateObject({
         model: resolved.model,
         schema: workflowProposalSchema,
         schemaName: 'WorkflowProposal',
-        system:
-          'You design node-graph workflows. Return a valid workflow proposal only. Nodes may include inert action metadata, but do not claim execution is implemented.',
+        system,
         prompt: [
           `User request:\n${input.prompt}`,
-          `Current workflow YAML:\n${input.workflow.configYaml}`,
-          `Current workflow JSON:\n${JSON.stringify(input.workflow.definition)}`,
+          `Current ${proposalKind} YAML:\n${input.workflow.configYaml}`,
+          `Current ${proposalKind} JSON:\n${JSON.stringify(input.workflow.definition)}`,
           `Context documents:\n${contextDocuments
             .map(
               (document) =>
@@ -131,7 +136,7 @@ export const POST: RequestHandler = async (event) =>
                 )}`
             )
             .join('\n\n')}`,
-          'Return a complete replacement workflow definition. Keep version as 1. Provide configYaml matching the definition.'
+          finalInstruction
         ].join('\n\n---\n\n')
       })
 

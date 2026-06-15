@@ -8,10 +8,12 @@ import {
   workflowDefinitionFromYaml,
   workflowDefinitionToYaml
 } from '$lib/workflows/definition'
+import { getWorkflowFlowTypeDefinition } from '$lib/workflows/flow-types'
 import type {
   UpdateWorkflowInput,
   Workflow,
   WorkflowDefinition,
+  WorkflowFlowType,
   WorkflowSettings
 } from '$lib/workflows/schema'
 import type { CanvasRole } from '$lib/canvas/roles'
@@ -126,7 +128,9 @@ export function createWorkspaceWorkflowsStore({
     await loadWorkflows(getActiveCanvasId())
   }
 
-  async function createWorkflowAtViewportCenter() {
+  async function createWorkflowAtViewportCenter(
+    flowType: WorkflowFlowType = 'workflow'
+  ) {
     const canvasId = getActiveCanvasId()
     const rootEl = getRootElement()
     if (!canvasId || !rootEl) {
@@ -145,8 +149,10 @@ export function createWorkspaceWorkflowsStore({
     )
 
     try {
+      const flowTypeDefinition = getWorkflowFlowTypeDefinition(flowType)
       const response = await createWorkflowApi(canvasId, {
-        title: 'Workflow',
+        title: flowTypeDefinition.defaultTitle,
+        flowType,
         x: center.x - DEFAULT_WORKFLOW_SIZE.width / 2,
         y: center.y - DEFAULT_WORKFLOW_SIZE.height / 2,
         width: DEFAULT_WORKFLOW_SIZE.width,
@@ -331,7 +337,11 @@ export function createWorkspaceWorkflowsStore({
     )
   }
 
-  function handleFramePointerUp(event: PointerEvent, workflowId: string) {
+  function handleFramePointerUp(
+    event: PointerEvent,
+    workflowId: string,
+    options: { focusOnClick?: boolean } = {}
+  ) {
     if (!pendingDrag || pendingDrag.workflowId !== workflowId) return
     event.stopPropagation()
 
@@ -352,7 +362,9 @@ export function createWorkspaceWorkflowsStore({
       return
     }
 
-    focusWorkflow(workflowId)
+    if (options.focusOnClick !== false) {
+      focusWorkflow(workflowId)
+    }
   }
 
   function handleFramePointerCancel(event: PointerEvent, workflowId: string) {

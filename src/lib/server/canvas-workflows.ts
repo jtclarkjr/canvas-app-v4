@@ -68,6 +68,7 @@ if (import.meta.vitest) {
 
   const definition = {
     version: 1 as const,
+    flowType: 'workflow' as const,
     name: 'Workflow',
     description: '',
     steps: [
