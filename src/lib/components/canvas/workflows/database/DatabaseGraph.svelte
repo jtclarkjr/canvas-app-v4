@@ -197,6 +197,7 @@
     onconnectend={handleConnectEnd}
     onnodedragstop={commitFlow}
     ondelete={commitFlow}
+    proOptions={{ hideAttribution: true }}
   >
     <Controls />
     <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
