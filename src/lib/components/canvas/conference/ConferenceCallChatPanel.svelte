@@ -1,7 +1,7 @@
 <script lang="ts">
   import CanvasChatComposer from '$lib/components/canvas/chat/CanvasChatComposer.svelte'
   import { segmentMentions } from '$lib/chat/mentions'
-  import type { ConferenceCallChatEntry } from '$lib/stores/conference/call-chat.svelte'
+  import type { ConferenceCallChatEntry } from '$lib/conference/types'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
 
   const store = useCanvasConferenceStore()

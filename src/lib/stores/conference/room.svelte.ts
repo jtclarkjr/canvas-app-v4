@@ -1,6 +1,9 @@
 import type { BackgroundProcessorWrapper } from '@livekit/track-processors'
 import type { AudioTrack, Room, VideoTrack } from 'livekit-client'
-import type { BackgroundEffect } from '$lib/conference/backgrounds'
+import type {
+  BackgroundEffect,
+  ConferenceTextStream
+} from '$lib/conference/types'
 import { ApiClientError } from '$lib/api-client'
 import { colorFromId } from '$lib/canvas/helpers/color-from-id'
 import { fetchConferenceToken } from '$lib/conference/api'
@@ -37,15 +40,6 @@ type ConferenceRoomInput = {
 }
 
 type LiveKitModule = typeof import('livekit-client')
-
-export type ConferenceTextStream = {
-  topic: string
-  text: string
-  streamId: string
-  timestamp: number
-  attributes: Record<string, string>
-  participantIdentity: string | undefined
-}
 
 function participantColor(metadata: string | undefined, identity: string) {
   if (metadata) {

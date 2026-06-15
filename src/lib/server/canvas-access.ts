@@ -2,14 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { forbidden, notFound } from '$lib/server/api-error'
 import type { Database } from '$lib/server/database.types'
 import { roleAtLeast, type CanvasRole } from '$lib/canvas/roles'
+import type { CanvasAccess } from '$lib/server/types'
 
 type CanvasRow = Database['public']['Tables']['canvases']['Row']
-
-export type CanvasAccess = {
-  canvas: CanvasRow
-  role: CanvasRole | null
-  publicAccess: boolean
-}
 
 export async function resolveCanvasAccess(
   supabase: SupabaseClient<Database>,

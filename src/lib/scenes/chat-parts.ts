@@ -2,19 +2,12 @@
 // typed, but messages arriving over realtime or loaded from the database
 // carry `parts: unknown[]` — these helpers narrow both uniformly.
 
-export type ChatPartLike = { type: string } & Record<string, unknown>
-
-export type DisplayMessage = {
-  id: string
-  role: 'user' | 'assistant' | 'system'
-  parts: unknown[]
-  metadata?: unknown
-}
-
-export type MessageAuthorInfo = {
-  id: string
-  name: string
-}
+import type {
+  ChatPartLike,
+  DisplayMessage,
+  DraftToolPart,
+  MessageAuthorInfo
+} from '$lib/scenes/types'
 
 // Author/model attribution rides on message metadata (stamped server-side
 // at persist time; local messages have none and belong to the viewer).
@@ -60,12 +53,6 @@ export function partText(part: ChatPartLike): string | null {
     return null
   }
   return part.text
-}
-
-export type DraftToolPart = {
-  state: string
-  title: string
-  content: string
 }
 
 export function writeDocumentPart(part: ChatPartLike): DraftToolPart | null {

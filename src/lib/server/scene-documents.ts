@@ -8,11 +8,7 @@ import {
   type SceneDocumentStatus
 } from '$lib/scenes/schema'
 import type { Database } from '$lib/server/database.types'
-
-export type SceneDocumentListsBySceneId = Record<
-  string,
-  SceneDocumentListItem[]
->
+import type { SceneDocumentListsBySceneId } from '$lib/server/types'
 
 export const SCENE_DOCUMENT_LIST_COLUMNS =
   'id, scene_id, canvas_id, kind, status, title, created_by, updated_by, created_at, updated_at'

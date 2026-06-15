@@ -1,4 +1,13 @@
-import type { Camera, Path, Point, TextElement } from '$lib/canvas/types'
+import type {
+  Camera,
+  Path,
+  PathHandleHit,
+  PathResizeHandle,
+  Point,
+  TextElement,
+  TextHandleHit,
+  TextResizeHandle
+} from '$lib/canvas/types'
 import {
   getShapeResizeCursor,
   rotatePoint,
@@ -49,18 +58,6 @@ function measureTextWidth(
   }
   return m.width
 }
-
-export type TextResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
-
-export type TextHandleHit =
-  | { type: 'resize'; handle: TextResizeHandle; text: TextElement }
-  | { type: 'rotate'; text: TextElement }
-
-export type PathResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
-
-export type PathHandleHit =
-  | { type: 'resize'; handle: PathResizeHandle; path: Path }
-  | { type: 'rotate'; path: Path }
 
 export function getTextLineHeight(fontSize: number): number {
   return fontSize * TEXT_LINE_HEIGHT

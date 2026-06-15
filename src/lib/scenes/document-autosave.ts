@@ -1,7 +1,4 @@
-export type DocumentSaveSnapshot = {
-  title: string
-  markdown: string
-}
+import type { DocumentSaveSnapshot } from '$lib/scenes/types'
 
 export function sameDocumentSaveSnapshot(
   first: DocumentSaveSnapshot | null,

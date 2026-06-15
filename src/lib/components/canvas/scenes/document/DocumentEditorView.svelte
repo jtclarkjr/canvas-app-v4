@@ -7,9 +7,9 @@
   } from '$lib/scenes/schema'
   import {
     sameDocumentSaveSnapshot,
-    shouldAttemptAutosave,
-    type DocumentSaveSnapshot
+    shouldAttemptAutosave
   } from '$lib/scenes/document-autosave'
+  import type { DocumentSaveSnapshot } from '$lib/scenes/types'
   import { downloadMarkdown } from '$lib/scenes/download'
 
   const AUTO_SAVE_DEBOUNCE_MS = 1200

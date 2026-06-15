@@ -160,3 +160,40 @@ export type Camera = {
   y: number
   scale: number
 }
+
+// Text and path resize handles
+export type TextResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
+
+export type TextHandleHit =
+  | { type: 'resize'; handle: TextResizeHandle; text: TextElement }
+  | { type: 'rotate'; text: TextElement }
+
+export type PathResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
+
+export type PathHandleHit =
+  | { type: 'resize'; handle: PathResizeHandle; path: Path }
+  | { type: 'rotate'; path: Path }
+
+// Shape and anchor hit testing
+export type ShapeResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
+
+export type ShapeHandleHit =
+  | { type: 'resize'; handle: ShapeResizeHandle; shape: DiagramShape }
+  | { type: 'rotate'; shape: DiagramShape }
+
+export type AnchorTarget = {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation?: number | null
+}
+
+export type AnchorHit = {
+  endpoint: DiagramEndpoint
+  target: AnchorTarget
+  targetType: DiagramAnchorTargetType
+  shape?: DiagramShape
+  anchor: AnchorPosition
+}

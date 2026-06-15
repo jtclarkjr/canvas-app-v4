@@ -1,8 +1,7 @@
 import { ZodType } from 'zod'
 import { isAnonymousUser } from '$lib/auth/anonymous'
-import { logServerError, type ErrorLogger } from '$lib/server/logger'
-
-export type ApiErrorIssues = Record<string, string[]>
+import { logServerError } from '$lib/server/logger'
+import type { ApiErrorIssues, ErrorLogger } from '$lib/server/types'
 
 type AppErrorOptions = {
   status: number

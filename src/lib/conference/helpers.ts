@@ -1,4 +1,10 @@
-import type { Corner, DevicePrefs, Point, Size } from '$lib/conference/types'
+import type {
+  BgPrefs,
+  Corner,
+  DevicePrefs,
+  Point,
+  Size
+} from '$lib/conference/types'
 
 type RenderableVideoTrack = {
   mediaStreamTrack: Pick<MediaStreamTrack, 'readyState'>
@@ -149,12 +155,6 @@ export function saveDevicePrefs(prefs: DevicePrefs) {
     // Storage being unavailable (private mode, quota) only loses the
     // preference, never the call.
   }
-}
-
-export type BgPrefs = {
-  effect: 'none' | 'blur' | 'virtual'
-  imagePath: string | null
-  blurRadius: number
 }
 
 export function loadBgPrefs(): BgPrefs {

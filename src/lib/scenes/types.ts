@@ -43,3 +43,30 @@ export type SceneActivity = {
   kind: SceneActivityKind
   textDelta?: string
 }
+
+// AI chat message parts
+export type ChatPartLike = { type: string } & Record<string, unknown>
+
+export type DisplayMessage = {
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  parts: unknown[]
+  metadata?: unknown
+}
+
+export type MessageAuthorInfo = {
+  id: string
+  name: string
+}
+
+export type DraftToolPart = {
+  state: string
+  title: string
+  content: string
+}
+
+// Document autosave
+export type DocumentSaveSnapshot = {
+  title: string
+  markdown: string
+}

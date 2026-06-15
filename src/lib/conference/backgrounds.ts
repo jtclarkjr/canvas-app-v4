@@ -1,8 +1,4 @@
-export type BackgroundEffect = 'none' | 'blur' | 'virtual'
-
-export type BgPreset =
-  | { id: string; label: string; type: 'none' | 'blur' }
-  | { id: string; label: string; type: 'virtual'; imagePath: string }
+import type { BgPreset } from '$lib/conference/types'
 
 function bucketUrl(filename: string) {
   const base = import.meta.env.VITE_SUPABASE_URL as string

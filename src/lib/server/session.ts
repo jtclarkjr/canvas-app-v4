@@ -4,18 +4,7 @@ import { getUserAvatarUrl, getUserDisplayName } from '$lib/auth/user-profile'
 import { getSupabaseAuthCookieName } from '$lib/auth/supabase-cookie'
 import { getSupabaseTokensFromCookieHeader } from '$lib/server/supabase-auth-cookie'
 
-export type RequestUser = {
-  id: string
-  email: string
-  name: string
-  image: string | null
-  isAnonymous: boolean
-}
-
-export type RequestSession = {
-  user: RequestUser
-  refreshedTokens?: { accessToken: string; refreshToken: string }
-}
+import type { RequestSession, RequestUser } from '$lib/server/types'
 
 function getBearerToken(authorizationHeader: string) {
   const [scheme, token] = authorizationHeader.split(/\s+/, 2)

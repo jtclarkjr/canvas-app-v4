@@ -5,7 +5,8 @@
   import { signOut } from '$lib/auth/session-service'
   import Popover from '$lib/components/shared/Popover.svelte'
   import { session } from '$lib/stores/shared/session.svelte'
-  import { theme, type Theme } from '$lib/stores/shared/theme.svelte'
+  import { theme } from '$lib/stores/shared/theme.svelte'
+  import type { Theme } from '$lib/stores/shared/types'
   import { CircleUserRound, LogOut, Monitor, Moon, Sun } from 'lucide-svelte'
 
   const themeOptions: Theme[] = ['light', 'dark', 'system']

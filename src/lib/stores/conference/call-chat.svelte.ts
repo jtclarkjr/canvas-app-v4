@@ -5,7 +5,12 @@ import {
   callChatContentSchema,
   type CallChatAttributes
 } from '$lib/conference/call-chat'
-import type { ConferenceTextStream } from '$lib/stores/conference/room.svelte'
+import type {
+  ConferenceCallChatAuthor,
+  ConferenceCallChatEntry,
+  ConferenceCallChatMessage,
+  ConferenceTextStream
+} from '$lib/conference/types'
 import type { ConferenceRoomStore } from '$lib/stores/conference/room.svelte'
 
 type ConferenceCallChatInput = {
@@ -13,28 +18,6 @@ type ConferenceCallChatInput = {
   getEnabled: () => boolean
   room: ConferenceRoomStore
   isVisible: () => boolean
-}
-
-export type ConferenceCallChatAuthor = {
-  id: string
-  name: string
-  color: string
-}
-
-export type ConferenceCallChatMessage = {
-  id: string
-  content: string
-  author: ConferenceCallChatAuthor
-  createdBy: string | null
-  createdAt: string
-}
-
-export type ConferenceCallChatEntryStatus = 'sent' | 'pending' | 'failed'
-
-export type ConferenceCallChatEntry = {
-  message: ConferenceCallChatMessage
-  status: ConferenceCallChatEntryStatus
-  errorMessage?: string
 }
 
 const FALLBACK_COLOR = 'var(--color-muted-foreground)'

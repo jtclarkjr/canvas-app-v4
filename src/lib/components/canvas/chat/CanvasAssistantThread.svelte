@@ -9,9 +9,9 @@
     isWebSearchPart,
     partText,
     readContextPart,
-    sourceUrlPart,
-    type DisplayMessage
+    sourceUrlPart
   } from '$lib/scenes/chat-parts'
+  import type { DisplayMessage } from '$lib/scenes/types'
   import { renderMarkdown } from '$lib/scenes/markdown'
   import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import CanvasChatComposer from '$lib/components/canvas/chat/CanvasChatComposer.svelte'

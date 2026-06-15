@@ -1,22 +1,5 @@
 import { AppError } from '$lib/server/api-error'
-
-export type ServerErrorLogEvent = {
-  source: 'api'
-  expected: boolean
-  name: string
-  message: string
-  status: number
-  method: string
-  path: string
-  code?: string
-  issues?: Record<string, string[]>
-  details?: Record<string, unknown>
-  stack?: string
-}
-
-export interface ErrorLogger {
-  log: (event: ServerErrorLogEvent) => void
-}
+import type { ErrorLogger } from '$lib/server/types'
 
 export const consoleErrorLogger: ErrorLogger = {
   log(event) {

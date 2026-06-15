@@ -1,5 +1,7 @@
 import type {
+  AnchorHit,
   AnchorPosition,
+  AnchorTarget,
   ConnectorKind,
   DiagramAnchorBinding,
   DiagramAnchorTargetType,
@@ -8,36 +10,15 @@ import type {
   DiagramFormatting,
   DiagramShape,
   Point,
+  ShapeHandleHit,
   ShapeKind,
+  ShapeResizeHandle,
   StrokeStyle
 } from '$lib/canvas/types'
 
 export const DEFAULT_SHAPE_WIDTH = 160
 export const DEFAULT_SHAPE_HEIGHT = 96
 export const MIN_SHAPE_SIZE = 24
-
-export type ShapeResizeHandle = 'nw' | 'ne' | 'se' | 'sw'
-
-export type ShapeHandleHit =
-  | { type: 'resize'; handle: ShapeResizeHandle; shape: DiagramShape }
-  | { type: 'rotate'; shape: DiagramShape }
-
-export type AnchorTarget = {
-  id: string
-  x: number
-  y: number
-  width: number
-  height: number
-  rotation?: number | null
-}
-
-export type AnchorHit = {
-  endpoint: DiagramEndpoint
-  target: AnchorTarget
-  targetType: DiagramAnchorTargetType
-  shape?: DiagramShape
-  anchor: AnchorPosition
-}
 
 const anchors: AnchorPosition[] = ['top', 'right', 'bottom', 'left']
 

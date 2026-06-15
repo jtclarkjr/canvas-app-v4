@@ -1,4 +1,3 @@
-import type { Edge, Node } from '@xyflow/svelte'
 import { parse, stringify } from 'yaml'
 import {
   workflowDefinitionSchema,
@@ -6,19 +5,7 @@ import {
   type WorkflowStep,
   type WorkflowStepType
 } from '$lib/workflows/schema'
-
-export type WorkflowNodeData = {
-  label: string
-  stepType: WorkflowStepType
-  description: string
-  tool?: string
-  config: Record<string, unknown>
-  input: Record<string, unknown>
-  actionKind: string
-}
-
-export type WorkflowFlowNode = Node<WorkflowNodeData, 'workflow'>
-export type WorkflowFlowEdge = Edge<Record<string, never>, 'smoothstep'>
+import type { WorkflowFlowEdge, WorkflowFlowNode } from '$lib/workflows/types'
 
 const DEFAULT_NODE_GAP = 220
 

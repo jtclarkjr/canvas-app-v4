@@ -25,7 +25,7 @@
   } from '$lib/scenes/schema'
   import { defaultModelId, isKnownModelId } from '$lib/scenes/models'
   import type { SceneActivity, SceneActivityKind } from '$lib/scenes/types'
-  import type { DraftToolPart } from '$lib/scenes/chat-parts'
+  import type { DraftToolPart } from '$lib/scenes/types'
   import { toast } from '$lib/stores/shared/toast.svelte'
   import { useSceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
   import ConfirmDialog from '$lib/components/shared/ConfirmDialog.svelte'

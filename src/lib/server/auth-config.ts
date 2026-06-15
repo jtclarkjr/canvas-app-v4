@@ -1,14 +1,5 @@
 import { env as privateEnv } from '$env/dynamic/private'
-
-export type AuthConfig = {
-  configured: boolean
-  providers: {
-    email: boolean
-    github: boolean
-    google: boolean
-    apple: boolean
-  }
-}
+import type { AuthConfig } from '$lib/server/types'
 
 const flag = (value: string | undefined): boolean =>
   !!value && value.toLowerCase() !== 'false' && value !== '0'

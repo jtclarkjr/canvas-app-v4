@@ -1,11 +1,8 @@
 <script lang="ts">
   import { VideoOff } from 'lucide-svelte'
   import Modal from '$lib/components/shared/Modal.svelte'
-  import {
-    BG_PRESETS,
-    bgThumbnailUrl,
-    type BgPreset
-  } from '$lib/conference/backgrounds'
+  import { BG_PRESETS, bgThumbnailUrl } from '$lib/conference/backgrounds'
+  import type { BgPreset } from '$lib/conference/types'
   import { attachTrack } from '$lib/components/canvas/conference/media-actions'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
 

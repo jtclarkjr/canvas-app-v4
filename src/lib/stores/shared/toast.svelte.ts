@@ -1,13 +1,4 @@
-export type Toast = {
-  id: string
-  title: string
-  description?: string
-  variant?: 'default' | 'error'
-  action?: {
-    label: string
-    onClick: () => void
-  }
-}
+import type { Toast } from '$lib/stores/shared/types'
 
 const DEFAULT_DURATION = 5000
 

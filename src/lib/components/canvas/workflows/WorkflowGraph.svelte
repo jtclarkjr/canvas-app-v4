@@ -13,10 +13,9 @@
   import {
     createWorkflowStep,
     workflowDefinitionFromFlow,
-    workflowDefinitionToFlow,
-    type WorkflowFlowEdge,
-    type WorkflowFlowNode
+    workflowDefinitionToFlow
   } from '$lib/workflows/definition'
+  import type { WorkflowFlowEdge, WorkflowFlowNode } from '$lib/workflows/types'
   import type {
     Workflow,
     WorkflowDefinition,

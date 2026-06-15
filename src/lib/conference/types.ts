@@ -64,3 +64,49 @@ export type CaptionSegment = {
   final: boolean
   receivedAt: number
 }
+
+// Background effects
+export type BackgroundEffect = 'none' | 'blur' | 'virtual'
+
+export type BgPreset =
+  | { id: string; label: string; type: 'none' | 'blur' }
+  | { id: string; label: string; type: 'virtual'; imagePath: string }
+
+export type BgPrefs = {
+  effect: 'none' | 'blur' | 'virtual'
+  imagePath: string | null
+  blurRadius: number
+}
+
+// Data channel text streams
+export type ConferenceTextStream = {
+  topic: string
+  text: string
+  streamId: string
+  timestamp: number
+  attributes: Record<string, string>
+  participantIdentity: string | undefined
+}
+
+// Call-scoped chat
+export type ConferenceCallChatAuthor = {
+  id: string
+  name: string
+  color: string
+}
+
+export type ConferenceCallChatMessage = {
+  id: string
+  content: string
+  author: ConferenceCallChatAuthor
+  createdBy: string | null
+  createdAt: string
+}
+
+export type ConferenceCallChatEntryStatus = 'sent' | 'pending' | 'failed'
+
+export type ConferenceCallChatEntry = {
+  message: ConferenceCallChatMessage
+  status: ConferenceCallChatEntryStatus
+  errorMessage?: string
+}

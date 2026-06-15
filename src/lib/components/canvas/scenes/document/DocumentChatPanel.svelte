@@ -7,10 +7,9 @@
   import {
     asParts,
     messageText,
-    writeDocumentPart,
-    type DisplayMessage,
-    type DraftToolPart
+    writeDocumentPart
   } from '$lib/scenes/chat-parts'
+  import type { DisplayMessage, DraftToolPart } from '$lib/scenes/types'
   import DocumentComposer from '$lib/components/canvas/scenes/document/DocumentComposer.svelte'
   import DocumentMessageList from '$lib/components/canvas/scenes/document/DocumentMessageList.svelte'
 

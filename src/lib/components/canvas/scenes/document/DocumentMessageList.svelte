@@ -16,9 +16,9 @@
     partText,
     readContextPart,
     sourceUrlPart,
-    writeDocumentPart,
-    type DisplayMessage
+    writeDocumentPart
   } from '$lib/scenes/chat-parts'
+  import type { DisplayMessage } from '$lib/scenes/types'
 
   let {
     messages,

@@ -1,6 +1,5 @@
 import DOMPurify from 'dompurify'
-
-export type MentionSegment = { text: string; hi: boolean }
+import type { MentionSegment } from '$lib/chat/types'
 
 // DOMPurify strips all HTML and script injection; ALLOWED_TAGS:[] returns
 // plain text only. Unicode normalization and length cap follow.

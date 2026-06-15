@@ -10,9 +10,9 @@ import { listCanvasWorkflowsForCanvas } from '$lib/server/canvas-workflows'
 import { workflowsEnabled } from '$lib/server/features'
 import {
   groupSceneDocumentItemsBySceneId,
-  listSceneDocumentItemsForCanvas,
-  type SceneDocumentListsBySceneId
+  listSceneDocumentItemsForCanvas
 } from '$lib/server/scene-documents'
+import type { SceneDocumentListsBySceneId } from '$lib/server/types'
 import { getSupabase } from '$lib/server/supabase'
 import type { CanvasElement } from '$lib/workspace/schema'
 import type { CanvasRole } from '$lib/canvas/roles'

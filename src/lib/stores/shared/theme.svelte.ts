@@ -1,6 +1,5 @@
 import { browser } from '$app/environment'
-
-export type Theme = 'light' | 'dark' | 'system'
+import type { Theme } from '$lib/stores/shared/types'
 
 const STORAGE_KEY = 'theme'
 

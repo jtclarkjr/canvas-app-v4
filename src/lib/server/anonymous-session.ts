@@ -2,10 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import type { Cookies } from '@sveltejs/kit'
 import { env as privateEnv } from '$env/dynamic/private'
 import { internalServerError } from '$lib/server/api-error'
-import {
-  requestUserFromSupabaseUser,
-  type RequestSession
-} from '$lib/server/session'
+import { requestUserFromSupabaseUser } from '$lib/server/session'
+import type { RequestSession } from '$lib/server/types'
 import { setSupabaseSessionCookie } from '$lib/server/session-cookie'
 
 export async function createAnonymousRequestSession(

@@ -1,9 +1,9 @@
 import type { Command } from '$lib/canvas/commands'
 import type {
   PathResizeHandle,
+  ShapeResizeHandle,
   TextResizeHandle
-} from '$lib/canvas/drawing-utils'
-import type { ShapeResizeHandle } from '$lib/canvas/diagram-utils'
+} from '$lib/canvas/types'
 import type {
   Arrowhead,
   CanvasDrawableElement,

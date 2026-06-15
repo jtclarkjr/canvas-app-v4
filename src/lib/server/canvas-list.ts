@@ -8,15 +8,12 @@ import {
 } from '$lib/canvas/schema'
 import type { CanvasRole, MemberRole } from '$lib/canvas/roles'
 import type { Database } from '$lib/server/database.types'
+import type { CanvasListData } from '$lib/server/types'
 
 type CanvasMembership = Pick<
   Database['public']['Tables']['canvas_members']['Row'],
   'canvas_id' | 'role'
 >
-
-export type CanvasListData = ListCanvasesResponse & {
-  error: string | null
-}
 
 export function createEmptyCanvasListData(): CanvasListData {
   return { items: [], error: null }

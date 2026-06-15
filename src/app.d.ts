@@ -1,5 +1,4 @@
-import type { AuthConfig } from '$lib/server/auth-config'
-import type { RequestUser } from '$lib/server/session'
+import type { AuthConfig, RequestUser } from '$lib/server/types'
 import type { ListCanvasesResponse } from '$lib/canvas/schema'
 
 declare global {

@@ -4,9 +4,9 @@ import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
 import { getAuthConfig } from '$lib/server/auth-config'
 import {
   createEmptyCanvasListData,
-  listCanvasesForUser,
-  type CanvasListData
+  listCanvasesForUser
 } from '$lib/server/canvas-list'
+import type { CanvasListData } from '$lib/server/types'
 import { getSupabase } from '$lib/server/supabase'
 
 function canvasListError(error: unknown): CanvasListData {
