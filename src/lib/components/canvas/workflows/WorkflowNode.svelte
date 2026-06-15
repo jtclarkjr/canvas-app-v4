@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Handle, Position, type NodeProps } from '@xyflow/svelte'
+  import { Handle, Position } from '@xyflow/svelte'
   import {
     CheckCircle2,
     CircleDot,
@@ -8,11 +8,12 @@
     FileOutput,
     StickyNote
   } from 'lucide-svelte'
-  import type { WorkflowFlowNode, WorkflowNodeData } from '$lib/workflows/types'
+  import type { WorkflowNodeData } from '$lib/workflows/types'
 
-  let { data, selected = false } = $props<
-    NodeProps<WorkflowFlowNode> & { data: WorkflowNodeData }
-  >()
+  let { data, selected = false } = $props<{
+    data: WorkflowNodeData
+    selected?: boolean
+  }>()
 
   const Icon = $derived.by(() => {
     switch (data.stepType) {
