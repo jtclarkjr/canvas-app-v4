@@ -6,14 +6,14 @@
   import type { WorkspaceDeviceProfile } from '$lib/workspace/device-profile.svelte'
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
   import TextEditor from '$lib/components/shared/TextEditor.svelte'
-  import MobileCanvasConference from '$lib/mobile/components/conference/MobileCanvasConference.svelte'
   import LiveCursors from '$lib/components/canvas/workspace/LiveCursors.svelte'
   import RequestEditAccessBanner from '$lib/components/canvas/workspace/RequestEditAccessBanner.svelte'
-  import ShareDialog from '$lib/components/canvas/workspace/ShareDialog.svelte'
   import MobileCanvasChat from '$lib/mobile/components/chat/MobileCanvasChat.svelte'
+  import MobileCanvasConference from '$lib/mobile/components/conference/MobileCanvasConference.svelte'
   import MobileSceneDialog from '$lib/mobile/components/scenes/MobileSceneDialog.svelte'
   import MobileSceneCardLayer from '$lib/mobile/components/scenes/MobileSceneCardLayer.svelte'
   import MobileWorkspaceChrome from '$lib/mobile/components/workspace/MobileWorkspaceChrome.svelte'
+  import ShareDialogRouter from '$lib/workspace/ShareDialogRouter.svelte'
 
   let {
     workspace,
@@ -39,7 +39,7 @@
 <MobileWorkspaceChrome {workspace} />
 
 {#if !workspace.isAnonymousPublicViewer}
-  <ShareDialog
+  <ShareDialogRouter
     bind:open={workspace.shareDialogOpen}
     canvasId={workspace.canvasIdForActions}
     canvasTitle={workspace.currentCanvasTitle}
@@ -47,6 +47,7 @@
     currentUserId={userId}
     visibility={workspace.currentCanvasVisibility}
     pendingRequests={workspace.pendingRequests}
+    {deviceProfile}
     onRequestResolved={workspace.handleRequestResolved}
     onVisibilityChange={workspace.saveVisibility}
   />

@@ -9,6 +9,7 @@
     Share2
   } from 'lucide-svelte'
   import { onMount } from 'svelte'
+  import { slide } from 'svelte/transition'
   import type { Canvas } from '$lib/canvas/schema'
   import { toast } from '$lib/stores/shared/toast.svelte'
   import { useCanvasChatStoreOptional } from '$lib/stores/chat/canvas-chat.svelte'
@@ -39,14 +40,14 @@
   }>()
 
   let titleInputEl = $state<HTMLInputElement | null>(null)
-  let dropdownEl = $state<HTMLDivElement | null>(null)
   let mobileMenuEl = $state<HTMLDivElement | null>(null)
-  let showCanvasSelector = $state(false)
+  let canvasesOpen = $state(false)
   let mobileMenuOpen = $state(false)
   let isEditingTitle = $state(false)
   let editedTitle = $state('')
 
   const chatStore = useCanvasChatStoreOptional()
+  const recentCanvases = $derived(canvases.slice(0, 3))
 
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,14 +57,6 @@
         !mobileMenuEl.contains(event.target)
       ) {
         mobileMenuOpen = false
-      }
-
-      if (
-        dropdownEl &&
-        event.target instanceof Node &&
-        !dropdownEl.contains(event.target)
-      ) {
-        showCanvasSelector = false
       }
     }
 
@@ -117,7 +110,6 @@
         class="toolbar-pill flex size-11 items-center justify-center"
         onclick={() => {
           mobileMenuOpen = !mobileMenuOpen
-          showCanvasSelector = false
         }}
         aria-label="Open canvas menu"
         aria-expanded={mobileMenuOpen}
@@ -170,6 +162,65 @@
                 <House class="size-4" aria-hidden="true" />
                 Dashboard
               </a>
+            {/if}
+
+            {#if showNavigation}
+              <div class="border-t border-border/60 pt-1">
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition hover:bg-secondary"
+                  onclick={() => (canvasesOpen = !canvasesOpen)}
+                  aria-label="Show recent canvases"
+                  aria-expanded={canvasesOpen}
+                >
+                  <ChevronDown
+                    class={`size-4 shrink-0 transition-transform duration-200 ${
+                      canvasesOpen ? 'rotate-180' : ''
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span class="min-w-0 flex-1 text-left">Canvases</span>
+                  <span class="text-xs text-muted-foreground">Last 3</span>
+                </button>
+
+                {#if canvasesOpen}
+                  <div
+                    class="overflow-hidden pb-1 pl-2"
+                    transition:slide={{ duration: 180, axis: 'y' }}
+                  >
+                    {#if recentCanvases.length > 0}
+                      {#each recentCanvases as canvas (canvas.id)}
+                        <button
+                          type="button"
+                          class={`mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
+                            canvas.id === activeCanvasId
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-popover-foreground hover:bg-secondary'
+                          }`}
+                          role="menuitem"
+                          onclick={() => {
+                            mobileMenuOpen = false
+                            canvasesOpen = false
+                            if (canvas.id !== activeCanvasId) {
+                              void goto(`/canvas/${canvas.id}`)
+                            }
+                          }}
+                        >
+                          {canvas.title.trim() || 'Untitled canvas'}
+                        </button>
+                      {/each}
+                    {:else if isLoadingCanvases}
+                      <div class="px-3 py-2 text-sm text-muted-foreground">
+                        Loading canvases...
+                      </div>
+                    {:else}
+                      <div class="px-3 py-2 text-sm text-muted-foreground">
+                        No canvases yet
+                      </div>
+                    {/if}
+                  </div>
+                {/if}
+              </div>
             {/if}
 
             <div class="flex items-center gap-2 pt-1">
@@ -230,60 +281,5 @@
         </div>
       {/if}
     </div>
-
-    {#if showNavigation}
-      <div bind:this={dropdownEl} class="pointer-events-auto relative">
-        <button
-          type="button"
-          class="toolbar-pill flex size-11 items-center justify-center"
-          onclick={() => {
-            showCanvasSelector = !showCanvasSelector
-            mobileMenuOpen = false
-          }}
-          aria-label="Switch canvas"
-          aria-expanded={showCanvasSelector}
-          aria-haspopup="menu"
-        >
-          <ChevronDown class="size-4" aria-hidden="true" />
-        </button>
-      </div>
-    {/if}
   </div>
-
-  {#if showCanvasSelector && showNavigation}
-    <div
-      class="pointer-events-auto fixed right-3 top-[calc(env(safe-area-inset-top)+4.5rem)] max-h-[min(22rem,60dvh)] w-[min(18rem,calc(100vw-1.5rem))] overflow-y-auto rounded-xl border border-border/70 bg-popover p-1 text-popover-foreground shadow-2xl"
-      role="menu"
-    >
-      {#if canvases.length > 0}
-        {#each canvases as canvas}
-          <button
-            type="button"
-            class={`w-full rounded-xl px-3 py-3 text-left text-sm font-medium transition ${
-              canvas.id === activeCanvasId
-                ? 'bg-primary text-primary-foreground'
-                : 'text-popover-foreground'
-            }`}
-            role="menuitem"
-            onclick={() => {
-              showCanvasSelector = false
-              if (canvas.id !== activeCanvasId) {
-                void goto(`/canvas/${canvas.id}`)
-              }
-            }}
-          >
-            {canvas.title.trim() || 'Untitled canvas'}
-          </button>
-        {/each}
-      {:else if isLoadingCanvases}
-        <div class="px-3 py-3 text-sm text-muted-foreground">
-          Loading canvases...
-        </div>
-      {:else}
-        <div class="px-3 py-3 text-sm text-muted-foreground">
-          No canvases yet
-        </div>
-      {/if}
-    </div>
-  {/if}
 </div>
