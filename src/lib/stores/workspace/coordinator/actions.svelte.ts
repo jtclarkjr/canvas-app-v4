@@ -137,7 +137,15 @@ export function createWorkspaceCoordinatorActions({
   }
 
   function handleViewportPointerDown(event: PointerEvent) {
-    if (stores.modeStore.mode !== 'editor') {
+    // Only a true background click should drop back to editor. Clicks on a
+    // scene card / workflow frame or their buttons (e.g. "Open scene") bubble
+    // here when they hit an interactive descendant — those must not switch mode.
+    const onInteractive =
+      event.target instanceof Element &&
+      event.target.closest(
+        'button, a, input, textarea, select, [role="button"], [data-camera-exempt]'
+      ) !== null
+    if (!onInteractive && stores.modeStore.mode !== 'editor') {
       state.selectedElementIds = new Set()
       handleModeChange('editor')
     }
