@@ -21,6 +21,7 @@
     WorkflowDefinition,
     WorkflowStepType
   } from '$lib/workflows/schema'
+  import { theme } from '$lib/stores/shared/theme.svelte'
 
   let { workflow, canEdit, onDefinitionChange } = $props<{
     workflow: Workflow
@@ -140,6 +141,7 @@
     bind:edges
     fitView
     {nodeTypes}
+    colorMode={theme.current}
     nodesDraggable={canEdit}
     nodesConnectable={canEdit}
     elementsSelectable={canEdit}
