@@ -147,9 +147,6 @@
   onpointerup={workspace.handleViewportPointerUp}
   onpointercancel={workspace.handleViewportPointerUp}
   onpointerleave={workspace.handleViewportPointerUp}
-  ontouchstart={workspace.handleTouchStart}
-  ontouchmove={workspace.handleTouchMove}
-  ontouchend={workspace.handleTouchEnd}
   style={workspace.rootStyle}
   role="region"
   aria-label="Drawing workspace"

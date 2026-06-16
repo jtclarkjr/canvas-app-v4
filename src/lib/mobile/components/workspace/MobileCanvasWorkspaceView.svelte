@@ -6,7 +6,7 @@
   import type { WorkspaceDeviceProfile } from '$lib/workspace/device-profile.svelte'
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
   import TextEditor from '$lib/components/shared/TextEditor.svelte'
-  import CanvasConference from '$lib/components/canvas/conference/CanvasConference.svelte'
+  import MobileCanvasConference from '$lib/mobile/components/conference/MobileCanvasConference.svelte'
   import LiveCursors from '$lib/components/canvas/workspace/LiveCursors.svelte'
   import RequestEditAccessBanner from '$lib/components/canvas/workspace/RequestEditAccessBanner.svelte'
   import ShareDialog from '$lib/components/canvas/workspace/ShareDialog.svelte'
@@ -135,7 +135,7 @@
 {/if}
 
 {#if !workspace.isAnonymousPublicViewer}
-  <CanvasConference />
+  <MobileCanvasConference />
 {/if}
 
 {#if workspace.isPublicViewer || workspace.role === 'reader'}

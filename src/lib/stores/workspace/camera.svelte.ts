@@ -303,7 +303,15 @@ export function createWorkspaceCameraStore({
     }
 
     rootEl.addEventListener('wheel', wheelHandler, { passive: false })
-    return () => rootEl?.removeEventListener('wheel', wheelHandler)
+    rootEl.addEventListener('touchstart', handleTouchStart, { passive: false })
+    rootEl.addEventListener('touchmove', handleTouchMove, { passive: false })
+    rootEl.addEventListener('touchend', handleTouchEnd)
+    return () => {
+      rootEl?.removeEventListener('wheel', wheelHandler)
+      rootEl?.removeEventListener('touchstart', handleTouchStart)
+      rootEl?.removeEventListener('touchmove', handleTouchMove)
+      rootEl?.removeEventListener('touchend', handleTouchEnd)
+    }
   })
 
   return {
