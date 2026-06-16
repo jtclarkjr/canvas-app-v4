@@ -9,7 +9,8 @@
     Share2
   } from 'lucide-svelte'
   import { onMount } from 'svelte'
-  import { slide } from 'svelte/transition'
+  import { cubicOut } from 'svelte/easing'
+  import { fade, fly, slide } from 'svelte/transition'
   import type { Canvas } from '$lib/canvas/schema'
   import { toast } from '$lib/stores/shared/toast.svelte'
   import { useCanvasChatStoreOptional } from '$lib/stores/chat/canvas-chat.svelte'
@@ -122,6 +123,7 @@
         <div
           class="absolute left-0 top-12 w-[min(18rem,calc(100vw-1.5rem))] overflow-hidden rounded-xl border border-border/70 bg-popover text-popover-foreground shadow-2xl"
           role="menu"
+          transition:fly={{ y: -8, duration: 160, easing: cubicOut }}
         >
           <div class="border-b border-border/70 p-2">
             {#if isEditingTitle}
@@ -186,38 +188,44 @@
                 {#if canvasesOpen}
                   <div
                     class="overflow-hidden pb-1 pl-2"
-                    transition:slide={{ duration: 180, axis: 'y' }}
+                    transition:slide={{
+                      duration: 180,
+                      axis: 'y',
+                      easing: cubicOut
+                    }}
                   >
-                    {#if recentCanvases.length > 0}
-                      {#each recentCanvases as canvas (canvas.id)}
-                        <button
-                          type="button"
-                          class={`mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
-                            canvas.id === activeCanvasId
-                              ? 'bg-primary text-primary-foreground'
-                              : 'text-popover-foreground hover:bg-secondary'
-                          }`}
-                          role="menuitem"
-                          onclick={() => {
-                            mobileMenuOpen = false
-                            canvasesOpen = false
-                            if (canvas.id !== activeCanvasId) {
-                              void goto(`/canvas/${canvas.id}`)
-                            }
-                          }}
-                        >
-                          {canvas.title.trim() || 'Untitled canvas'}
-                        </button>
-                      {/each}
-                    {:else if isLoadingCanvases}
-                      <div class="px-3 py-2 text-sm text-muted-foreground">
-                        Loading canvases...
-                      </div>
-                    {:else}
-                      <div class="px-3 py-2 text-sm text-muted-foreground">
-                        No canvases yet
-                      </div>
-                    {/if}
+                    <div transition:fade={{ duration: 120 }}>
+                      {#if recentCanvases.length > 0}
+                        {#each recentCanvases as canvas (canvas.id)}
+                          <button
+                            type="button"
+                            class={`mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
+                              canvas.id === activeCanvasId
+                                ? 'bg-primary text-primary-foreground'
+                                : 'text-popover-foreground hover:bg-secondary'
+                            }`}
+                            role="menuitem"
+                            onclick={() => {
+                              mobileMenuOpen = false
+                              canvasesOpen = false
+                              if (canvas.id !== activeCanvasId) {
+                                void goto(`/canvas/${canvas.id}`)
+                              }
+                            }}
+                          >
+                            {canvas.title.trim() || 'Untitled canvas'}
+                          </button>
+                        {/each}
+                      {:else if isLoadingCanvases}
+                        <div class="px-3 py-2 text-sm text-muted-foreground">
+                          Loading canvases...
+                        </div>
+                      {:else}
+                        <div class="px-3 py-2 text-sm text-muted-foreground">
+                          No canvases yet
+                        </div>
+                      {/if}
+                    </div>
                   </div>
                 {/if}
               </div>
