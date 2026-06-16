@@ -49,6 +49,9 @@
 
   const chatStore = useCanvasChatStoreOptional()
   const recentCanvases = $derived(canvases.slice(0, 3))
+  const hasMenuNotifications = $derived(
+    pendingCount > 0 || (chatStore?.unreadCount ?? 0) > 0
+  )
 
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,15 +111,23 @@
     <div bind:this={mobileMenuEl} class="pointer-events-auto relative">
       <button
         type="button"
-        class="toolbar-pill flex size-11 items-center justify-center"
+        class="toolbar-pill relative flex size-11 items-center justify-center"
         onclick={() => {
           mobileMenuOpen = !mobileMenuOpen
         }}
-        aria-label="Open canvas menu"
+        aria-label={hasMenuNotifications
+          ? 'Open canvas menu, notifications available'
+          : 'Open canvas menu'}
         aria-expanded={mobileMenuOpen}
         aria-haspopup="menu"
       >
         <Menu class="size-5" aria-hidden="true" />
+        {#if hasMenuNotifications}
+          <span
+            class="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-warning ring-2 ring-background"
+            aria-hidden="true"
+          ></span>
+        {/if}
       </button>
 
       {#if mobileMenuOpen}
