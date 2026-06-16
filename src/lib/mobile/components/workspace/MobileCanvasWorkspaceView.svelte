@@ -7,9 +7,9 @@
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
   import TextEditor from '$lib/components/shared/TextEditor.svelte'
   import LiveCursors from '$lib/components/canvas/workspace/LiveCursors.svelte'
-  import RequestEditAccessBanner from '$lib/components/canvas/workspace/RequestEditAccessBanner.svelte'
   import MobileCanvasChat from '$lib/mobile/components/chat/MobileCanvasChat.svelte'
   import MobileCanvasConference from '$lib/mobile/components/conference/MobileCanvasConference.svelte'
+  import MobileRequestEditAccessBanner from '$lib/mobile/components/workspace/MobileRequestEditAccessBanner.svelte'
   import MobileSceneDialog from '$lib/mobile/components/scenes/MobileSceneDialog.svelte'
   import MobileSceneCardLayer from '$lib/mobile/components/scenes/MobileSceneCardLayer.svelte'
   import MobileWorkspaceChrome from '$lib/mobile/components/workspace/MobileWorkspaceChrome.svelte'
@@ -140,7 +140,7 @@
 {/if}
 
 {#if workspace.isPublicViewer || workspace.role === 'reader'}
-  <RequestEditAccessBanner
+  <MobileRequestEditAccessBanner
     canvasId={workspace.canvasIdForActions}
     isPublicViewer={workspace.isPublicViewer}
     isAnonymousPublicViewer={workspace.isAnonymousPublicViewer}
