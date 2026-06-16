@@ -2,8 +2,8 @@
   import { MessageSquare, Mic, MicOff, Pin, Users } from 'lucide-svelte'
   import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
-  import CanvasChatRoomPanel from '$lib/components/canvas/chat/CanvasChatRoomPanel.svelte'
   import ConferenceCallChatPanel from '$lib/components/canvas/conference/ConferenceCallChatPanel.svelte'
+  import MobileCanvasChatRoomPanel from '$lib/mobile/components/chat/MobileCanvasChatRoomPanel.svelte'
 
   const store = useCanvasConferenceStore()
   const chatStore = useCanvasChatStore()
@@ -196,7 +196,7 @@
         {#if store.fullscreenChatTab === 'call'}
           <ConferenceCallChatPanel />
         {:else}
-          <CanvasChatRoomPanel userId={store.userId} alwaysVisible />
+          <MobileCanvasChatRoomPanel userId={store.userId} alwaysVisible />
         {/if}
       </div>
     {:else if store.fullscreenPanel === 'people'}
