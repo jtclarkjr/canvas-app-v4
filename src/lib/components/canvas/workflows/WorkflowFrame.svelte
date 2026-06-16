@@ -80,8 +80,7 @@
   aria-label={`${interactive ? 'Focus' : 'Drag'} workflow ${workflow.title}`}
   onpointerdown={(event) => handlers.pointerDown(event, workflow.id)}
   onpointermove={(event) => handlers.pointerMove(event, workflow.id)}
-  onpointerup={(event) =>
-    handlers.pointerUp(event, workflow.id, { focusOnClick: interactive })}
+  onpointerup={(event) => handlers.pointerUp(event, workflow.id)}
   onpointercancel={(event) => handlers.pointerCancel(event, workflow.id)}
   ondblclick={() => onFocus(workflow.id)}
   onkeydown={(event) => {

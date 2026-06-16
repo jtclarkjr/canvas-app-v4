@@ -509,6 +509,10 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     }
     selectedTool = tool
     sceneCursorStyle = null
+    if (tool !== 'hand' && modeStore.mode !== 'editor') {
+      workflowsStore.clearFocusedWorkflow()
+      modeStore.setMode('editor')
+    }
   }
 
   function handleModeChange(nextMode: WorkspaceMode) {
@@ -532,6 +536,18 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
 
     if (nextMode !== 'workflows') {
       workflowsStore.clearFocusedWorkflow()
+    }
+
+    // Deselect a scene element when leaving scenes mode so the single-click
+    // auto-switch effect doesn't immediately re-enter scenes.
+    if (nextMode !== 'scenes' && modeStore.mode === 'scenes') {
+      const [id] = selectedElementIds
+      if (
+        selectedElementIds.size === 1 &&
+        scenesStore.scenes.some((s) => s.id === id)
+      ) {
+        selectedElementIds = new Set()
+      }
     }
 
     modeStore.setMode(nextMode)
@@ -588,6 +604,27 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
 
     if (modeStore.mode !== 'editor' && selectedTool !== 'hand') {
       selectedTool = 'hand'
+    }
+  })
+
+  $effect(() => {
+    if (modeStore.mode === 'scenes') return
+    if (selectedElementIds.size !== 1) return
+    const [id] = selectedElementIds
+    if (scenesStore.scenes.some((s) => s.id === id)) {
+      handleModeChange('scenes')
+    }
+  })
+
+  $effect(() => {
+    if (scenesStore.openScene && modeStore.mode !== 'scenes') {
+      handleModeChange('scenes')
+    }
+  })
+
+  $effect(() => {
+    if (workflowsStore.focusedWorkflowId && modeStore.mode !== 'workflows') {
+      handleModeChange('workflows')
     }
   })
 
@@ -704,7 +741,13 @@ export function createCanvasWorkspaceStore(input: CanvasWorkspaceStoreInput) {
     zoomIn: cameraStore.zoomIn,
     zoomOut: cameraStore.zoomOut,
     resetView: cameraStore.resetView,
-    handleViewportPointerDown: cameraStore.handleViewportPointerDown,
+    handleViewportPointerDown: (event: PointerEvent) => {
+      if (modeStore.mode !== 'editor') {
+        selectedElementIds = new Set()
+        handleModeChange('editor')
+      }
+      cameraStore.handleViewportPointerDown(event)
+    },
     handleViewportPointerMove: cameraStore.handleViewportPointerMove,
     handleViewportPointerUp: cameraStore.handleViewportPointerUp,
     handleTouchStart: cameraStore.handleTouchStart,
