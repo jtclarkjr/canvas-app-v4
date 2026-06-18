@@ -1,5 +1,7 @@
 <script lang="ts">
   import { Minimize2, Trash2 } from 'lucide-svelte'
+  import { cubicOut } from 'svelte/easing'
+  import { fade, fly } from 'svelte/transition'
   import type {
     Scene,
     SceneMessage,
@@ -58,9 +60,17 @@
   let isClosing = false
   let initialPrompt = $state<string | null>(null)
   let confirmDeleteOpen = $state(false)
+  let dragPointerId: number | null = null
+  let dragStartX = 0
+  let dragStartY = 0
+  let dragStartScrollable: HTMLElement | null = null
+  let dragActive = false
+  let dragY = $state(0)
+  let dragging = $state(false)
 
   const sceneType = $derived(getSceneType(scene.type))
   const isPhone = $derived(deviceProfile.shell === 'phone')
+  const sheetStyle = $derived(`transform:translateY(${dragY}px)`)
   const hasStarted = $derived(
     typeof scene.settings.category === 'string' &&
       scene.settings.category !== ''
@@ -88,6 +98,7 @@
   $effect(() => {
     const el = dialogEl
     if (!el) return
+    if (isPhone) return
 
     el.style.transformOrigin = 'top left'
     const target = el.getBoundingClientRect()
@@ -118,6 +129,12 @@
   async function minimize() {
     if (isClosing) return
     isClosing = true
+    dragY = 0
+
+    if (isPhone) {
+      onClose()
+      return
+    }
 
     const el = dialogEl
     const cardRect =
@@ -156,6 +173,81 @@
     }
 
     onClose()
+  }
+
+  function closestScrollable(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) {
+      return null
+    }
+
+    let current: HTMLElement | null = target
+    while (current) {
+      const style = window.getComputedStyle(current)
+      const canScroll =
+        /(auto|scroll)/.test(style.overflowY) &&
+        current.scrollHeight > current.clientHeight
+
+      if (canScroll) {
+        return current
+      }
+
+      if (current.getAttribute('role') === 'dialog') {
+        return null
+      }
+
+      current = current.parentElement
+    }
+
+    return null
+  }
+
+  function handleDragStart(event: PointerEvent) {
+    if (!isPhone || isClosing) return
+    dragPointerId = event.pointerId
+    dragStartX = event.clientX
+    dragStartY = event.clientY - dragY
+    dragStartScrollable = closestScrollable(event.target)
+    dragActive = false
+    dragging = false
+    ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+  }
+
+  function handleDragMove(event: PointerEvent) {
+    if (!isPhone || event.pointerId !== dragPointerId) return
+
+    const deltaX = event.clientX - dragStartX
+    const deltaY = event.clientY - dragStartY
+
+    if (!dragActive) {
+      if (
+        deltaY <= 10 ||
+        Math.abs(deltaX) > Math.abs(deltaY) ||
+        (dragStartScrollable && dragStartScrollable.scrollTop > 0)
+      ) {
+        return
+      }
+
+      dragActive = true
+      dragging = true
+    }
+
+    event.preventDefault()
+    dragY = Math.max(0, deltaY)
+  }
+
+  function handleDragEnd(event: PointerEvent) {
+    if (!isPhone || event.pointerId !== dragPointerId) return
+    dragging = false
+    dragActive = false
+    dragStartScrollable = null
+    dragPointerId = null
+
+    if (dragY > 80) {
+      void minimize()
+      return
+    }
+
+    dragY = 0
   }
 
   function handleWindowKeydown(event: KeyboardEvent) {
@@ -197,57 +289,85 @@
   class="fixed inset-0 z-40 cursor-auto bg-black/45 backdrop-blur-sm"
   role="presentation"
   data-camera-exempt
+  transition:fade={{ duration: 120 }}
   onpointerdown={() => void minimize()}
 ></div>
 
 <div
   bind:this={dialogEl}
   class={isPhone
-    ? 'fixed inset-0 z-50 flex cursor-auto flex-col overflow-hidden bg-background text-foreground'
+    ? `fixed inset-x-0 bottom-0 z-50 flex h-[94dvh] max-h-[calc(100dvh-env(safe-area-inset-top)-0.75rem)] min-h-[20rem] cursor-auto flex-col overflow-hidden rounded-t-2xl border border-border/70 bg-card text-card-foreground shadow-2xl ${
+        dragging ? '' : 'transition-transform duration-150'
+      }`
     : 'glass-card fixed inset-x-[6vw] inset-y-[5vh] z-50 flex cursor-auto flex-col overflow-hidden md:inset-x-[10vw]'}
+  style={isPhone ? sheetStyle : undefined}
   role="dialog"
   aria-modal="true"
   aria-labelledby="scene-dialog-title"
+  tabindex="-1"
   data-camera-exempt
+  transition:fly={isPhone
+    ? { y: 36, duration: 180, easing: cubicOut }
+    : undefined}
+  onpointerdown={handleDragStart}
+  onpointermove={handleDragMove}
+  onpointerup={handleDragEnd}
+  onpointercancel={handleDragEnd}
 >
   <header
     class={isPhone
-      ? 'flex items-center justify-between gap-3 border-b border-border/50 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]'
+      ? 'shrink-0 border-b border-border/60 px-4 pb-3 pt-2'
       : 'flex items-center justify-between gap-3 border-b border-border/50 px-5 py-3'}
   >
-    <div class="flex min-w-0 items-center gap-2">
-      <span
-        class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-      >
-        {sceneType?.label ?? scene.type}
-      </span>
-      <h2
-        id="scene-dialog-title"
-        class="truncate text-sm font-semibold text-foreground"
-      >
-        {scene.title || sceneType?.defaultTitle || 'Scene'}
-      </h2>
-    </div>
-
-    <div class="flex items-center gap-1">
-      {#if canModify}
-        <button
-          type="button"
-          class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-          onclick={() => (confirmDeleteOpen = true)}
-          aria-label="Delete scene"
-        >
-          <Trash2 class="size-4" aria-hidden="true" />
-        </button>
-      {/if}
+    {#if isPhone}
       <button
         type="button"
-        class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        class="mx-auto mb-3 block h-5 w-16 rounded-full"
+        aria-label="Drag down to close scene"
         onclick={() => void minimize()}
-        aria-label="Minimize scene"
       >
-        <Minimize2 class="size-4" aria-hidden="true" />
+        <span class="mx-auto block h-1 w-10 rounded-full bg-muted-foreground/30"
+        ></span>
       </button>
+    {/if}
+
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex min-w-0 items-center gap-2">
+        <span
+          class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+        >
+          {sceneType?.label ?? scene.type}
+        </span>
+        <h2
+          id="scene-dialog-title"
+          class="truncate text-sm font-semibold text-foreground"
+        >
+          {scene.title || sceneType?.defaultTitle || 'Scene'}
+        </h2>
+      </div>
+
+      <div class="flex shrink-0 items-center gap-1">
+        {#if canModify}
+          <button
+            type="button"
+            class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
+            onclick={() => (confirmDeleteOpen = true)}
+            aria-label="Delete scene"
+          >
+            <Trash2 class="size-4" aria-hidden="true" />
+          </button>
+        {/if}
+        {#if !isPhone}
+          <button
+            type="button"
+            class="flex size-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            onclick={() => void minimize()}
+            aria-label="Minimize scene"
+          >
+            <Minimize2 class="size-4" aria-hidden="true" />
+          </button>
+        {/if}
+      </div>
     </div>
   </header>
 

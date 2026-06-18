@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Plus, Workflow as WorkflowIcon } from 'lucide-svelte'
+  import { Workflow as WorkflowIcon } from 'lucide-svelte'
   import type { Camera } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
@@ -8,13 +8,10 @@
     UpdateWorkflowInput,
     Workflow,
     WorkflowDefinition,
-    WorkflowFlowType,
     WorkflowSettings
   } from '$lib/workflows/schema'
   import MobileWorkflowCard from '$lib/mobile/components/workflows/MobileWorkflowCard.svelte'
-  import MobileWorkflowCreateSheet from '$lib/mobile/components/workflows/MobileWorkflowCreateSheet.svelte'
   import MobileWorkflowFullscreen from '$lib/mobile/components/workflows/MobileWorkflowFullscreen.svelte'
-  import MobileWorkflowListSheet from '$lib/mobile/components/workflows/MobileWorkflowListSheet.svelte'
 
   type FrameHandlers = {
     pointerDown: (event: PointerEvent, workflowId: string) => void
@@ -43,7 +40,6 @@
     canModifyWorkflow,
     handlers,
     isCreatingWorkflow = false,
-    onCreateWorkflow,
     onFocusWorkflow,
     onClearFocusedWorkflow,
     onDeleteWorkflow,
@@ -64,7 +60,6 @@
     canModifyWorkflow: (workflowId: string) => boolean
     handlers: FrameHandlers
     isCreatingWorkflow?: boolean
-    onCreateWorkflow: (flowType?: WorkflowFlowType) => void
     onFocusWorkflow: (workflowId: string) => void
     onClearFocusedWorkflow: () => void
     onDeleteWorkflow: (workflowId: string) => void
@@ -90,8 +85,6 @@
     ) => Promise<Workflow | null>
   }>()
 
-  let createOpen = $state(false)
-  let listOpen = $state(false)
   let fullscreenWorkflowId = $state<string | null>(null)
   const interactive = $derived(mode === 'workflows')
   const fullscreenWorkflow = $derived(
@@ -102,8 +95,6 @@
 
   $effect(() => {
     if (mode !== 'workflows') {
-      createOpen = false
-      listOpen = false
       fullscreenWorkflowId = null
     }
   })
@@ -120,8 +111,6 @@
   })
 
   function openWorkflow(workflowId: string) {
-    createOpen = false
-    listOpen = false
     fullscreenWorkflowId = workflowId
     onFocusWorkflow(workflowId)
   }
@@ -129,12 +118,6 @@
   function closeFullscreen() {
     fullscreenWorkflowId = null
     onClearFocusedWorkflow()
-  }
-
-  function createWorkflow(flowType: WorkflowFlowType) {
-    createOpen = false
-    listOpen = false
-    onCreateWorkflow(flowType)
   }
 
   function deleteWorkflow(workflowId: string) {
@@ -160,29 +143,6 @@
   {/each}
 </div>
 
-{#if interactive && workflows.length > 0 && !fullscreenWorkflow}
-  <button
-    type="button"
-    class="toolbar-pill fixed right-3 top-[calc(env(safe-area-inset-top)+4.25rem)] z-20 flex size-11 items-center justify-center"
-    onclick={() => (listOpen = true)}
-    aria-label="Open workflow list"
-  >
-    <WorkflowIcon class="size-5" aria-hidden="true" />
-  </button>
-{/if}
-
-{#if interactive && canEdit && !fullscreenWorkflow}
-  <button
-    type="button"
-    class="toolbar-pill fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+7.75rem)] z-20 flex h-11 -translate-x-1/2 items-center gap-2 px-4 text-sm font-medium disabled:opacity-60"
-    onclick={() => (createOpen = true)}
-    disabled={isCreatingWorkflow}
-  >
-    <Plus class="size-4" aria-hidden="true" />
-    {isCreatingWorkflow ? 'Creating...' : 'New workflow'}
-  </button>
-{/if}
-
 {#if interactive && workflows.length === 0 && !isCreatingWorkflow}
   <div
     class="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+7.75rem)] z-10 flex justify-center"
@@ -194,27 +154,6 @@
       No workflow items yet
     </div>
   </div>
-{/if}
-
-{#if listOpen}
-  <MobileWorkflowListSheet
-    {workflows}
-    {canEdit}
-    onOpen={openWorkflow}
-    onCreateRequest={() => {
-      listOpen = false
-      createOpen = true
-    }}
-    onClose={() => (listOpen = false)}
-  />
-{/if}
-
-{#if createOpen}
-  <MobileWorkflowCreateSheet
-    isCreating={isCreatingWorkflow}
-    onClose={() => (createOpen = false)}
-    onCreate={createWorkflow}
-  />
 {/if}
 
 {#if interactive && fullscreenWorkflow}

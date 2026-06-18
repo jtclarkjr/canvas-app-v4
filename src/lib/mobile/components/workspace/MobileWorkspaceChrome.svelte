@@ -28,11 +28,13 @@
   onModeChange={workspace.handleModeChange}
 />
 
-<MobileToolDock
-  selectedTool={workspace.displayTool}
-  readOnly={!workspace.canEdit || workspace.mode !== 'editor'}
-  onToolChange={workspace.handleToolChange}
-/>
+{#if workspace.mode === 'editor'}
+  <MobileToolDock
+    selectedTool={workspace.displayTool}
+    readOnly={!workspace.canEdit}
+    onToolChange={workspace.handleToolChange}
+  />
+{/if}
 
 <MobileTextFormattingToolbar
   fontSize={workspace.textFormatting.fontSize}

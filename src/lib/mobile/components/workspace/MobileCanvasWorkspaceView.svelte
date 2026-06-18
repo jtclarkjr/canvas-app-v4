@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { SceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
-  import type { WorkflowFlowType } from '$lib/workflows/schema'
   import type { CanvasWorkspaceStore } from '$lib/mobile/types'
   import type { WorkspaceDeviceProfile } from '$lib/workspace/device-profile.svelte'
   import CanvasSurface from '$lib/components/canvas/CanvasSurface.svelte'
@@ -79,12 +78,9 @@
     scenes={workspace.scenes}
     camera={workspace.camera}
     mode={workspace.mode}
-    canEdit={workspace.canEdit}
     canModifyScene={workspace.canModifyScene}
     activity={workspace.sceneActivity}
     handlers={workspace.sceneCardHandlers}
-    isCreatingScene={workspace.isCreatingScene}
-    onCreateScene={() => void workspace.createScene('document')}
   />
 {/if}
 
@@ -101,8 +97,6 @@
     canModifyWorkflow={workspace.canModifyWorkflow}
     handlers={workspace.workflowFrameHandlers}
     isCreatingWorkflow={workspace.isCreatingWorkflow}
-    onCreateWorkflow={(flowType?: WorkflowFlowType) =>
-      void workspace.createWorkflow(flowType)}
     onFocusWorkflow={workspace.focusWorkflow}
     onClearFocusedWorkflow={workspace.clearFocusedWorkflow}
     onDeleteWorkflow={(workflowId: string) =>

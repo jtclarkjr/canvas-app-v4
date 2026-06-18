@@ -67,17 +67,25 @@
     event.stopPropagation()
     handlers.pointerCancel(event, workflow.id)
   }
+
+  function stopWorkspacePointer(event: PointerEvent) {
+    event.stopPropagation()
+  }
 </script>
 
 <article
   class={`absolute flex overflow-hidden rounded-xl border border-border/70 bg-card/95 text-card-foreground shadow-xl backdrop-blur ${interactive ? 'pointer-events-auto' : 'pointer-events-none'}`}
   style={cardStyle}
   data-workflow-id={workflow.id}
+  onpointerdown={stopWorkspacePointer}
 >
   <button
     type="button"
     class="flex min-h-full w-full flex-col p-0 text-left"
-    onclick={() => onOpen(workflow.id)}
+    onclick={(event) => {
+      event.stopPropagation()
+      onOpen(workflow.id)
+    }}
     disabled={!interactive}
     aria-label={`Open workflow ${workflow.title}`}
   >

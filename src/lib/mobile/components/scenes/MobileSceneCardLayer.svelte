@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Plus } from 'lucide-svelte'
   import type { Camera } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneActivity, WorkspaceMode } from '$lib/scenes/types'
@@ -26,20 +25,15 @@
     canModifyScene,
     activity,
     handlers,
-    isCreatingScene = false,
-    deviceProfile,
-    onCreateScene
+    deviceProfile
   } = $props<{
     scenes: Scene[]
     camera: Camera
     mode: WorkspaceMode
-    canEdit: boolean
     canModifyScene: (sceneId: string) => boolean
     activity: Record<string, SceneActivity>
     handlers: CardHandlers
-    isCreatingScene?: boolean
     deviceProfile: WorkspaceDeviceProfile
-    onCreateScene: () => void
   }>()
 </script>
 
@@ -56,15 +50,3 @@
     />
   {/each}
 </div>
-
-{#if mode === 'scenes' && canEdit}
-  <button
-    type="button"
-    class="toolbar-pill fixed left-1/2 bottom-[calc(env(safe-area-inset-bottom)+7.75rem)] z-20 flex h-11 -translate-x-1/2 items-center gap-2 px-4 text-sm font-medium disabled:opacity-60"
-    onclick={onCreateScene}
-    disabled={isCreatingScene}
-  >
-    <Plus class="size-4" />
-    {isCreatingScene ? 'Creating…' : 'New scene'}
-  </button>
-{/if}

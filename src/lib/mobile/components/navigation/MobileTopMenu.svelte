@@ -344,24 +344,5 @@
         </div>
       {/if}
     </div>
-
-    {#if workflowEnabled}
-      <button
-        type="button"
-        class={`pointer-events-auto toolbar-pill relative flex size-11 items-center justify-center transition ${
-          mode === 'workflows'
-            ? 'border-primary/60 bg-primary text-primary-foreground'
-            : ''
-        }`}
-        onclick={() =>
-          onModeChange(mode === 'workflows' ? 'editor' : 'workflows')}
-        aria-label={mode === 'workflows'
-          ? 'Return to editor mode'
-          : 'Open workflows'}
-        aria-pressed={mode === 'workflows'}
-      >
-        <WorkflowIcon class="size-5" aria-hidden="true" />
-      </button>
-    {/if}
   </div>
 </div>
