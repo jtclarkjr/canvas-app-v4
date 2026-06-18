@@ -42,7 +42,9 @@
     [
       `--mode-count:${columnCount}`,
       `--active-index:${activeIndex}`,
-      `--switcher-expanded-width:${columnCount * MODE_BUTTON_WIDTH_REM + SWITCHER_PADDING_REM}rem`,
+      // +2px accounts for the toolbar-pill 1px border on each side, which
+      // border-box would otherwise eat from the inner thumb/button geometry.
+      `--switcher-expanded-width:calc(${columnCount * MODE_BUTTON_WIDTH_REM + SWITCHER_PADDING_REM}rem + 2px)`,
       `--switcher-expanded-thumb-offset:${activeIndex * MODE_BUTTON_WIDTH_REM}rem`,
       `--switcher-collapsed-track-offset:${activeIndex * -MODE_ICON_WIDTH_REM}rem`
     ].join(';')
@@ -88,7 +90,8 @@
   .mode-switcher {
     --switcher-button-width: 6.5rem;
     --switcher-icon-width: 2rem;
-    --switcher-collapsed-width: 2.5rem;
+    /* 2rem icon + 0.5rem padding + 2px for the toolbar-pill border (border-box). */
+    --switcher-collapsed-width: calc(2.5rem + 2px);
 
     width: var(--switcher-expanded-width);
     transition:
