@@ -54,10 +54,8 @@ export function createConferenceStatusStore({
   }
 
   function broadcastChanged() {
-    void channel?.send({
-      type: 'broadcast',
-      event: 'conference-changed',
-      payload: {}
+    void channel?.httpSend('conference-changed', {}).catch((error) => {
+      console.warn('[conference] status nudge broadcast failed', error)
     })
   }
 
