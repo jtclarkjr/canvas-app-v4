@@ -26,7 +26,7 @@
   import SceneCardLayer from '$lib/components/canvas/scenes/SceneCardLayer.svelte'
   import SceneDialog from '$lib/components/canvas/scenes/SceneDialog.svelte'
   import SceneModeSwitcher from '$lib/components/canvas/scenes/SceneModeSwitcher.svelte'
-  import type WorkflowLayer from '$lib/components/canvas/workflows/WorkflowLayer.svelte'
+  import WorkflowLayer from '$lib/components/canvas/workflows/WorkflowLayer.svelte'
 
   let {
     canvasId,
@@ -107,7 +107,6 @@
   let rootEl = $state<HTMLDivElement | null>(null)
   let svgEl = $state<SVGSVGElement | null>(null)
   let textInputEl = $state<HTMLTextAreaElement | null>(null)
-  let WorkflowLayerComponent = $state<typeof WorkflowLayer | null>(null)
 
   $effect(() => {
     workspace.setProps(currentWorkspaceInput())
@@ -115,25 +114,6 @@
 
   $effect(() => {
     workspace.setElements({ rootEl, svgEl, textInputEl })
-  })
-
-  $effect(() => {
-    if (!workflowEnabled || WorkflowLayerComponent) {
-      return
-    }
-
-    let cancelled = false
-    void import('$lib/components/canvas/workflows/WorkflowLayer.svelte').then(
-      (module) => {
-        if (!cancelled) {
-          WorkflowLayerComponent = module.default
-        }
-      }
-    )
-
-    return () => {
-      cancelled = true
-    }
   })
 
   onMount(workspace.mount)
@@ -288,8 +268,8 @@
     />
   {/if}
 
-  {#if !workspace.isAnonymousPublicViewer && workspace.workflowEnabled && WorkflowLayerComponent}
-    <WorkflowLayerComponent
+  {#if !workspace.isAnonymousPublicViewer && workspace.workflowEnabled}
+    <WorkflowLayer
       canvasId={workspace.canvasIdForActions}
       workflows={workspace.workflows}
       focusedWorkflow={workspace.focusedWorkflow}
