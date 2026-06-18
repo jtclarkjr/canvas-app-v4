@@ -1,11 +1,8 @@
 <script lang="ts">
   import { FileText, LoaderCircle, Search } from 'lucide-svelte'
   import { fade, scale } from 'svelte/transition'
-  import {
-    DEFAULT_CANVAS_SEARCH_LIMIT,
-    getCanvasSearchResults,
-    getCanvasTitle
-  } from '$lib/canvas/search'
+  import { DEFAULT_CANVAS_SEARCH_LIMIT } from '$lib/canvas/consts'
+  import { getCanvasSearchResults, getCanvasTitle } from '$lib/canvas/search'
   import type { Canvas } from '$lib/canvas/schema'
   import RoleBadge from '$lib/components/shared/RoleBadge.svelte'
 

@@ -1,3 +1,5 @@
+import type { Canvas } from '$lib/canvas/schema'
+
 export type Tool =
   | 'select'
   | 'hand'
@@ -191,4 +193,10 @@ export type AnchorHit = {
   targetType: DiagramAnchorTargetType
   shape?: DiagramShape
   anchor: AnchorPosition
+}
+
+export type CanvasSearchResult = {
+  canvas: Canvas
+  index: number
+  score: number
 }

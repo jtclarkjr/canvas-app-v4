@@ -1,12 +1,6 @@
+import { DEFAULT_CANVAS_SEARCH_LIMIT } from '$lib/canvas/consts'
 import type { Canvas } from '$lib/canvas/schema'
-
-export type CanvasSearchResult = {
-  canvas: Canvas
-  index: number
-  score: number
-}
-
-export const DEFAULT_CANVAS_SEARCH_LIMIT = 8
+import type { CanvasSearchResult } from '$lib/canvas/types'
 
 function normalizeSearchText(value: string): string {
   return value.trim().toLocaleLowerCase()

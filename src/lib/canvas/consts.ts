@@ -1,0 +1,1 @@
+export const DEFAULT_CANVAS_SEARCH_LIMIT = 8
