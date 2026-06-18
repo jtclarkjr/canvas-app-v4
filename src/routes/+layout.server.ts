@@ -1,6 +1,6 @@
 import type { LayoutServerLoad } from './$types'
 import { isAnonymousUser } from '$lib/auth/anonymous'
-import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
+import { CANVASES_DEPENDENCY } from '$lib/canvas/consts'
 import { getAuthConfig } from '$lib/server/auth-config'
 import {
   createEmptyCanvasListData,

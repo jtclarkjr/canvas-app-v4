@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { ROLE_LABELS, type CanvasRole } from '$lib/canvas/roles'
+  import { ROLE_LABELS } from '$lib/canvas/consts'
+  import type { CanvasRole } from '$lib/canvas/roles'
 
   let { role } = $props<{ role: CanvasRole }>()
 

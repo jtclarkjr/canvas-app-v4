@@ -15,10 +15,11 @@ import type {
   ShapeKind,
   StrokeStyle
 } from '$lib/canvas/types'
-
-export const DEFAULT_SHAPE_WIDTH = 160
-export const DEFAULT_SHAPE_HEIGHT = 96
-export const MIN_SHAPE_SIZE = 24
+import {
+  DEFAULT_SHAPE_HEIGHT,
+  DEFAULT_SHAPE_WIDTH,
+  MIN_SHAPE_SIZE
+} from '$lib/canvas/consts'
 
 const anchors: AnchorPosition[] = ['top', 'right', 'bottom', 'left']
 

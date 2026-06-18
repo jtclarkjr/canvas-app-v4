@@ -1,7 +1,7 @@
 import { invalidate } from '$app/navigation'
 import { listCanvases } from '$lib/canvas/api'
 import { updateCanvas } from '$lib/workspace/api'
-import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
+import { CANVASES_DEPENDENCY } from '$lib/canvas/consts'
 import { broadcastCanvasVisibilityChange } from '$lib/workspace/canvas-visibility-realtime'
 import type { Canvas, CanvasVisibility } from '$lib/canvas/schema'
 

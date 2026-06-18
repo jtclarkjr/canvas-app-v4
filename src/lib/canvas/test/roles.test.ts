@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test'
-import { ROLE_RANK, roleAtLeast } from '$lib/canvas/roles'
+import { ROLE_RANK } from '$lib/canvas/consts'
+import { roleAtLeast } from '$lib/canvas/roles'
 import type { CanvasRole } from '$lib/canvas/roles'
 
 describe('canvas roles', () => {

@@ -8,15 +8,17 @@ import type {
   TextHandleHit
 } from '$lib/canvas/types'
 import {
+  TEXT_BOUNDS_PADDING,
+  TEXT_EDITOR_MIN_WIDTH,
+  TEXT_EDITOR_WIDTH_PADDING,
+  TEXT_LINE_HEIGHT
+} from '$lib/canvas/consts'
+import {
   getShapeResizeCursor,
   rotatePoint,
   unrotatePoint
 } from '$lib/canvas/diagram-utils'
 
-export const TEXT_LINE_HEIGHT = 1.25
-export const TEXT_BOUNDS_PADDING = 4
-export const TEXT_EDITOR_MIN_WIDTH = 120
-export const TEXT_EDITOR_WIDTH_PADDING = 16
 const TEXT_ROTATE_HANDLE_LENGTH = 32
 const PATH_ROTATE_HANDLE_LENGTH = 32
 const MIN_TEXT_FONT_SIZE = 6

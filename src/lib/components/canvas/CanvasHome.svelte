@@ -5,7 +5,7 @@
   import { fade, scale } from 'svelte/transition'
   import { flip } from 'svelte/animate'
   import { createCanvas, deleteCanvas, listCanvases } from '$lib/canvas/api'
-  import { CANVASES_DEPENDENCY } from '$lib/canvas/dependencies'
+  import { CANVASES_DEPENDENCY } from '$lib/canvas/consts'
   import { isAnonymousUser } from '$lib/auth/anonymous'
   import CanvasSearchDialog from '$lib/components/canvas/CanvasSearchDialog.svelte'
   import Modal from '$lib/components/shared/Modal.svelte'

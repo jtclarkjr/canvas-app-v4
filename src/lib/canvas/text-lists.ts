@@ -1,6 +1,6 @@
+import { BULLET_PREFIX } from '$lib/canvas/consts'
 import type { ListStyle } from '$lib/canvas/types'
 
-export const BULLET_PREFIX = '• '
 const NUMBER_PREFIX = /^(\d+)\. /
 
 export function getLineMarker(line: string): ListStyle {

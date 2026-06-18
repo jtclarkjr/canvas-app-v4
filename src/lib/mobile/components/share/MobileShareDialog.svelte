@@ -16,13 +16,9 @@
     UserSearchResult
   } from '$lib/canvas/schema'
   import type { CanvasMember } from '$lib/workspace/schema'
-  import {
-    MEMBER_ROLES,
-    ROLE_LABELS,
-    roleAtLeast,
-    type CanvasRole,
-    type MemberRole
-  } from '$lib/canvas/roles'
+  import { MEMBER_ROLES, ROLE_LABELS } from '$lib/canvas/consts'
+  import { roleAtLeast } from '$lib/canvas/roles'
+  import type { CanvasRole, MemberRole } from '$lib/canvas/roles'
   import { toast } from '$lib/stores/shared/toast.svelte'
 
   let {
