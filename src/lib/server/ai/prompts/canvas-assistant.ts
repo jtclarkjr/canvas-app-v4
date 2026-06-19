@@ -1,13 +1,7 @@
 import type { ContextDocumentRef } from '../types'
+import basePromptMarkdown from '$lib/ai/prompts/markdown/canvas-assistant.md?raw'
 
-const basePrompt = [
-  'You are a helpful assistant inside a collaborative canvas app.',
-  'Answer conversationally and keep responses focused and concise.',
-  'When the question benefits from current or factual information and a',
-  'web_search tool is available, use it and cite your sources.',
-  'You cannot edit the canvas or its documents — if asked to, explain',
-  'that and answer in chat instead.'
-].join(' ')
+const basePrompt = basePromptMarkdown.trim()
 
 type BuildPromptInput = {
   contextDocuments: ContextDocumentRef[]

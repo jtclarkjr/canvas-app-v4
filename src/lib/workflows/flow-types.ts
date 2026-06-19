@@ -1,9 +1,18 @@
+import databaseFinalInstructionMarkdown from '$lib/ai/prompts/markdown/workflow/database-final-instruction.md?raw'
+import databaseSystemPromptMarkdown from '$lib/ai/prompts/markdown/workflow/database-system.md?raw'
+import workflowFinalInstructionMarkdown from '$lib/ai/prompts/markdown/workflow/workflow-final-instruction.md?raw'
+import workflowSystemPromptMarkdown from '$lib/ai/prompts/markdown/workflow/workflow-system.md?raw'
 import { defaultDatabaseDefinition } from '$lib/workflows/database/definition'
 import { defaultWorkflowDefinition } from '$lib/workflows/definition'
 import type {
   WorkflowDefinition,
   WorkflowFlowType
 } from '$lib/workflows/schema'
+
+const workflowSystemPrompt = workflowSystemPromptMarkdown.trim()
+const workflowFinalInstruction = workflowFinalInstructionMarkdown.trim()
+const databaseSystemPrompt = databaseSystemPromptMarkdown.trim()
+const databaseFinalInstruction = databaseFinalInstructionMarkdown.trim()
 
 export type WorkflowFlowTypeDefinition = {
   id: WorkflowFlowType
@@ -29,10 +38,8 @@ export const workflowFlowTypeDefinition = {
     proposalKind: 'node-graph workflow',
     promptPlaceholder: 'Describe the workflow tree to build...',
     promptSubject: 'workflow',
-    system:
-      'You design node-graph workflows. Return a valid workflow proposal only. Nodes include labels, types, descriptions, dependencies, and positions, but do not claim execution is implemented.',
-    finalInstruction:
-      'Return a complete replacement workflow definition. Keep version as 1 and flowType as workflow. Provide configYaml matching the definition.'
+    system: workflowSystemPrompt,
+    finalInstruction: workflowFinalInstruction
   },
   createDefaultDefinition: defaultWorkflowDefinition
 } satisfies WorkflowFlowTypeDefinition
@@ -46,10 +53,8 @@ export const databaseFlowTypeDefinition = {
     proposalKind: 'database schema',
     promptPlaceholder: 'Describe the database schema to build...',
     promptSubject: 'database schema',
-    system:
-      'You design Supabase-style database diagrams. Return a valid database schema proposal only. Include tables, columns, positions, and foreign-key relations, but do not claim migrations or live database changes are implemented.',
-    finalInstruction:
-      'Return a complete replacement database definition. Keep version as 1 and flowType as database. Provide configYaml matching the definition.'
+    system: databaseSystemPrompt,
+    finalInstruction: databaseFinalInstruction
   },
   createDefaultDefinition: defaultDatabaseDefinition
 } satisfies WorkflowFlowTypeDefinition

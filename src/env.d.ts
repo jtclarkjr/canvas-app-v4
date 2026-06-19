@@ -10,3 +10,8 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
   readonly vitest?: typeof import('vitest')
 }
+
+declare module '*.md?raw' {
+  const content: string
+  export default content
+}
