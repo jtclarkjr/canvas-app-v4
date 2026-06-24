@@ -68,6 +68,38 @@ export function installWorkspaceCoordinatorEffects({
   })
 
   $effect(() => {
+    const followedUserId = state.followedUserId
+    if (!followedUserId) return
+
+    const memberStillPresent = stores.presenceStore.displayMembers.some(
+      (member) => member.id === followedUserId
+    )
+    if (!memberStillPresent) {
+      state.followedUserId = null
+      return
+    }
+
+    const cursor = stores.presenceStore.cursors[followedUserId]
+    if (!cursor || cursor.coordinateSpace !== 'canvas') return
+
+    if (typeof requestAnimationFrame !== 'function') {
+      stores.cameraStore.centerOnCanvasPoint(cursor.position)
+      return
+    }
+
+    const frame = requestAnimationFrame(() => {
+      if (state.followedUserId !== followedUserId) return
+
+      const latestCursor = stores.presenceStore.cursors[followedUserId]
+      if (!latestCursor || latestCursor.coordinateSpace !== 'canvas') return
+
+      stores.cameraStore.centerOnCanvasPoint(latestCursor.position)
+    })
+
+    return () => cancelAnimationFrame(frame)
+  })
+
+  $effect(() => {
     const nextCanvasId = state.activeCanvasId
     if (!nextCanvasId || nextCanvasId === state.lastLoadedCanvasId) {
       return
@@ -83,6 +115,7 @@ export function installWorkspaceCoordinatorEffects({
     state.draftShape = null
     state.draftConnector = null
     state.editingText = null
+    state.followedUserId = null
     state.sceneLiveMessages = {}
     stores.scenesStore.closeScene()
     stores.workflowsStore.clearFocusedWorkflow()

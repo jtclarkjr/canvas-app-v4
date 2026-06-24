@@ -1,6 +1,11 @@
 import type { Camera, Point, Tool } from '$lib/canvas/types'
 import { screenToCanvas } from '$lib/canvas/drawing-utils'
-import { constrainScale, resetCamera, zoomCamera } from '$lib/workspace/camera'
+import {
+  centerCameraOnCanvasPoint,
+  constrainScale,
+  resetCamera,
+  zoomCamera
+} from '$lib/workspace/camera'
 import { getWorkspaceCursorStyle } from '$lib/workspace/cursor-style'
 
 type WorkspaceCameraInput = {
@@ -8,6 +13,7 @@ type WorkspaceCameraInput = {
   getRootElement: () => HTMLDivElement | null
   getSelectedTool: () => Tool
   getCursorStyleOverride?: () => string | null
+  onLocalCameraIntent?: () => void
 }
 
 const cameraFallback: Camera = { x: 0, y: 0, scale: 1 }
@@ -24,7 +30,8 @@ export function createWorkspaceCameraStore({
   getActiveCanvasId,
   getRootElement,
   getSelectedTool,
-  getCursorStyleOverride
+  getCursorStyleOverride,
+  onLocalCameraIntent
 }: WorkspaceCameraInput) {
   let camera = $state<Camera>(cameraFallback)
   let isViewportDragging = $state(false)
@@ -88,6 +95,7 @@ export function createWorkspaceCameraStore({
     }
 
     ;(event.currentTarget as HTMLDivElement).setPointerCapture(event.pointerId)
+    onLocalCameraIntent?.()
     isViewportDragging = true
     lastPointerPos = { x: event.clientX, y: event.clientY }
   }
@@ -126,6 +134,7 @@ export function createWorkspaceCameraStore({
       const touch = event.touches[0]
       if (!touch) return
 
+      onLocalCameraIntent?.()
       touchStart = {
         touches: [{ x: touch.clientX, y: touch.clientY }],
         distance: 0
@@ -141,6 +150,7 @@ export function createWorkspaceCameraStore({
       const touch2 = event.touches[1]
       if (!touch1 || !touch2) return
 
+      onLocalCameraIntent?.()
       const touches = [
         { x: touch1.clientX, y: touch1.clientY },
         { x: touch2.clientX, y: touch2.clientY }
@@ -237,15 +247,39 @@ export function createWorkspaceCameraStore({
   }
 
   function zoomIn() {
+    onLocalCameraIntent?.()
     camera = zoomCamera(camera, 1.2)
   }
 
   function zoomOut() {
+    onLocalCameraIntent?.()
     camera = zoomCamera(camera, 0.8)
   }
 
   function resetView() {
+    onLocalCameraIntent?.()
     camera = resetCamera()
+  }
+
+  function centerOnCanvasPoint(point: Point) {
+    const rootEl = getRootElement()
+    if (!rootEl) return
+
+    const rect = rootEl.getBoundingClientRect()
+    const nextCamera = centerCameraOnCanvasPoint(camera, point, {
+      width: rect.width,
+      height: rect.height
+    })
+
+    if (
+      Math.abs(nextCamera.x - camera.x) < 0.5 &&
+      Math.abs(nextCamera.y - camera.y) < 0.5 &&
+      nextCamera.scale === camera.scale
+    ) {
+      return
+    }
+
+    camera = nextCamera
   }
 
   function cursorStyle() {
@@ -279,6 +313,7 @@ export function createWorkspaceCameraStore({
       if (!rect) return
 
       if (event.ctrlKey || event.metaKey) {
+        onLocalCameraIntent?.()
         const mouseX = event.clientX - rect.left
         const mouseY = event.clientY - rect.top
         const zoomFactor = event.deltaY < 0 ? 1.1 : 0.9
@@ -291,6 +326,7 @@ export function createWorkspaceCameraStore({
           scale: newScale
         }
       } else {
+        onLocalCameraIntent?.()
         const dx = event.shiftKey ? -event.deltaY : -event.deltaX
         const dy = event.shiftKey ? 0 : -event.deltaY
 
@@ -326,6 +362,7 @@ export function createWorkspaceCameraStore({
     zoomIn,
     zoomOut,
     resetView,
+    centerOnCanvasPoint,
     get camera() {
       return camera
     },

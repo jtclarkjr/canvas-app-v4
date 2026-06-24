@@ -38,7 +38,10 @@ export function createWorkspaceChildStores({
     getActiveCanvasId: () => state.activeCanvasId,
     getRootElement: () => state.rootEl,
     getSelectedTool: () => state.selectedTool,
-    getCursorStyleOverride: () => state.sceneCursorStyle
+    getCursorStyleOverride: () => state.sceneCursorStyle,
+    onLocalCameraIntent: () => {
+      state.followedUserId = null
+    }
   })
   const canvasesStore = createWorkspaceCanvasesStore({
     getActiveCanvasId: () => state.activeCanvasId,

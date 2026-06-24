@@ -15,6 +15,23 @@ export function createWorkspaceFacade({
   stores,
   actions
 }: WorkspaceFacadeInput) {
+  function followMemberCursor(memberId: string | null) {
+    if (!memberId || memberId === state.userId) {
+      state.followedUserId = null
+      return
+    }
+
+    state.followedUserId = stores.presenceStore.displayMembers.some(
+      (member) => member.id === memberId
+    )
+      ? memberId
+      : null
+  }
+
+  function clearFollowedCursor() {
+    state.followedUserId = null
+  }
+
   return {
     setProps: actions.setProps,
     setElements: actions.setElements,
@@ -83,6 +100,8 @@ export function createWorkspaceFacade({
     handleTouchStart: stores.cameraStore.handleTouchStart,
     handleTouchMove: stores.cameraStore.handleTouchMove,
     handleTouchEnd: stores.cameraStore.handleTouchEnd,
+    followMemberCursor,
+    clearFollowedCursor,
     get rootStyle() {
       return stores.cameraStore.rootStyle
     },
@@ -138,6 +157,9 @@ export function createWorkspaceFacade({
     },
     get displayMembers() {
       return stores.presenceStore.displayMembers
+    },
+    get followedUserId() {
+      return state.followedUserId
     },
     get shareDialogOpen() {
       return stores.accessStore.shareDialogOpen

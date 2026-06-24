@@ -48,6 +48,7 @@ export class WorkspaceCoordinatorState {
   selectionEnd = $state<Point | null>(null)
   isSelecting = $state(false)
   selectedElementIds = $state<Set<string>>(new Set())
+  followedUserId = $state<string | null>(null)
   sceneCursorStyle = $state<string | null>(null)
   editingText = $state<EditingText | null>(null)
   editorSelection = $state({ start: 0, end: 0 })

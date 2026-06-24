@@ -159,8 +159,11 @@
       canvasId={workspace.canvasIdForActions}
       role={workspace.role}
       members={workspace.displayMembers}
+      currentUserId={userId}
+      followedUserId={workspace.followedUserId}
       pendingCount={workspace.pendingRequests.length}
       onShare={workspace.openShareDialog}
+      onFollowMember={workspace.followMemberCursor}
     />
   {/if}
 
