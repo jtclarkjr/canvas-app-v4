@@ -227,12 +227,14 @@
         <MobileDatabaseGraph
           {workflow}
           canEdit={canEdit && canModify}
+          lockedLabel="Read-only"
           onDefinitionChange={handleDefinitionChange}
         />
       {:else}
         <MobileWorkflowGraph
           {workflow}
           canEdit={canEdit && canModify}
+          lockedLabel="Read-only"
           onDefinitionChange={handleDefinitionChange}
         />
       {/if}

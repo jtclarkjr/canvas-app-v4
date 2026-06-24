@@ -97,12 +97,14 @@
       <DatabaseGraph
         {workflow}
         canEdit={canEdit && canModify}
+        lockedLabel="Read-only"
         {onDefinitionChange}
       />
     {:else}
       <WorkflowGraph
         {workflow}
         canEdit={canEdit && canModify}
+        lockedLabel="Read-only"
         {onDefinitionChange}
       />
     {/if}

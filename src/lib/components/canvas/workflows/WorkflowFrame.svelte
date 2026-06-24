@@ -150,12 +150,14 @@
           <DatabaseGraph
             {workflow}
             canEdit={interactive && canModify && focused}
+            lockedLabel={canModify ? 'Not selected' : 'Read-only'}
             {onDefinitionChange}
           />
         {:else}
           <WorkflowGraph
             {workflow}
             canEdit={interactive && canModify && focused}
+            lockedLabel={canModify ? 'Not selected' : 'Read-only'}
             {onDefinitionChange}
           />
         {/if}

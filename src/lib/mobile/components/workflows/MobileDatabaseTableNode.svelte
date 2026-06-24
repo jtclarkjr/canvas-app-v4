@@ -1,26 +1,62 @@
 <script lang="ts">
-  import { Handle, Position } from '@xyflow/svelte'
-  import { KeyRound, Table2 } from 'lucide-svelte'
+  import { Handle, Position, useSvelteFlow } from '@xyflow/svelte'
+  import { KeyRound, Table2, Trash2 } from 'lucide-svelte'
   import { databaseColumnHandleId } from '$lib/workflows/database/definition'
-  import type { DatabaseTableNodeData } from '$lib/workflows/database/types'
+  import type {
+    DatabaseFlowEdge,
+    DatabaseFlowNode,
+    DatabaseTableNodeData
+  } from '$lib/workflows/database/types'
 
-  let { data, selected = false } = $props<{
+  let {
+    id,
+    data,
+    selected = false,
+    deletable = true
+  } = $props<{
+    id: string
     data: DatabaseTableNodeData
     selected?: boolean
+    deletable?: boolean
   }>()
+
+  const { deleteElements } = useSvelteFlow<DatabaseFlowNode, DatabaseFlowEdge>()
 
   const table = $derived(data.table)
   const handleClass =
     'mobile-database-column-handle !size-3 !border-primary !bg-background opacity-0 transition-opacity'
+
+  function stopGraphControlEvent(event: Event) {
+    event.stopPropagation()
+  }
+
+  async function deleteNode(event: MouseEvent) {
+    stopGraphControlEvent(event)
+    event.preventDefault()
+    await deleteElements({ nodes: [{ id }] })
+  }
 </script>
 
 <div
-  class={`min-w-[230px] max-w-[280px] overflow-visible rounded-xl border bg-card shadow-lg transition ${
+  class={`relative min-w-[230px] max-w-[280px] overflow-visible rounded-xl border bg-card shadow-lg transition ${
     selected
       ? 'border-primary ring-2 ring-primary/30'
       : 'border-border/80 hover:border-primary/50'
   }`}
 >
+  {#if selected && deletable}
+    <button
+      type="button"
+      class="nodrag nopan absolute -top-2 -right-2 z-10 flex size-7 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:border-destructive/60 hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={`Delete ${table.name}`}
+      title="Delete table"
+      onpointerdown={stopGraphControlEvent}
+      onclick={deleteNode}
+    >
+      <Trash2 class="size-3.5" aria-hidden="true" />
+    </button>
+  {/if}
+
   <div class="flex items-center gap-2 border-b border-border/70 px-3 py-2">
     <Table2 class="size-4 shrink-0 text-primary" aria-hidden="true" />
     <div class="min-w-0 flex-1">

@@ -5,10 +5,13 @@
     Controls,
     SvelteFlow,
     type Connection,
+    type EdgeTypes,
     type NodeTypes
   } from '@xyflow/svelte'
   import '@xyflow/svelte/dist/style.css'
   import { GitBranch, ListPlus, Plus, Split } from 'lucide-svelte'
+  import DeletableSmoothStepEdge from '$lib/components/canvas/workflows/DeletableSmoothStepEdge.svelte'
+  import GraphInteractivityStatus from '$lib/components/canvas/workflows/GraphInteractivityStatus.svelte'
   import WorkflowNode from '$lib/components/canvas/workflows/WorkflowNode.svelte'
   import {
     createWorkflowStep,
@@ -23,9 +26,10 @@
   } from '$lib/workflows/schema'
   import { theme } from '$lib/stores/shared/theme.svelte'
 
-  let { workflow, canEdit, onDefinitionChange } = $props<{
+  let { workflow, canEdit, lockedLabel, onDefinitionChange } = $props<{
     workflow: Workflow
     canEdit: boolean
+    lockedLabel?: string
     onDefinitionChange: (definition: WorkflowDefinition) => void | Promise<void>
   }>()
 
@@ -37,8 +41,12 @@
     workflow: WorkflowNode
   }
 
+  const edgeTypes: EdgeTypes = {
+    smoothstep: DeletableSmoothStepEdge
+  }
+
   $effect(() => {
-    const nextKey = `${workflow.id}:${workflow.updatedAt}:${JSON.stringify(
+    const nextKey = `${workflow.id}:${workflow.updatedAt}:${canEdit}:${JSON.stringify(
       workflow.definition
     )}`
     if (nextKey === syncedKey) {
@@ -46,8 +54,8 @@
     }
 
     const flow = workflowDefinitionToFlow(workflow.definition)
-    nodes = flow.nodes
-    edges = flow.edges
+    nodes = flow.nodes.map((node) => ({ ...node, deletable: canEdit }))
+    edges = flow.edges.map((edge) => ({ ...edge, deletable: canEdit }))
     syncedKey = nextKey
   })
 
@@ -60,6 +68,57 @@
     emitDefinition(
       workflowDefinitionFromFlow(nodes, edges, workflow.definition)
     )
+  }
+
+  function isEditableTarget(target: EventTarget | null) {
+    if (!(target instanceof HTMLElement)) return false
+    return (
+      target.isContentEditable ||
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    )
+  }
+
+  function deleteSelectedElements() {
+    const selectedNodeIds = new Set(
+      nodes.filter((node) => node.selected).map((node) => node.id)
+    )
+    const selectedEdgeIds = new Set(
+      edges.filter((edge) => edge.selected).map((edge) => edge.id)
+    )
+
+    if (selectedNodeIds.size === 0 && selectedEdgeIds.size === 0) {
+      return false
+    }
+
+    nodes = nodes.filter((node) => !selectedNodeIds.has(node.id))
+    edges = edges.filter(
+      (edge) =>
+        !selectedEdgeIds.has(edge.id) &&
+        !selectedNodeIds.has(edge.source) &&
+        !selectedNodeIds.has(edge.target)
+    )
+    commitFlow()
+    return true
+  }
+
+  function handleGraphKeydown(event: KeyboardEvent) {
+    const isDeleteKey = event.key === 'Backspace' || event.key === 'Delete'
+    const hasModifier =
+      event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+
+    if (
+      canEdit &&
+      isDeleteKey &&
+      !hasModifier &&
+      !isEditableTarget(event.target) &&
+      deleteSelectedElements()
+    ) {
+      event.preventDefault()
+    }
+
+    event.stopPropagation()
   }
 
   function handleConnect(connection: Connection) {
@@ -103,7 +162,7 @@
   onpointerdown={(event) => event.stopPropagation()}
   onpointermove={(event) => event.stopPropagation()}
   onpointerup={(event) => event.stopPropagation()}
-  onkeydown={(event) => event.stopPropagation()}
+  onkeydown={handleGraphKeydown}
 >
   {#if canEdit}
     <div
@@ -141,6 +200,7 @@
     bind:edges
     fitView
     {nodeTypes}
+    {edgeTypes}
     colorMode={theme.current}
     nodesDraggable={canEdit}
     nodesConnectable={canEdit}
@@ -157,7 +217,8 @@
     ondelete={commitFlow}
     proOptions={{ hideAttribution: true }}
   >
-    <Controls />
+    <Controls showLock={false} />
+    <GraphInteractivityStatus {canEdit} {lockedLabel} />
     <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
   </SvelteFlow>
 

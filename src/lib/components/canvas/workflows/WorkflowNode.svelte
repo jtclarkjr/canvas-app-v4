@@ -1,19 +1,33 @@
 <script lang="ts">
-  import { Handle, Position } from '@xyflow/svelte'
+  import { Handle, Position, useSvelteFlow } from '@xyflow/svelte'
   import {
     CircleCheck,
     CircleDot,
     Diamond,
     FileInput,
     FileOutput,
-    StickyNote
+    StickyNote,
+    Trash2
   } from 'lucide-svelte'
-  import type { WorkflowNodeData } from '$lib/workflows/types'
+  import type {
+    WorkflowFlowEdge,
+    WorkflowFlowNode,
+    WorkflowNodeData
+  } from '$lib/workflows/types'
 
-  let { data, selected = false } = $props<{
+  let {
+    id,
+    data,
+    selected = false,
+    deletable = true
+  } = $props<{
+    id: string
     data: WorkflowNodeData
     selected?: boolean
+    deletable?: boolean
   }>()
+
+  const { deleteElements } = useSvelteFlow<WorkflowFlowNode, WorkflowFlowEdge>()
 
   const Icon = $derived.by(() => {
     switch (data.stepType) {
@@ -32,15 +46,38 @@
   })
 
   const typeLabel = $derived(data.stepType === 'task' ? 'step' : data.stepType)
+
+  function stopGraphControlEvent(event: Event) {
+    event.stopPropagation()
+  }
+
+  async function deleteNode(event: MouseEvent) {
+    stopGraphControlEvent(event)
+    event.preventDefault()
+    await deleteElements({ nodes: [{ id }] })
+  }
 </script>
 
 <div
-  class={`min-w-[180px] rounded-md border bg-card px-3 py-2 shadow-sm transition ${
+  class={`relative min-w-[180px] rounded-md border bg-card px-3 py-2 shadow-sm transition ${
     selected
       ? 'border-primary ring-2 ring-primary/25'
       : 'border-border/80 hover:border-primary/50'
   }`}
 >
+  {#if selected && deletable}
+    <button
+      type="button"
+      class="nodrag nopan absolute -top-2 -right-2 z-10 flex size-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:border-destructive/60 hover:bg-destructive hover:text-destructive-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={`Delete ${data.label}`}
+      title="Delete node"
+      onpointerdown={stopGraphControlEvent}
+      onclick={deleteNode}
+    >
+      <Trash2 class="size-3" aria-hidden="true" />
+    </button>
+  {/if}
+
   <Handle
     type="target"
     position={Position.Left}
