@@ -16,8 +16,15 @@
     children: () => unknown
   }>()
 
+  const headerlessRoutes = [
+    '/login',
+    '/terms-of-service',
+    '/usage-policy',
+    '/privacy-policy'
+  ]
   const hideHeader = $derived(
-    page.url.pathname === '/login' || page.url.pathname.startsWith('/canvas/')
+    headerlessRoutes.includes(page.url.pathname) ||
+      page.url.pathname.startsWith('/canvas/')
   )
 
   onMount(() => {

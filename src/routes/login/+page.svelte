@@ -37,5 +37,26 @@
       </p>
     </div>
     <AuthForm authConfig={data.authConfig} {redirectTo} />
+    <p class="mt-5 mb-0 text-center text-xs leading-5 text-muted-foreground">
+      By signing in or creating an account, you agree to our
+      <a
+        href="/terms-of-service"
+        class="underline underline-offset-2 transition hover:text-foreground"
+      >
+        Terms of Service
+      </a>,
+      <a
+        href="/usage-policy"
+        class="underline underline-offset-2 transition hover:text-foreground"
+      >
+        Usage Policy
+      </a>, and
+      <a
+        href="/privacy-policy"
+        class="underline underline-offset-2 transition hover:text-foreground"
+      >
+        Privacy Policy
+      </a>.
+    </p>
   </div>
 </main>
