@@ -17,6 +17,7 @@
     "@ai-sdk/svelte": "^4.0.208",
     "@livekit/track-processors": "^0.7.2",
     "@supabase/supabase-js": "^2.108.2",
+    "@tanstack/svelte-virtual": "^3.13.29",
     "@vercel/analytics": "^2.0.1",
     "@xyflow/svelte": "^1.6.1",
     "ai": "^6.0.208",

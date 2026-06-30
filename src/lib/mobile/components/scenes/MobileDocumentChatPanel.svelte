@@ -28,6 +28,7 @@
     SceneActivityKind
   } from '$lib/scenes/types'
   import MobileCanvasChatComposer from '$lib/mobile/components/chat/MobileCanvasChatComposer.svelte'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
 
   let {
     initialMessages,
@@ -85,7 +86,6 @@
     chat.status === 'submitted' || chat.status === 'streaming'
   )
   let initialPromptSent = false
-  let scrollEl = $state<HTMLDivElement | null>(null)
 
   const displayMessages = $derived.by<DisplayMessage[]>(() => {
     const own = chat.messages
@@ -98,8 +98,14 @@
         parts: message.parts,
         metadata: { ...message.metadata, author: message.author ?? undefined }
       }))
-    return [...own, ...(remote as UIMessage[])]
+    return [...own, ...(remote as UIMessage[])].filter(
+      (message) => message.role !== 'system'
+    )
   })
+
+  function messageTextLength(message: DisplayMessage | undefined) {
+    return message ? messageText(message).length : 0
+  }
 
   function userLabel(message: DisplayMessage) {
     const author = messageAuthor(message)
@@ -191,138 +197,137 @@
     }
   })
 
-  $effect(() => {
-    void displayMessages.length
-    void remoteStreamingText
-    void (chat.lastMessage?.parts.length ?? 0)
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight
-    }
-  })
+  const followKey = $derived(
+    `${displayMessages.length}:${chat.status}:${remoteStreamingText.length}:${messageTextLength(displayMessages[displayMessages.length - 1])}`
+  )
 </script>
 
 <div class="flex h-full min-h-0 flex-col">
-  <div
-    bind:this={scrollEl}
-    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
+  <VirtualizedMessageList
+    items={displayMessages}
+    keyForItem={(message) => message.id}
+    estimateSize={112}
+    followMode="always"
+    {followKey}
+    className="px-4 py-3"
   >
-    {#each displayMessages as message (message.id)}
-      {#if message.role !== 'system'}
+    {#snippet item(message)}
+      <div
+        class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+      >
+        <span class="mb-1 px-1 text-[11px] font-medium text-muted-foreground">
+          {message.role === 'user' ? userLabel(message) : 'AI'}
+        </span>
         <div
-          class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+          class={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+            message.role === 'user'
+              ? 'bg-primary text-primary-foreground'
+              : 'border border-border/60 bg-background/80 text-foreground'
+          }`}
         >
-          <span class="mb-1 px-1 text-[11px] font-medium text-muted-foreground">
-            {message.role === 'user' ? userLabel(message) : 'AI'}
-          </span>
-          <div
-            class={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-              message.role === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border/60 bg-background/80 text-foreground'
-            }`}
-          >
-            {#each asParts(message.parts) as part, index (index)}
-              {@const text = partText(part)}
-              {@const draft = writeDocumentPart(part)}
-              {@const context = readContextPart(part)}
-              {@const source = sourceUrlPart(part)}
-              {#if text}
-                {#if message.role === 'assistant'}
-                  <div class="chat-prose">
-                    <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via DOMPurify in renderMarkdown -->
-                    {@html renderMarkdown(text)}
-                  </div>
-                {:else}
-                  <p class="whitespace-pre-wrap">{text}</p>
-                {/if}
-              {:else if draft}
-                <div
-                  class="my-1.5 flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-xs text-muted-foreground"
-                >
-                  {#if draft.state === 'output-available'}
-                    <FileCheckCorner
-                      class="size-3.5 shrink-0 text-emerald-600"
-                    />
-                    <span>
-                      Wrote draft <strong class="text-foreground"
-                        >{draft.title || 'Untitled'}</strong
-                      >
-                    </span>
-                  {:else}
-                    <LoaderCircle
-                      class="size-3.5 shrink-0 animate-spin text-primary"
-                    />
-                    <span>Writing {draft.title || 'draft'}...</span>
-                  {/if}
+          {#each asParts(message.parts) as part, index (index)}
+            {@const text = partText(part)}
+            {@const draft = writeDocumentPart(part)}
+            {@const context = readContextPart(part)}
+            {@const source = sourceUrlPart(part)}
+            {#if text}
+              {#if message.role === 'assistant'}
+                <div class="chat-prose">
+                  <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via DOMPurify in renderMarkdown -->
+                  {@html renderMarkdown(text)}
                 </div>
-              {:else if context}
-                <span
-                  class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  <BookOpen class="size-3" aria-hidden="true" />
-                  Read context: {context.title}
-                </span>
-              {:else if isWebSearchPart(part)}
-                <span
-                  class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  <Globe class="size-3" aria-hidden="true" />
-                  Searched the web
-                </span>
-              {:else if source}
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  class="my-1 mr-1 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border/60 px-2 py-0.5 text-xs text-primary active:bg-primary/5"
-                >
-                  <Globe class="size-3 shrink-0" aria-hidden="true" />
-                  <span class="truncate">{source.title}</span>
-                </a>
+              {:else}
+                <p class="whitespace-pre-wrap">{text}</p>
               {/if}
-            {/each}
+            {:else if draft}
+              <div
+                class="my-1.5 flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 px-3 py-1.5 text-xs text-muted-foreground"
+              >
+                {#if draft.state === 'output-available'}
+                  <FileCheckCorner class="size-3.5 shrink-0 text-emerald-600" />
+                  <span>
+                    Wrote draft <strong class="text-foreground"
+                      >{draft.title || 'Untitled'}</strong
+                    >
+                  </span>
+                {:else}
+                  <LoaderCircle
+                    class="size-3.5 shrink-0 animate-spin text-primary"
+                  />
+                  <span>Writing {draft.title || 'draft'}...</span>
+                {/if}
+              </div>
+            {:else if context}
+              <span
+                class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                <BookOpen class="size-3" aria-hidden="true" />
+                Read context: {context.title}
+              </span>
+            {:else if isWebSearchPart(part)}
+              <span
+                class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                <Globe class="size-3" aria-hidden="true" />
+                Searched the web
+              </span>
+            {:else if source}
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                class="my-1 mr-1 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border/60 px-2 py-0.5 text-xs text-primary active:bg-primary/5"
+              >
+                <Globe class="size-3 shrink-0" aria-hidden="true" />
+                <span class="truncate">{source.title}</span>
+              </a>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    {/snippet}
+
+    {#snippet after()}
+      {#if remoteActivity?.kind === 'generating'}
+        <div class="mt-3 flex justify-start" role="status">
+          <div
+            class="max-w-[88%] rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-3.5 py-2.5 text-sm leading-relaxed text-foreground"
+          >
+            <span class="mb-1 flex items-center gap-1.5 text-xs text-primary">
+              <Sparkles class="size-3 animate-pulse" aria-hidden="true" />
+              {remoteActivity.userName || 'A collaborator'} is generating...
+            </span>
+            {#if remoteStreamingText}
+              <p class="whitespace-pre-wrap">{remoteStreamingText}</p>
+            {/if}
           </div>
         </div>
       {/if}
-    {/each}
 
-    {#if remoteActivity?.kind === 'generating'}
-      <div class="flex justify-start" role="status">
+      {#if chat.status === 'submitted'}
         <div
-          class="max-w-[88%] rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-3.5 py-2.5 text-sm leading-relaxed text-foreground"
+          class="mt-3 flex items-center gap-2 px-1 text-xs text-muted-foreground"
+          role="status"
         >
-          <span class="mb-1 flex items-center gap-1.5 text-xs text-primary">
-            <Sparkles class="size-3 animate-pulse" aria-hidden="true" />
-            {remoteActivity.userName || 'A collaborator'} is generating...
-          </span>
-          {#if remoteStreamingText}
-            <p class="whitespace-pre-wrap">{remoteStreamingText}</p>
-          {/if}
+          <LoaderCircle
+            class="size-3.5 animate-spin text-primary"
+            aria-hidden="true"
+          />
+          Thinking...
         </div>
-      </div>
-    {/if}
+      {/if}
+    {/snippet}
 
-    {#if chat.status === 'submitted'}
-      <div
-        class="flex items-center gap-2 px-1 text-xs text-muted-foreground"
-        role="status"
-      >
-        <LoaderCircle
-          class="size-3.5 animate-spin text-primary"
-          aria-hidden="true"
-        />
-        Thinking...
-      </div>
-    {/if}
-
-    {#if displayMessages.length === 0 && chat.status === 'ready'}
-      <div
-        class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
-      >
-        Ask AI to draft, revise, or summarize this scene document.
-      </div>
-    {/if}
-  </div>
+    {#snippet empty()}
+      {#if chat.status === 'ready'}
+        <div
+          class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
+        >
+          Ask AI to draft, revise, or summarize this scene document.
+        </div>
+      {/if}
+    {/snippet}
+  </VirtualizedMessageList>
 
   {#if chat.error}
     <div

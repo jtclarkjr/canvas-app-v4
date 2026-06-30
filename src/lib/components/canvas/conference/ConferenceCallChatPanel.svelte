@@ -3,11 +3,9 @@
   import { segmentMentions } from '$lib/chat/mentions'
   import type { ConferenceCallChatEntry } from '$lib/conference/types'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
 
   const store = useCanvasConferenceStore()
-
-  let scrollEl = $state<HTMLDivElement | null>(null)
-  let atBottom = true
 
   const mentionMembers = $derived(
     store.participants
@@ -23,31 +21,7 @@
     store.participants.find((participant) => participant.isLocal)?.name ?? null
   )
 
-  function scrollToBottom() {
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight
-    }
-  }
-
-  function handleScroll() {
-    if (!scrollEl) return
-    atBottom =
-      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
-  }
-
-  $effect(() => {
-    requestAnimationFrame(() => {
-      atBottom = true
-      scrollToBottom()
-    })
-  })
-
-  $effect(() => {
-    void store.callChatEntries.length
-    if (atBottom) {
-      scrollToBottom()
-    }
-  })
+  const followKey = $derived(store.callChatEntries.length)
 
   function isOwn(entry: ConferenceCallChatEntry) {
     return entry.message.createdBy === store.userId
@@ -76,12 +50,15 @@
 </script>
 
 <div class="flex h-full min-h-0 flex-col">
-  <div
-    bind:this={scrollEl}
-    onscroll={handleScroll}
-    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
+  <VirtualizedMessageList
+    items={store.callChatEntries}
+    keyForItem={(entry) => entry.message.id}
+    estimateSize={72}
+    followMode="when-at-end"
+    {followKey}
+    className="px-4 py-3"
   >
-    {#each store.callChatEntries as entry (entry.message.id)}
+    {#snippet item(entry)}
       {@const own = isOwn(entry)}
       {@const segs = segmentMentions(entry.message.content, myName)}
       <div class={`flex flex-col ${own ? 'items-end' : 'items-start'}`}>
@@ -125,16 +102,16 @@
           </div>
         {/if}
       </div>
-    {/each}
+    {/snippet}
 
-    {#if store.callChatEntries.length === 0}
+    {#snippet empty()}
       <div
         class="flex flex-1 items-center justify-center text-sm text-muted-foreground"
       >
         No call messages yet.
       </div>
-    {/if}
-  </div>
+    {/snippet}
+  </VirtualizedMessageList>
 
   <CanvasChatComposer
     disabled={!store.isInCall}

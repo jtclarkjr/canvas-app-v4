@@ -17,6 +17,7 @@
   import ModelPicker from '$lib/components/canvas/scenes/document/ModelPicker.svelte'
   import WorkflowContextPicker from '$lib/components/canvas/workflows/panels/WorkflowContextPicker.svelte'
   import WorkflowDraggablePanel from '$lib/components/canvas/workflows/panels/WorkflowDraggablePanel.svelte'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
   import type {
     UpdateWorkflowInput,
     Workflow,
@@ -88,6 +89,9 @@
           sceneTitle: scene.title
         }))
     )
+  )
+  const followKey = $derived(
+    `${messages.length}:${isAsking}:${messages[messages.length - 1]?.text.length ?? 0}`
   )
 
   $effect(() => {
@@ -321,10 +325,16 @@
       </div>
     {/if}
 
-    <div
-      class="m-3 mb-0 flex min-h-[120px] flex-1 flex-col gap-2 overflow-auto rounded-md border border-border/70 bg-background/60 p-2"
+    <VirtualizedMessageList
+      items={messages}
+      keyForItem={(message) => message.id}
+      estimateSize={72}
+      gap={8}
+      followMode="when-at-end"
+      {followKey}
+      className="m-3 mb-0 min-h-[120px] rounded-md border border-border/70 bg-background/60 p-2"
     >
-      {#each messages as message (message.id)}
+      {#snippet item(message)}
         {@const proposalApplying = applyingProposalIds.includes(message.id)}
         {@const proposalApplied = appliedProposalIds.includes(message.id)}
         <div
@@ -370,15 +380,17 @@
             </button>
           {/if}
         </div>
-      {:else}
+      {/snippet}
+
+      {#snippet empty()}
         <div
           class="flex h-full items-center justify-center text-xs text-muted-foreground"
         >
           <MessageSquare class="mr-2 size-4" />
           Ask for a {aiPromptSubject} proposal.
         </div>
-      {/each}
-    </div>
+      {/snippet}
+    </VirtualizedMessageList>
 
     <div class="border-t border-border/50 p-2">
       <div class="surface-card flex flex-col gap-1.5 rounded-xl p-2">

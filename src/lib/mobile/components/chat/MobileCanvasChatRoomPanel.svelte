@@ -6,6 +6,7 @@
     type ChatEntry
   } from '$lib/stores/chat/canvas-chat.svelte'
   import MobileCanvasChatComposer from '$lib/mobile/components/chat/MobileCanvasChatComposer.svelte'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
 
   let { userId, alwaysVisible = false } = $props<{
     userId: string
@@ -25,36 +26,7 @@
     store.mentionMembers.find((member) => member.id === userId)?.name ?? null
   )
 
-  let scrollEl = $state<HTMLDivElement | null>(null)
-  let atBottom = true
-
-  function scrollToBottom() {
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight
-    }
-  }
-
-  function handleScroll() {
-    if (!scrollEl) return
-    atBottom =
-      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
-  }
-
-  $effect(() => {
-    if (visible) {
-      requestAnimationFrame(() => {
-        atBottom = true
-        scrollToBottom()
-      })
-    }
-  })
-
-  $effect(() => {
-    void store.entries.length
-    if (visible && atBottom) {
-      scrollToBottom()
-    }
-  })
+  const followKey = $derived(store.entries.length)
 
   function isOwn(entry: ChatEntry) {
     return entry.message.createdBy === userId
@@ -97,27 +69,33 @@
       ></div>
     </div>
   {:else}
-    <div
-      bind:this={scrollEl}
-      onscroll={handleScroll}
-      class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
+    <VirtualizedMessageList
+      items={store.entries}
+      keyForItem={(entry) => entry.message.id}
+      estimateSize={76}
+      active={visible}
+      followMode="when-at-end"
+      {followKey}
+      className="px-4 py-3"
     >
-      {#if store.chatLoadError}
-        <div
-          class="flex items-center justify-between gap-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
-        >
-          <span>{store.chatLoadError}</span>
-          <button
-            type="button"
-            class="font-medium underline"
-            onclick={() => void store.retryChatLoad()}
+      {#snippet before()}
+        {#if store.chatLoadError}
+          <div
+            class="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive"
           >
-            Retry
-          </button>
-        </div>
-      {/if}
+            <span>{store.chatLoadError}</span>
+            <button
+              type="button"
+              class="font-medium underline"
+              onclick={() => void store.retryChatLoad()}
+            >
+              Retry
+            </button>
+          </div>
+        {/if}
+      {/snippet}
 
-      {#each store.entries as entry (entry.message.id)}
+      {#snippet item(entry)}
         {@const own = isOwn(entry)}
         {@const label = authorLabel(entry)}
         {@const segs = segmentMentions(entry.message.content, myName)}
@@ -168,16 +146,18 @@
             </div>
           {/if}
         </div>
-      {/each}
+      {/snippet}
 
-      {#if store.entries.length === 0 && !store.chatLoadError}
-        <div
-          class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
-        >
-          No messages yet. Say hi to your collaborators.
-        </div>
-      {/if}
-    </div>
+      {#snippet empty()}
+        {#if !store.chatLoadError}
+          <div
+            class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
+          >
+            No messages yet. Say hi to your collaborators.
+          </div>
+        {/if}
+      {/snippet}
+    </VirtualizedMessageList>
   {/if}
 
   <MobileCanvasChatComposer

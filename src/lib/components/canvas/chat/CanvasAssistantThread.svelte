@@ -11,10 +11,10 @@
     readContextPart,
     sourceUrlPart
   } from '$lib/scenes/chat-parts'
-  import type { DisplayMessage } from '$lib/scenes/types'
   import { renderMarkdown } from '$lib/scenes/markdown'
   import { useCanvasChatStore } from '$lib/stores/chat/canvas-chat.svelte'
   import CanvasChatComposer from '$lib/components/canvas/chat/CanvasChatComposer.svelte'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
 
   let { canvasId, initialMessages } = $props<{
     canvasId: string
@@ -50,132 +50,114 @@
 
   const visible = $derived(store.open && store.activeTab === 'assistant')
 
-  let scrollEl = $state<HTMLDivElement | null>(null)
-  let atBottom = true
-
-  function scrollToBottom() {
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight
-    }
+  function messageTextLength(message: UIMessage | undefined) {
+    return asParts(message?.parts ?? []).reduce(
+      (length, part) => length + (partText(part)?.length ?? 0),
+      0
+    )
   }
 
-  function handleScroll() {
-    if (!scrollEl) return
-    atBottom =
-      scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 32
-  }
-
-  $effect(() => {
-    if (visible) {
-      requestAnimationFrame(() => {
-        atBottom = true
-        scrollToBottom()
-      })
-    }
-  })
-
-  // Track message growth and streamed text, pinned to bottom only when
-  // the reader is already there.
-  $effect(() => {
-    void chat.messages.length
-    void (chat.lastMessage?.parts.length ?? 0)
-    if (visible && atBottom) {
-      scrollToBottom()
-    }
-  })
-
-  const displayMessages = $derived(chat.messages)
+  const displayMessages = $derived(
+    chat.messages.filter((message) => message.role !== 'system')
+  )
+  const followKey = $derived(
+    `${displayMessages.length}:${chat.status}:${messageTextLength(displayMessages[displayMessages.length - 1])}`
+  )
 </script>
 
 <div class="flex h-full min-h-0 flex-col">
-  <div
-    bind:this={scrollEl}
-    onscroll={handleScroll}
-    class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3"
+  <VirtualizedMessageList
+    items={displayMessages}
+    keyForItem={(message) => message.id}
+    estimateSize={104}
+    active={visible}
+    followMode="when-at-end"
+    {followKey}
+    className="px-4 py-3"
   >
-    {#each displayMessages as message (message.id)}
-      {#if message.role !== 'system'}
+    {#snippet item(message)}
+      <div
+        class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+      >
+        <span class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground">
+          {message.role === 'user' ? 'You' : 'Assistant'}
+        </span>
         <div
-          class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
+          class={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
+            message.role === 'user'
+              ? 'bg-primary text-primary-foreground'
+              : 'border border-border/60 bg-background/70 text-foreground'
+          }`}
         >
-          <span
-            class="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground"
-          >
-            {message.role === 'user' ? 'You' : 'Assistant'}
-          </span>
-          <div
-            class={`max-w-[85%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
-              message.role === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border/60 bg-background/70 text-foreground'
-            }`}
-          >
-            {#each asParts(message.parts) as part, index (index)}
-              {@const text = partText(part)}
-              {@const context = readContextPart(part)}
-              {@const source = sourceUrlPart(part)}
-              {#if text}
-                {#if message.role === 'assistant'}
-                  <div class="chat-prose">
-                    <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via DOMPurify in renderMarkdown -->
-                    {@html renderMarkdown(text)}
-                  </div>
-                {:else}
-                  <p class="whitespace-pre-wrap">{text}</p>
-                {/if}
-              {:else if context}
-                <span
-                  class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  <BookOpen class="size-3" />
-                  Read context: {context.title}
-                </span>
-              {:else if isWebSearchPart(part)}
-                <span
-                  class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  <Globe class="size-3" />
-                  Searched the web
-                </span>
-              {:else if source}
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  class="my-1 mr-1 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border/60 px-2 py-0.5 text-xs text-primary hover:bg-primary/5"
-                >
-                  <Globe class="size-3 shrink-0" />
-                  <span class="truncate">{source.title}</span>
-                </a>
+          {#each asParts(message.parts) as part, index (index)}
+            {@const text = partText(part)}
+            {@const context = readContextPart(part)}
+            {@const source = sourceUrlPart(part)}
+            {#if text}
+              {#if message.role === 'assistant'}
+                <div class="chat-prose">
+                  <!-- eslint-disable-next-line svelte/no-at-html-tags -- sanitized via DOMPurify in renderMarkdown -->
+                  {@html renderMarkdown(text)}
+                </div>
+              {:else}
+                <p class="whitespace-pre-wrap">{text}</p>
               {/if}
-            {/each}
-          </div>
+            {:else if context}
+              <span
+                class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                <BookOpen class="size-3" />
+                Read context: {context.title}
+              </span>
+            {:else if isWebSearchPart(part)}
+              <span
+                class="my-1 mr-1 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                <Globe class="size-3" />
+                Searched the web
+              </span>
+            {:else if source}
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noreferrer noopener"
+                class="my-1 mr-1 inline-flex max-w-full items-center gap-1 truncate rounded-full border border-border/60 px-2 py-0.5 text-xs text-primary hover:bg-primary/5"
+              >
+                <Globe class="size-3 shrink-0" />
+                <span class="truncate">{source.title}</span>
+              </a>
+            {/if}
+          {/each}
+        </div>
+      </div>
+    {/snippet}
+
+    {#snippet after()}
+      {#if chat.status === 'submitted'}
+        <div
+          class="mt-3 flex items-center gap-2 px-1 text-xs text-muted-foreground"
+          role="status"
+        >
+          <LoaderCircle
+            class="size-3.5 animate-spin text-primary"
+            aria-hidden="true"
+          />
+          Thinking…
         </div>
       {/if}
-    {/each}
+    {/snippet}
 
-    {#if chat.status === 'submitted'}
-      <div
-        class="flex items-center gap-2 px-1 text-xs text-muted-foreground"
-        role="status"
-      >
-        <LoaderCircle
-          class="size-3.5 animate-spin text-primary"
-          aria-hidden="true"
-        />
-        Thinking…
-      </div>
-    {/if}
-
-    {#if displayMessages.length === 0 && chat.status === 'ready'}
-      <div
-        class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
-      >
-        Ask the assistant anything — it can search the web and read this
-        canvas's saved documents.
-      </div>
-    {/if}
-  </div>
+    {#snippet empty()}
+      {#if chat.status === 'ready'}
+        <div
+          class="flex flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground"
+        >
+          Ask the assistant anything — it can search the web and read this
+          canvas's saved documents.
+        </div>
+      {/if}
+    {/snippet}
+  </VirtualizedMessageList>
 
   {#if chat.error}
     <div

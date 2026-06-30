@@ -29,6 +29,7 @@
     WorkflowSettings,
     WorkflowVersion
   } from '$lib/workflows/schema'
+  import VirtualizedMessageList from '$lib/components/shared/VirtualizedMessageList.svelte'
 
   type SheetTab = 'overview' | 'code' | 'notes' | 'versions' | 'assistant'
   type ChatEntry = {
@@ -88,6 +89,7 @@
     { id: 'assistant' as SheetTab, label: 'AI', icon: Bot }
   ]
   const canSend = $derived(canModify && !isAsking && prompt.trim().length > 0)
+  const followKey = $derived(`${messages.length}:${isAsking}`)
 
   $effect(() => {
     void workflow.id
@@ -421,8 +423,16 @@
         </div>
       {:else}
         <div class="flex min-h-full flex-col gap-3">
-          <div class="min-h-0 flex-1 space-y-3">
-            {#each messages as message (message.id)}
+          <VirtualizedMessageList
+            items={messages}
+            keyForItem={(message) => message.id}
+            estimateSize={92}
+            active={activeTab === 'assistant'}
+            followMode="when-at-end"
+            {followKey}
+            className="min-h-[36dvh] max-h-[58dvh]"
+          >
+            {#snippet item(message)}
               <div
                 class={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}
               >
@@ -453,21 +463,27 @@
                   {/if}
                 </div>
               </div>
-            {/each}
-            {#if isAsking}
-              <div
-                class="flex items-center gap-2 text-sm text-muted-foreground"
-              >
-                <LoaderCircle class="size-4 animate-spin" />
-                Thinking...
-              </div>
-            {/if}
-            {#if messages.length === 0 && !isAsking}
-              <p class="py-8 text-center text-sm text-muted-foreground">
-                Ask AI to revise this workflow for mobile.
-              </p>
-            {/if}
-          </div>
+            {/snippet}
+
+            {#snippet after()}
+              {#if isAsking}
+                <div
+                  class="mt-3 flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                  <LoaderCircle class="size-4 animate-spin" />
+                  Thinking...
+                </div>
+              {/if}
+            {/snippet}
+
+            {#snippet empty()}
+              {#if !isAsking}
+                <p class="py-8 text-center text-sm text-muted-foreground">
+                  Ask AI to revise this workflow for mobile.
+                </p>
+              {/if}
+            {/snippet}
+          </VirtualizedMessageList>
           <div
             class="sticky bottom-0 -mx-4 border-t border-border/60 bg-card px-4 py-3"
           >
