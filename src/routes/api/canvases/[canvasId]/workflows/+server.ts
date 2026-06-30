@@ -29,6 +29,7 @@ import {
   workflowResponseSchema,
   type WorkflowDefinition
 } from '$lib/workflows/schema'
+import { getNextWorkflowTitle } from '$lib/workflows/titles'
 
 const DEFAULT_WORKFLOW_SIZE = { width: 760, height: 500 }
 
@@ -83,7 +84,22 @@ export const POST: RequestHandler = async (event) =>
       const input = parseInput(createWorkflowInputSchema, payload)
       const flowType = input.flowType ?? 'workflow'
       const flowTypeDefinition = getWorkflowFlowTypeDefinition(flowType)
-      const title = input.title ?? flowTypeDefinition.defaultTitle
+      let title = input.title
+      if (!title) {
+        const { data: existingWorkflows, error: titlesError } = await supabase
+          .from('canvas_workflows')
+          .select('title')
+          .eq('canvas_id', canvasId)
+
+        if (titlesError) {
+          throw titlesError
+        }
+
+        title = getNextWorkflowTitle(
+          flowTypeDefinition.defaultTitle,
+          (existingWorkflows ?? []).map((workflow) => workflow.title)
+        )
+      }
       const definition = input.configYaml
         ? parseWorkflowYaml(input.configYaml)
         : (input.definition ??

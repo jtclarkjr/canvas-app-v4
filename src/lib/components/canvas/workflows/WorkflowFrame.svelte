@@ -6,6 +6,7 @@
   import DatabaseGraph from '$lib/components/canvas/workflows/database/DatabaseGraph.svelte'
   import WorkflowGraph from '$lib/components/canvas/workflows/WorkflowGraph.svelte'
   import WorkflowResizeHandle from '$lib/components/canvas/workflows/WorkflowResizeHandle.svelte'
+  import WorkflowTitleEditor from '$lib/components/canvas/workflows/WorkflowTitleEditor.svelte'
 
   type FrameHandlers = {
     pointerDown: (event: PointerEvent, workflowId: string) => void
@@ -34,6 +35,7 @@
     onFocus,
     onMaximize,
     onDelete,
+    onRename,
     onDefinitionChange
   } = $props<{
     workflow: Workflow
@@ -47,6 +49,7 @@
     onFocus: (workflowId: string) => void
     onMaximize: (workflowId: string) => void
     onDelete: (workflowId: string) => void
+    onRename: (workflowId: string, title: string) => void | Promise<void>
     onDefinitionChange: (definition: WorkflowDefinition) => void | Promise<void>
   }>()
 
@@ -140,11 +143,11 @@
       {:else}
         <GitBranch class="size-4 shrink-0 text-primary" />
       {/if}
-      <span
-        class="min-w-0 flex-1 truncate text-sm font-semibold text-foreground"
-      >
-        {workflow.title}
-      </span>
+      <WorkflowTitleEditor
+        title={workflow.title}
+        canModify={interactive && canModify}
+        onSave={(title) => onRename(workflow.id, title)}
+      />
       <span
         class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
       >

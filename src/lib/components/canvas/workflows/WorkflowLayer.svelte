@@ -193,6 +193,7 @@
       onFocus={onFocusWorkflow}
       onMaximize={maximizeWorkflow}
       onDelete={requestDeleteWorkflow}
+      onRename={(workflowId, title) => onPatchWorkflow(workflowId, { title })}
       onDefinitionChange={(definition) =>
         onPatchWorkflowDefinition(workflow.id, definition)}
     />
@@ -206,6 +207,7 @@
     canModify={canModifyWorkflow(fullscreenWorkflow.id)}
     onMinimize={minimizeFullscreenWorkflow}
     onDelete={requestDeleteWorkflow}
+    onRename={(workflowId, title) => onPatchWorkflow(workflowId, { title })}
     onDefinitionChange={(definition) =>
       onPatchWorkflowDefinition(fullscreenWorkflow.id, definition)}
   />

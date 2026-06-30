@@ -6,6 +6,7 @@
   import { isDatabaseFlowDefinition } from '$lib/workflows/database/definition'
   import DatabaseGraph from '$lib/components/canvas/workflows/database/DatabaseGraph.svelte'
   import WorkflowGraph from '$lib/components/canvas/workflows/WorkflowGraph.svelte'
+  import WorkflowTitleEditor from '$lib/components/canvas/workflows/WorkflowTitleEditor.svelte'
 
   let {
     workflow,
@@ -13,6 +14,7 @@
     canModify,
     onMinimize,
     onDelete,
+    onRename,
     onDefinitionChange
   } = $props<{
     workflow: Workflow
@@ -20,6 +22,7 @@
     canModify: boolean
     onMinimize: () => void
     onDelete: (workflowId: string) => void
+    onRename: (workflowId: string, title: string) => void | Promise<void>
     onDefinitionChange: (definition: WorkflowDefinition) => void | Promise<void>
   }>()
 
@@ -60,10 +63,13 @@
     {:else}
       <GitBranch class="size-4 shrink-0 text-primary" />
     {/if}
-    <div class="min-w-0 flex-1">
-      <h2 class="truncate text-sm font-semibold text-foreground">
-        {workflow.title}
-      </h2>
+    <div class="group/title flex min-w-0 flex-1 items-center gap-1">
+      <WorkflowTitleEditor
+        title={workflow.title}
+        {canModify}
+        buttonClassName="group-hover/title:flex"
+        onSave={(title) => onRename(workflow.id, title)}
+      />
     </div>
     <span
       class="rounded bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground"

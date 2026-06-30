@@ -117,6 +117,7 @@
     error = null
     try {
       await onPatchWorkflow({ title })
+      titleDraft = title
     } catch (cause) {
       error = cause instanceof Error ? cause.message : 'Failed to save title.'
     } finally {
@@ -316,6 +317,7 @@
             <input
               class="h-11 w-full rounded-xl border border-border/70 bg-background px-3 text-sm outline-none focus:border-primary"
               bind:value={titleDraft}
+              maxlength="120"
               disabled={!canModify}
             />
           </label>

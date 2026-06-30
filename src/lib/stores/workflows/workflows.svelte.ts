@@ -8,7 +8,6 @@ import {
   workflowDefinitionFromYaml,
   workflowDefinitionToYaml
 } from '$lib/workflows/definition'
-import { getWorkflowFlowTypeDefinition } from '$lib/workflows/flow-types'
 import type {
   UpdateWorkflowInput,
   Workflow,
@@ -149,9 +148,7 @@ export function createWorkspaceWorkflowsStore({
     )
 
     try {
-      const flowTypeDefinition = getWorkflowFlowTypeDefinition(flowType)
       const response = await createWorkflowApi(canvasId, {
-        title: flowTypeDefinition.defaultTitle,
         flowType,
         x: center.x - DEFAULT_WORKFLOW_SIZE.width / 2,
         y: center.y - DEFAULT_WORKFLOW_SIZE.height / 2,
