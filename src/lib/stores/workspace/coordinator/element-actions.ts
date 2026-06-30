@@ -1,14 +1,18 @@
 import { invalidateAll } from '$app/navigation'
 import { ApiClientError } from '$lib/canvas/api'
 import { createApplyCommand } from '$lib/canvas/apply-command'
-import type { Command } from '$lib/canvas/commands'
+import type { Command, CommandAudit } from '$lib/canvas/commands'
 import {
   deleteElement as deleteElementApi,
   listElements,
   upsertElement as upsertElementApi
 } from '$lib/workspace/api'
 import { canvasElementsToDrawingState } from '$lib/workspace/element-mapping'
-import type { CanvasElement, UpsertElementInput } from '$lib/workspace/schema'
+import type {
+  CanvasElement,
+  CanvasMutationAuditInput,
+  UpsertElementInput
+} from '$lib/workspace/schema'
 import type { WorkspaceCoordinatorState } from './state.svelte'
 
 type WorkspaceElementActionsInput = {
@@ -33,22 +37,24 @@ export function createWorkspaceElementActions({
 
   const deleteElement = {
     mutate(
-      variables: { id: string },
+      variables: { id: string; audit?: CanvasMutationAuditInput },
       options?: { onError?: (error: unknown) => void }
     ) {
       if (!state.activeCanvasId) {
         return
       }
 
-      void deleteElementApi(state.activeCanvasId, variables.id).catch(
-        (error) => {
-          options?.onError?.(error)
-        }
-      )
+      void deleteElementApi(
+        state.activeCanvasId,
+        variables.id,
+        variables.audit
+      ).catch((error) => {
+        options?.onError?.(error)
+      })
     }
   }
 
-  function applyCommand(command: Command) {
+  function applyCommand(command: Command, audit?: CommandAudit) {
     createApplyCommand({
       canvasId: state.activeCanvasId,
       paths: state.paths,
@@ -61,7 +67,7 @@ export function createWorkspaceElementActions({
       setConnectors: (next) => state.setConnectors(next),
       upsertElement,
       deleteElement
-    })(command)
+    })(command, audit)
   }
 
   function syncElements(items: CanvasElement[]) {

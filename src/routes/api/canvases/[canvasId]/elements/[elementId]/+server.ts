@@ -1,15 +1,40 @@
 import { json, type RequestHandler } from '@sveltejs/kit'
-import { deleteElementResponseSchema } from '$lib/workspace/schema'
+import {
+  deleteElementInputSchema,
+  deleteElementResponseSchema
+} from '$lib/workspace/schema'
 import { requireCanvasRole } from '$lib/server/canvas-access'
 import { toCanvasElement } from '$lib/server/canvas-elements'
+import { recordCanvasHistory } from '$lib/server/canvas-history'
 import {
+  badRequest,
   handleApiError,
   notFound,
+  parseInput,
   requireRouteParam,
   withAccountAuth
 } from '$lib/server/api-error'
 import { withRateLimit } from '$lib/server/rate-limit'
 import { getSupabase } from '$lib/server/supabase'
+
+async function parseOptionalDeleteInput(request: Request) {
+  const text = await request.text()
+  if (!text.trim()) {
+    return deleteElementInputSchema.parse({})
+  }
+
+  try {
+    return parseInput(deleteElementInputSchema, JSON.parse(text))
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw badRequest('Request body must be valid JSON.', {
+        code: 'invalid_json',
+        cause: error
+      })
+    }
+    throw error
+  }
+}
 
 export const DELETE: RequestHandler = async (event) =>
   withRateLimit(async () => {
@@ -26,6 +51,7 @@ export const DELETE: RequestHandler = async (event) =>
         'Element id',
         'elementId'
       )
+      const input = await parseOptionalDeleteInput(event.request)
 
       await requireCanvasRole(supabase, canvasId, user.id, 'editor')
 
@@ -61,6 +87,15 @@ export const DELETE: RequestHandler = async (event) =>
           details: { elementId }
         })
       }
+
+      await recordCanvasHistory(supabase, {
+        canvasId,
+        defaultAction: 'deleted',
+        elementId: data.id,
+        elementType: data.type,
+        audit: input.audit,
+        actor: user
+      })
 
       return json(
         deleteElementResponseSchema.parse({

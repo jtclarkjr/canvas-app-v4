@@ -29,6 +29,11 @@ export interface BaseCommand {
   userId: string
 }
 
+export type CommandAudit = {
+  action: 'undo' | 'redo'
+  commandType: CommandType
+}
+
 export interface CreatePathCommand extends BaseCommand {
   type: 'CREATE_PATH'
   element: Path
@@ -150,13 +155,14 @@ export interface ApplyCommandOptions {
         x: number
         y: number
         z?: number | null
+        audit?: CommandAudit
       },
       options?: { onError?: (error: unknown) => void }
     ) => void
   }
   deleteElement: {
     mutate: (
-      variables: { id: string },
+      variables: { id: string; audit?: CommandAudit },
       options?: { onError?: (error: unknown) => void }
     ) => void
   }

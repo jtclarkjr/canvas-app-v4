@@ -8,6 +8,7 @@ import {
   listCanvasElementsForCanvas,
   toCanvasElement
 } from '$lib/server/canvas-elements'
+import { recordCanvasHistory } from '$lib/server/canvas-history'
 import {
   handleApiError,
   notFound,
@@ -117,6 +118,15 @@ export const POST: RequestHandler = async (event) =>
       if (error || !data) {
         throw error ?? new Error('Failed to upsert canvas element')
       }
+
+      await recordCanvasHistory(supabase, {
+        canvasId,
+        defaultAction: existing?.data ? 'modified' : 'created',
+        elementId: data.id,
+        elementType: data.type,
+        audit: input.audit,
+        actor: user
+      })
 
       return json(
         upsertElementResponseSchema.parse({

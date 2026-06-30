@@ -11,7 +11,7 @@ import type { Workflow } from '$lib/workflows/schema'
 // modes, while edit affordances stay gated separately.
 describe('scene mode switcher visibility', () => {
   function renderWorkspace(
-    role: 'reader' | 'editor' | 'owner',
+    role: 'reader' | 'editor' | 'admin' | 'owner',
     options: { isAnonymousPublicViewer?: boolean } = {}
   ) {
     return render(CanvasWorkspace, {
@@ -40,6 +40,16 @@ describe('scene mode switcher visibility', () => {
   it('keeps diagram templates inside the collapsed editing toolbar', () => {
     expect(renderWorkspace('editor')).toContain('Drawing tools')
     expect(renderWorkspace('reader')).not.toContain('Diagram templates')
+  })
+
+  it('renders canvas history only for owner and admin users', () => {
+    expect(renderWorkspace('owner')).toContain('Open canvas history')
+    expect(renderWorkspace('admin')).toContain('Open canvas history')
+    expect(renderWorkspace('editor')).not.toContain('Open canvas history')
+    expect(renderWorkspace('reader')).not.toContain('Open canvas history')
+    expect(
+      renderWorkspace('reader', { isAnonymousPublicViewer: true })
+    ).not.toContain('Open canvas history')
   })
 
   it('server-renders initial drawing elements and scene cards', () => {

@@ -6,7 +6,11 @@ import type {
   Path,
   TextElement
 } from '$lib/canvas/types'
-import type { ApplyCommandOptions, Command } from '$lib/canvas/commands'
+import type {
+  ApplyCommandOptions,
+  Command,
+  CommandAudit
+} from '$lib/canvas/commands'
 import { textElementToData } from '$lib/canvas/drawing-utils'
 import { connectorToData, shapeToData } from '$lib/canvas/diagram-utils'
 
@@ -66,7 +70,8 @@ function elementZ(element: CanvasDrawableElement): number | null {
 function upsertCanvasElement(
   options: ApplyCommandOptions,
   type: CanvasElementType,
-  element: CanvasDrawableElement
+  element: CanvasDrawableElement,
+  audit?: CommandAudit
 ) {
   const data = elementToData(type, element)
   const position = elementPosition(type, element)
@@ -77,7 +82,8 @@ function upsertCanvasElement(
     data,
     x: position.x,
     y: position.y,
-    z: elementZ(element)
+    z: elementZ(element),
+    ...(audit ? { audit } : {})
   })
 }
 
@@ -151,52 +157,58 @@ function removeElement(options: ApplyCommandOptions, id: string) {
 }
 
 export function createApplyCommand(options: ApplyCommandOptions) {
-  return (command: Command) => {
+  return (command: Command, audit?: CommandAudit) => {
     switch (command.type) {
       case 'CREATE_PATH':
         insertElement(options, 'path', command.element)
-        upsertCanvasElement(options, 'path', command.element)
+        upsertCanvasElement(options, 'path', command.element, audit)
         break
       case 'CREATE_TEXT':
         insertElement(options, 'text', command.element)
-        upsertCanvasElement(options, 'text', command.element)
+        upsertCanvasElement(options, 'text', command.element, audit)
         break
       case 'CREATE_SHAPE':
         insertElement(options, 'shape', command.element)
-        upsertCanvasElement(options, 'shape', command.element)
+        upsertCanvasElement(options, 'shape', command.element, audit)
         break
       case 'CREATE_CONNECTOR':
         insertElement(options, 'connector', command.element)
-        upsertCanvasElement(options, 'connector', command.element)
+        upsertCanvasElement(options, 'connector', command.element, audit)
         break
       case 'CREATE_MULTIPLE':
         for (const { element, type } of command.elements) {
           insertElement(options, type, element)
-          upsertCanvasElement(options, type, element)
+          upsertCanvasElement(options, type, element, audit)
         }
         break
       case 'DELETE_ELEMENT':
         removeElement(options, command.element.id)
-        options.deleteElement.mutate({ id: command.element.id })
+        options.deleteElement.mutate({
+          id: command.element.id,
+          ...(audit ? { audit } : {})
+        })
         break
       case 'DELETE_MULTIPLE':
         for (const { element } of command.elements) {
           removeElement(options, element.id)
-          options.deleteElement.mutate({ id: element.id })
+          options.deleteElement.mutate({
+            id: element.id,
+            ...(audit ? { audit } : {})
+          })
         }
         break
       case 'UPDATE_TEXT':
         replaceElement(options, 'text', command.after)
-        upsertCanvasElement(options, 'text', command.after)
+        upsertCanvasElement(options, 'text', command.after, audit)
         break
       case 'UPDATE_ELEMENT':
         replaceElement(options, command.elementType, command.after)
-        upsertCanvasElement(options, command.elementType, command.after)
+        upsertCanvasElement(options, command.elementType, command.after, audit)
         break
       case 'UPDATE_MULTIPLE':
         for (const element of command.elements) {
           replaceElement(options, element.type, element.after)
-          upsertCanvasElement(options, element.type, element.after)
+          upsertCanvasElement(options, element.type, element.after, audit)
         }
         break
       case 'MOVE_ELEMENT':
@@ -215,10 +227,15 @@ export function createApplyCommand(options: ApplyCommandOptions) {
                 (entry) => entry.id === command.elementId
               )
               if (path) {
-                upsertCanvasElement(options, 'path', {
-                  ...path,
-                  points: command.after.points
-                })
+                upsertCanvasElement(
+                  options,
+                  'path',
+                  {
+                    ...path,
+                    points: command.after.points
+                  },
+                  audit
+                )
               }
             }
             break
@@ -240,7 +257,7 @@ export function createApplyCommand(options: ApplyCommandOptions) {
                   y: command.after.y
                 }
                 replaceElement(options, 'text', next)
-                upsertCanvasElement(options, 'text', next)
+                upsertCanvasElement(options, 'text', next, audit)
               }
             }
             break
@@ -261,7 +278,7 @@ export function createApplyCommand(options: ApplyCommandOptions) {
                 if (path) {
                   const next = { ...path, points: element.after.points }
                   replaceElement(options, 'path', next)
-                  upsertCanvasElement(options, 'path', next)
+                  upsertCanvasElement(options, 'path', next, audit)
                 }
               }
               break
@@ -283,7 +300,7 @@ export function createApplyCommand(options: ApplyCommandOptions) {
                     y: element.after.y
                   }
                   replaceElement(options, 'text', next)
-                  upsertCanvasElement(options, 'text', next)
+                  upsertCanvasElement(options, 'text', next, audit)
                 }
               }
               break

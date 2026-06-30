@@ -1,6 +1,7 @@
 <script lang="ts">
   import { MousePointer2, UserRound } from 'lucide-svelte'
-  import type { CanvasRole } from '$lib/canvas/roles'
+  import { roleAtLeast, type CanvasRole } from '$lib/canvas/roles'
+  import CanvasHistoryButton from '$lib/components/canvas/workspace/CanvasHistoryButton.svelte'
   import CanvasOptionsButton from '$lib/components/canvas/workspace/CanvasOptionsButton.svelte'
   import ConferenceCallButton from '$lib/components/canvas/conference/controls/ConferenceCallButton.svelte'
   import Popover from '$lib/components/shared/Popover.svelte'
@@ -165,6 +166,10 @@
   </Popover>
 
   <ConferenceCallButton />
+
+  {#if roleAtLeast(role, 'admin')}
+    <CanvasHistoryButton {canvasId} />
+  {/if}
 
   <CanvasOptionsButton {canvasId} {role} {pendingCount} {onShare} />
 </div>

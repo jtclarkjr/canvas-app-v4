@@ -1,8 +1,12 @@
-import { getInverseCommand, type Command } from '$lib/canvas/commands'
+import {
+  getInverseCommand,
+  type Command,
+  type CommandAudit
+} from '$lib/canvas/commands'
 
 type WorkspaceHistoryInput = {
   getUserId: () => string
-  applyCommand: (command: Command) => void
+  applyCommand: (command: Command, audit?: CommandAudit) => void
 }
 
 export function createWorkspaceHistoryStore({
@@ -45,13 +49,19 @@ export function createWorkspaceHistoryStore({
   function handleUndo() {
     const command = undo()
     if (!command) return
-    applyCommand(getInverseCommand(command))
+    applyCommand(getInverseCommand(command), {
+      action: 'undo',
+      commandType: command.type
+    })
   }
 
   function handleRedo() {
     const command = redo()
     if (!command) return
-    applyCommand(command)
+    applyCommand(command, {
+      action: 'redo',
+      commandType: command.type
+    })
   }
 
   return {
@@ -66,4 +76,61 @@ export function createWorkspaceHistoryStore({
       return redoStack.length > 0
     }
   }
+}
+
+if (import.meta.vitest) {
+  const { describe, expect, it } = import.meta.vitest
+
+  describe('workspace history store', () => {
+    const createTextCommand = (): Command => ({
+      type: 'CREATE_TEXT',
+      timestamp: 1,
+      userId: 'user-1',
+      element: {
+        id: 'text-1',
+        text: 'Hello',
+        x: 10,
+        y: 20,
+        rotation: 0,
+        color: '#111111',
+        fontSize: 16,
+        isBold: false,
+        isItalic: false,
+        isUnderline: false
+      }
+    })
+
+    it('records undo and redo audit metadata while preserving stack behavior', () => {
+      const applied: Array<{ command: Command; audit?: CommandAudit }> = []
+      const store = createWorkspaceHistoryStore({
+        getUserId: () => 'user-1',
+        applyCommand: (command, audit) => {
+          applied.push({ command, audit })
+        }
+      })
+      const command = createTextCommand()
+
+      store.addCommand(command)
+      expect(store.canUndo).toBe(true)
+      expect(store.canRedo).toBe(false)
+
+      store.handleUndo()
+      expect(store.canUndo).toBe(false)
+      expect(store.canRedo).toBe(true)
+      expect(applied[0]?.command.type).toBe('DELETE_ELEMENT')
+      expect(applied[0]?.audit).toEqual({
+        action: 'undo',
+        commandType: 'CREATE_TEXT'
+      })
+
+      store.handleRedo()
+      expect(store.canUndo).toBe(true)
+      expect(store.canRedo).toBe(false)
+      expect(applied[1]?.command.type).toBe('CREATE_TEXT')
+      expect(applied[1]?.audit).toEqual({
+        action: 'redo',
+        commandType: 'CREATE_TEXT'
+      })
+    })
+  })
 }

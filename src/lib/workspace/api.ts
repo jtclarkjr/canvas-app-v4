@@ -3,6 +3,7 @@ import {
   addMemberInputSchema,
   deleteElementResponseSchema,
   listAccessRequestsResponseSchema,
+  listCanvasHistoryResponseSchema,
   listElementsResponseSchema,
   listMembersResponseSchema,
   memberResponseSchema,
@@ -14,7 +15,9 @@ import {
   upsertElementResponseSchema,
   userSearchResponseSchema,
   type AddMemberInput,
+  type CanvasMutationAuditInput,
   type DeleteElementResponse,
+  type ListCanvasHistoryResponse,
   type ListAccessRequestsResponse,
   type ListElementsResponse,
   type ListMembersResponse,
@@ -92,13 +95,18 @@ export async function upsertElement(
 
 export async function deleteElement(
   canvasId: string,
-  elementId: string
+  elementId: string,
+  audit?: CanvasMutationAuditInput
 ): Promise<DeleteElementResponse> {
   const response = await fetch(
     `/api/canvases/${canvasId}/elements/${elementId}`,
     {
       method: 'DELETE',
-      headers: await getApiHeaders({ accept: 'application/json' })
+      headers: await getApiHeaders({
+        accept: 'application/json',
+        ...(audit ? { 'content-type': 'application/json' } : {})
+      }),
+      ...(audit ? { body: JSON.stringify({ audit }) } : {})
     }
   )
 
@@ -106,6 +114,32 @@ export async function deleteElement(
     response,
     (payload) => deleteElementResponseSchema.parse(payload),
     'Failed to delete canvas element.'
+  )
+}
+
+export async function listCanvasHistory(
+  canvasId: string,
+  options: { limit?: number; before?: string | null } = {}
+): Promise<ListCanvasHistoryResponse> {
+  const params = new URLSearchParams()
+  if (options.limit) {
+    params.set('limit', String(options.limit))
+  }
+  if (options.before) {
+    params.set('before', options.before)
+  }
+  const query = params.toString()
+  const response = await fetch(
+    `/api/canvases/${canvasId}/history${query ? `?${query}` : ''}`,
+    {
+      headers: await getApiHeaders({ accept: 'application/json' })
+    }
+  )
+
+  return parseResponse(
+    response,
+    (payload) => listCanvasHistoryResponseSchema.parse(payload),
+    'Failed to load canvas history.'
   )
 }
 

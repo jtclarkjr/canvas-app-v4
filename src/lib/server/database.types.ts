@@ -72,6 +72,59 @@ export interface Database {
         }
         Relationships: []
       }
+      canvas_history: {
+        Row: {
+          id: string
+          canvas_id: string
+          action: Database['public']['Enums']['canvas_history_action']
+          element_id: string
+          element_type: string
+          command_type: string | null
+          actor_id: string | null
+          actor_name: string | null
+          actor_email: string | null
+          actor_image: string | null
+          metadata: Json
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          canvas_id: string
+          action: Database['public']['Enums']['canvas_history_action']
+          element_id: string
+          element_type: string
+          command_type?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_email?: string | null
+          actor_image?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          canvas_id?: string
+          action?: Database['public']['Enums']['canvas_history_action']
+          element_id?: string
+          element_type?: string
+          command_type?: string | null
+          actor_id?: string | null
+          actor_name?: string | null
+          actor_email?: string | null
+          actor_image?: string | null
+          metadata?: Json
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'canvas_history_canvas_id_fkey'
+            columns: ['canvas_id']
+            isOneToOne: false
+            referencedRelation: 'canvases'
+            referencedColumns: ['id']
+          }
+        ]
+      }
       profiles: {
         Row: {
           id: string
@@ -578,6 +631,12 @@ export interface Database {
       canvas_role: 'admin' | 'editor' | 'reader'
       access_request_status: 'pending' | 'approved' | 'denied'
       canvas_visibility: 'private' | 'public'
+      canvas_history_action:
+        | 'created'
+        | 'modified'
+        | 'deleted'
+        | 'undo'
+        | 'redo'
     }
   }
 }
