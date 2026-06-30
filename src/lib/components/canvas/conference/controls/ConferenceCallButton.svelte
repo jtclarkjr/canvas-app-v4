@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Phone } from 'lucide-svelte'
+  import { Phone, PhoneOff } from 'lucide-svelte'
   import { useCanvasConferenceStore } from '$lib/stores/conference/index.svelte'
 
   const store = useCanvasConferenceStore()
@@ -32,6 +32,17 @@
     </span>
     <Phone class="size-4" />
     <span>Join · {store.participantCount}</span>
+  </button>
+{:else if store.isInCall}
+  <button
+    type="button"
+    class="flex h-9 items-center gap-2 rounded-full border border-destructive bg-destructive px-3 text-xs font-semibold text-destructive-foreground shadow-lg transition hover:opacity-90"
+    onclick={() => void store.leave()}
+    title="Leave call"
+    aria-label="Leave call"
+  >
+    <PhoneOff class="size-4" />
+    <span>{store.participantCount}</span>
   </button>
 {:else}
   <div
