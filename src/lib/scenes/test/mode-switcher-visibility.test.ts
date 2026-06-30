@@ -1,31 +1,40 @@
 import { describe, expect, it } from 'vite-plus/test'
 import { render } from 'svelte/server'
 import CanvasWorkspace from '$lib/components/canvas/workspace/CanvasWorkspace.svelte'
+import WorkflowLayer from '$lib/components/canvas/workflows/WorkflowLayer.svelte'
+import type { SceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
 import type { CanvasElement } from '$lib/workspace/schema'
 import type { Scene } from '$lib/scenes/schema'
+import type { Workflow } from '$lib/workflows/schema'
 
-// The Editor/Scenes mode switcher is an editing affordance: readers can
-// still open scene cards by double-clicking them, but they don't get the
-// mode toggle.
+// The Editor/Scenes/Workflows mode switcher is navigation: readers can switch
+// modes, while edit affordances stay gated separately.
 describe('scene mode switcher visibility', () => {
-  function renderWorkspace(role: 'reader' | 'editor' | 'owner') {
+  function renderWorkspace(
+    role: 'reader' | 'editor' | 'owner',
+    options: { isAnonymousPublicViewer?: boolean } = {}
+  ) {
     return render(CanvasWorkspace, {
       props: {
         canvasId: 'canvas-1',
         userId: 'user-1',
         userEmail: 'user@example.com',
-        role
+        role,
+        ...options
       }
     }).body
   }
 
-  it('hides the mode switcher from read-only users', () => {
-    expect(renderWorkspace('reader')).not.toContain('Scenes')
-  })
-
-  it('renders the mode switcher for editors and owners', () => {
+  it('renders the mode switcher for non-anonymous users', () => {
+    expect(renderWorkspace('reader')).toContain('Scenes')
     expect(renderWorkspace('editor')).toContain('Scenes')
     expect(renderWorkspace('owner')).toContain('Scenes')
+  })
+
+  it('hides the mode switcher from anonymous public viewers', () => {
+    expect(
+      renderWorkspace('reader', { isAnonymousPublicViewer: true })
+    ).not.toContain('Scenes')
   })
 
   it('keeps diagram templates inside the collapsed editing toolbar', () => {
@@ -214,4 +223,89 @@ describe('scene mode switcher visibility', () => {
     expect(body).toContain('Server seeded text')
     expect(body).toContain('Server seeded scene')
   })
+
+  it('shows workflow builder panels only for modifiable workflows', () => {
+    expect(renderWorkflowLayer(false)).not.toContain('Workflow AI builder')
+    expect(renderWorkflowLayer(false)).not.toContain(
+      'Workflow code and versions'
+    )
+    expect(renderWorkflowLayer(true)).toContain('Workflow AI builder')
+    expect(renderWorkflowLayer(true)).toContain('Workflow code and versions')
+  })
 })
+
+function renderWorkflowLayer(canModify: boolean) {
+  const workflow = createWorkflow()
+  const sceneDocumentsStore = {
+    getItems: () => []
+  } as unknown as SceneDocumentsStore
+
+  return render(WorkflowLayer, {
+    props: {
+      canvasId: 'canvas-1',
+      workflows: [workflow],
+      focusedWorkflow: workflow,
+      scenes: [],
+      sceneDocumentsStore,
+      camera: { x: 0, y: 0, scale: 1 },
+      mode: 'workflows',
+      selectedTool: 'hand',
+      canEdit: true,
+      canModifyWorkflow: () => canModify,
+      handlers: {
+        pointerDown: () => undefined,
+        pointerMove: () => undefined,
+        pointerUp: () => undefined,
+        pointerCancel: () => undefined,
+        resizePointerDown: () => undefined,
+        resizePointerMove: () => undefined,
+        resizePointerUp: () => undefined,
+        resizePointerCancel: () => undefined
+      },
+      onCreateWorkflow: () => undefined,
+      onFocusWorkflow: () => undefined,
+      onClearFocusedWorkflow: () => undefined,
+      onDeleteWorkflow: () => undefined,
+      onPatchWorkflow: async () => null,
+      onPatchWorkflowDefinition: async () => null,
+      onPatchWorkflowYaml: async () => null,
+      onPatchWorkflowNotes: async () => null,
+      onPatchWorkflowSettings: async () => null
+    }
+  }).body
+}
+
+function createWorkflow(): Workflow {
+  const timestamp = '2026-06-12T00:00:00.000Z'
+
+  return {
+    id: 'workflow-1',
+    canvasId: 'canvas-1',
+    title: 'Server seeded workflow',
+    x: 120,
+    y: 96,
+    width: 760,
+    height: 500,
+    rotation: 0,
+    definition: {
+      version: 1,
+      flowType: 'workflow',
+      name: 'Server seeded workflow',
+      description: '',
+      steps: []
+    },
+    configYaml: 'version: 1\nname: Server seeded workflow\n',
+    notes: '',
+    settings: {
+      context: {
+        documentIds: [],
+        sceneIds: [],
+        includeLinkedScenes: true
+      }
+    },
+    createdBy: 'user-1',
+    updatedBy: 'user-1',
+    createdAt: timestamp,
+    updatedAt: timestamp
+  }
+}

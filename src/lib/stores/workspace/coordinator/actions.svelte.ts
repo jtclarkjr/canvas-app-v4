@@ -116,6 +116,15 @@ export function createWorkspaceCoordinatorActions({
     }
   }
 
+  function activateScene(sceneId: string) {
+    if (!state.canNavigateModes() || !stores.scenesStore.getScene(sceneId)) {
+      return
+    }
+
+    state.selectedElementIds = new Set([sceneId])
+    handleModeChange('scenes')
+  }
+
   function handleWorkspaceKeydown(event: KeyboardEvent) {
     if (stores.scenesStore.openScene || stores.workflowsStore.focusedWorkflow) {
       return
@@ -158,6 +167,7 @@ export function createWorkspaceCoordinatorActions({
     screenToCanvasPoint,
     handleToolChange,
     handleModeChange,
+    activateScene,
     handleWorkspaceKeydown,
     mount,
     handleViewportPointerDown

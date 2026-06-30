@@ -5,7 +5,7 @@
     Plus,
     Workflow as WorkflowIcon
   } from 'lucide-svelte'
-  import type { Camera } from '$lib/canvas/types'
+  import type { Camera, Tool } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneDocumentsStore } from '$lib/stores/scenes/documents.svelte'
   import type { WorkspaceMode } from '$lib/scenes/types'
@@ -55,6 +55,7 @@
     sceneDocumentsStore,
     camera,
     mode,
+    selectedTool,
     canEdit,
     canModifyWorkflow,
     handlers,
@@ -76,6 +77,7 @@
     sceneDocumentsStore: SceneDocumentsStore
     camera: Camera
     mode: WorkspaceMode
+    selectedTool: Tool
     canEdit: boolean
     canModifyWorkflow: (workflowId: string) => boolean
     handlers: FrameHandlers
@@ -107,6 +109,9 @@
   }>()
 
   const interactive = $derived(mode === 'workflows')
+  const canActivateFrames = $derived(
+    !interactive && (mode !== 'editor' || !canEdit || selectedTool === 'select')
+  )
   let selectedCreateType = $state<WorkflowFlowType>('workflow')
   let createMenuOpen = $state(false)
   let fullscreenWorkflowId = $state<string | null>(null)
@@ -182,6 +187,7 @@
       focused={interactive && focused && fullscreenWorkflowId !== workflow.id}
       canModify={canModifyWorkflow(workflow.id)}
       canDrag={canEdit && canModifyWorkflow(workflow.id)}
+      canActivate={canActivateFrames}
       {interactive}
       {handlers}
       onFocus={onFocusWorkflow}
@@ -268,7 +274,7 @@
   </div>
 {/if}
 
-{#if mode === 'workflows' && focusedWorkflow}
+{#if mode === 'workflows' && focusedWorkflow && canModifyWorkflow(focusedWorkflow.id)}
   <WorkflowBuilderPanels
     {canvasId}
     workflow={focusedWorkflow}

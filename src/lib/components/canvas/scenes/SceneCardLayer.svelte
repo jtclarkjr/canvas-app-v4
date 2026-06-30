@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Plus } from 'lucide-svelte'
-  import type { Camera } from '$lib/canvas/types'
+  import type { Camera, Tool } from '$lib/canvas/types'
   import type { Scene } from '$lib/scenes/schema'
   import type { SceneActivity, WorkspaceMode } from '$lib/scenes/types'
   import SceneCard from '$lib/components/canvas/scenes/SceneCard.svelte'
@@ -21,23 +21,32 @@
     scenes,
     camera,
     mode,
+    selectedTool,
     canEdit,
     canModifyScene,
     activity,
     handlers,
     isCreatingScene = false,
+    onActivateScene,
     onCreateScene
   } = $props<{
     scenes: Scene[]
     camera: Camera
     mode: WorkspaceMode
+    selectedTool: Tool
     canEdit: boolean
     canModifyScene: (sceneId: string) => boolean
     activity: Record<string, SceneActivity>
     handlers: CardHandlers
     isCreatingScene?: boolean
+    onActivateScene: (sceneId: string) => void
     onCreateScene: () => void
   }>()
+
+  const canActivateCards = $derived(
+    mode !== 'scenes' &&
+      (mode !== 'editor' || !canEdit || selectedTool === 'select')
+  )
 </script>
 
 <!-- Cards live above the drawing SVG in both modes; each card handles its
@@ -52,6 +61,8 @@
       activity={activity[scene.id] ?? null}
       {handlers}
       interactive={mode === 'scenes'}
+      canActivate={canActivateCards}
+      onActivate={onActivateScene}
     />
   {/each}
 </div>

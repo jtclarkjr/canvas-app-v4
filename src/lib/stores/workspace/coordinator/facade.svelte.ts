@@ -41,6 +41,7 @@ export function createWorkspaceFacade({
     handleToolChange: actions.handleToolChange,
     insertDiagramTemplate: stores.templeStore.insertDiagramTemplate,
     handleModeChange: actions.handleModeChange,
+    activateScene: actions.activateScene,
     createScene: stores.scenesStore.createSceneAtViewportCenter,
     createWorkflow: (flowType?: WorkflowFlowType) =>
       state.workflowEnabled
@@ -129,6 +130,9 @@ export function createWorkspaceFacade({
     },
     get canEdit() {
       return state.canEdit()
+    },
+    get canNavigateModes() {
+      return state.canNavigateModes()
     },
     get canManageCanvas() {
       return state.canManageCanvas()

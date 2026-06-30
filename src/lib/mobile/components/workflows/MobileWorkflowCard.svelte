@@ -21,16 +21,27 @@
     pointerCancel: (event: PointerEvent, workflowId: string) => void
   }
 
-  let { workflow, camera, interactive, canModify, handlers, onOpen, onDelete } =
-    $props<{
-      workflow: CanvasWorkflow
-      camera: Camera
-      interactive: boolean
-      canModify: boolean
-      handlers: FrameHandlers
-      onOpen: (workflowId: string) => void
-      onDelete: (workflowId: string) => void
-    }>()
+  let {
+    workflow,
+    camera,
+    interactive,
+    canModify,
+    canActivate,
+    handlers,
+    onActivate,
+    onOpen,
+    onDelete
+  } = $props<{
+    workflow: CanvasWorkflow
+    camera: Camera
+    interactive: boolean
+    canModify: boolean
+    canActivate: boolean
+    handlers: FrameHandlers
+    onActivate: (workflowId: string) => void
+    onOpen: (workflowId: string) => void
+    onDelete: (workflowId: string) => void
+  }>()
 
   const isDatabase = $derived(isDatabaseFlowDefinition(workflow.definition))
   const countLabel = $derived.by(() => {
@@ -71,10 +82,22 @@
   function stopWorkspacePointer(event: PointerEvent) {
     event.stopPropagation()
   }
+
+  function handleCardClick(event: MouseEvent) {
+    event.stopPropagation()
+    if (interactive) {
+      onOpen(workflow.id)
+      return
+    }
+
+    if (canActivate) {
+      onActivate(workflow.id)
+    }
+  }
 </script>
 
 <article
-  class={`absolute flex overflow-hidden rounded-xl border border-border/70 bg-card/95 text-card-foreground shadow-xl backdrop-blur ${interactive ? 'pointer-events-auto' : 'pointer-events-none'}`}
+  class={`absolute flex overflow-hidden rounded-xl border border-border/70 bg-card/95 text-card-foreground shadow-xl backdrop-blur ${interactive || canActivate ? 'pointer-events-auto' : 'pointer-events-none'}`}
   style={cardStyle}
   data-workflow-id={workflow.id}
   onpointerdown={stopWorkspacePointer}
@@ -82,12 +105,9 @@
   <button
     type="button"
     class="flex min-h-full w-full flex-col p-0 text-left"
-    onclick={(event) => {
-      event.stopPropagation()
-      onOpen(workflow.id)
-    }}
-    disabled={!interactive}
-    aria-label={`Open workflow ${workflow.title}`}
+    onclick={handleCardClick}
+    disabled={!interactive && !canActivate}
+    aria-label={`${interactive ? 'Open' : 'Focus'} workflow ${workflow.title}`}
   >
     <header
       class="flex h-12 shrink-0 items-center gap-2 border-b border-border/70 px-3"

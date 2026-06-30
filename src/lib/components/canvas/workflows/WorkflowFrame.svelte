@@ -28,6 +28,7 @@
     focused,
     canModify,
     canDrag,
+    canActivate,
     interactive,
     handlers,
     onFocus,
@@ -40,6 +41,7 @@
     focused: boolean
     canModify: boolean
     canDrag: boolean
+    canActivate: boolean
     interactive: boolean
     handlers: FrameHandlers
     onFocus: (workflowId: string) => void
@@ -66,30 +68,68 @@
       ? workflow.definition.tables
       : []
   )
+
+  function handlePointerDown(event: PointerEvent) {
+    if (interactive || canDrag) {
+      handlers.pointerDown(event, workflow.id)
+      return
+    }
+
+    event.stopPropagation()
+  }
+
+  function handlePointerMove(event: PointerEvent) {
+    if (interactive || canDrag) {
+      handlers.pointerMove(event, workflow.id)
+    }
+  }
+
+  function handlePointerUp(event: PointerEvent) {
+    if (interactive || canDrag) {
+      handlers.pointerUp(event, workflow.id)
+    }
+  }
+
+  function handlePointerCancel(event: PointerEvent) {
+    if (interactive || canDrag) {
+      handlers.pointerCancel(event, workflow.id)
+    }
+  }
+
+  function handleClick(event: MouseEvent) {
+    if (!canActivate || interactive || canDrag) return
+    event.stopPropagation()
+    onFocus(workflow.id)
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    if (!interactive && !canActivate) return
+
+    event.preventDefault()
+    onFocus(workflow.id)
+  }
 </script>
 
 <div
   class={`glass-card group absolute flex overflow-hidden p-0 transition-shadow ${
-    interactive || canDrag ? 'pointer-events-auto' : 'pointer-events-none'
+    interactive || canDrag || canActivate
+      ? 'pointer-events-auto'
+      : 'pointer-events-none'
   } ${focused ? 'ring-2 ring-primary/50' : ''}`}
   style={frameStyle}
   data-workflow-id={workflow.id}
   role="button"
   tabindex="0"
-  title={interactive ? 'Focus workflow' : 'Drag workflow'}
-  aria-label={`${interactive ? 'Focus' : 'Drag'} workflow ${workflow.title}`}
-  onpointerdown={(event) => handlers.pointerDown(event, workflow.id)}
-  onpointermove={(event) => handlers.pointerMove(event, workflow.id)}
-  onpointerup={(event) => handlers.pointerUp(event, workflow.id)}
-  onpointercancel={(event) => handlers.pointerCancel(event, workflow.id)}
+  title={interactive || canActivate ? 'Focus workflow' : 'Drag workflow'}
+  aria-label={`${interactive || canActivate ? 'Focus' : 'Drag'} workflow ${workflow.title}`}
+  onpointerdown={handlePointerDown}
+  onpointermove={handlePointerMove}
+  onpointerup={handlePointerUp}
+  onpointercancel={handlePointerCancel}
+  onclick={handleClick}
   ondblclick={() => onFocus(workflow.id)}
-  onkeydown={(event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      if (!interactive) return
-      event.preventDefault()
-      onFocus(workflow.id)
-    }
-  }}
+  onkeydown={handleKeydown}
 >
   <div class="flex min-h-0 w-full flex-col bg-card/90">
     <div

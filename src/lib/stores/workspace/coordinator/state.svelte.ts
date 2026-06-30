@@ -95,6 +95,10 @@ export class WorkspaceCoordinatorState {
     return this.role !== 'reader'
   }
 
+  canNavigateModes() {
+    return !this.isAnonymousPublicViewer
+  }
+
   canManageCanvas() {
     return this.role === 'owner' || this.role === 'admin'
   }

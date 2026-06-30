@@ -146,7 +146,7 @@
     onToolChange={workspace.handleToolChange}
   />
 
-  {#if workspace.canEdit}
+  {#if workspace.canNavigateModes}
     <SceneModeSwitcher
       mode={workspace.mode}
       workflowEnabled={workspace.workflowEnabled}
@@ -262,11 +262,13 @@
       scenes={workspace.scenes}
       camera={workspace.camera}
       mode={workspace.mode}
+      selectedTool={workspace.selectedTool}
       canEdit={workspace.canEdit}
       canModifyScene={workspace.canModifyScene}
       activity={workspace.sceneActivity}
       handlers={workspace.sceneCardHandlers}
       isCreatingScene={workspace.isCreatingScene}
+      onActivateScene={workspace.activateScene}
       onCreateScene={() => void workspace.createScene('document')}
     />
   {/if}
@@ -280,6 +282,7 @@
       {sceneDocumentsStore}
       camera={workspace.camera}
       mode={workspace.mode}
+      selectedTool={workspace.selectedTool}
       canEdit={workspace.canEdit}
       canModifyWorkflow={workspace.canModifyWorkflow}
       handlers={workspace.workflowFrameHandlers}

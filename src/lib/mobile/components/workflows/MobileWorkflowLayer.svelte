@@ -136,7 +136,9 @@
       {camera}
       {interactive}
       canModify={canModifyWorkflow(workflow.id)}
+      canActivate={!interactive}
       {handlers}
+      onActivate={onFocusWorkflow}
       onOpen={openWorkflow}
       onDelete={deleteWorkflow}
     />
